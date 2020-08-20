@@ -32,8 +32,8 @@ To get the servers running. The frontend will be served at http://localhost:3000
 
 ### Existing resources 
 
-- [India Dashboard Project]() A good source of components for visualizing COVID data 
-- [The R Shiny app]() that the BU team is currently using.
+- [India Dashboard Project](https://www.covid19india.org/) A good source of components for visualizing COVID data 
+- [The R Shiny app](https://github.com/tmh741/AFCOVIDDashboard) that the BU team is currently using.
 
 ### Data 
 
