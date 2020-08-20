@@ -5,12 +5,12 @@
 
 The inital repo is setup as a yarn + lerna based monorepo. It has two packages 
 
-- frontend : A create react app template using  typescript
-- api : A nest.js server for developing the API, this is also written in typescript 
+- [frontend](/packages/frontend) : A [create-react-app template](https://github.com/facebook/create-react-app) using  typescript
+- [api](/packages/api) : A [nestjs](https://nestjs.com/) server for developing the API, this is also written in typescript 
 
 In addition to these javascript packages there are two other directories 
-- data: which should contain any rawor proccessed data we need for the project 
-- scripts: which should contain any scripts we are using to clean and transform data. For example any ETL should live in this folder.
+- [data](/data): which should contain any rawor proccessed data we need for the project 
+- [scripts](/scripts): which should contain any scripts we are using to clean and transform data. For example any ETL should live in this folder.
 
 These are just placeholders and we might swich these out for another type of server / frontend framework as the project progresses.
 
