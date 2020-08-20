@@ -14,6 +14,22 @@ In addition to these javascript packages there are two other directories
 
 These are just placeholders and we might swich these out for another type of server / frontend framework as the project progresses.
 
+### Running the application 
+
+First install the dependencies using 
+
+```bash
+yarn install
+```
+
+From the root dir and then run 
+
+```
+yarn start
+```
+
+To get the servers running. The frontend will be served at http://localhost:3000 and the API will be hosted at http://localhost:4000  
+
 ### Existing resources 
 
 - [India Dashboard Project]() A good source of components for visualizing COVID data 
