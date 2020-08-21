@@ -39,4 +39,7 @@ To get the servers running. The frontend will be served at http://localhost:3000
 
 The majority of data that the team is using comes from the [Johns Hopkins dashboard](https://coronavirus.jhu.edu/us-map).
 
-In addition we have some model output data that can be found in the data/raw directory.
+In addition we have some model output data that can be found in the data/raw directory. 
+
+For an example of the model outputs + some other data files look at the summary here : 
+- [Model output data summary](/data/raw/test/summary.md)
