@@ -43,3 +43,28 @@ In addition we have some model output data that can be found in the data/raw dir
 
 For an example of the model outputs + some other data files look at the summary here : 
 - [Model output data summary](/data/raw/test/summary.md)
+
+Some variables additionally come from the Institute of Health Metrics and Evaluation (IHME),  Population Reference Bureau 
+
+### Model specifications 
+
+#### IV Regression Model
+
+```r
+model <- ivreg(lncaseload_lastobs ~ lnrchange + lnexpo + lnsdi + lnurban + lnp70p +
+                 lnhhsn + lnihr2018 + lnsqualty + lnasthma + lnhiv  | 
+                 lnexpo + lnsdi + lnurban + lnp70p +
+                 lnhhsn + lnihr2018 + lnsqualty + lnasthma + lnhiv + lntraffic,data= modeldata)
+```
+
+- lnrchange : Change in cases between the first two weeks of the virus ?
+- lnexpo : Inital expansion factor of the virus ?
+- lnsdi : socio demographic index
+- lnurban : Urbanisation of the country
+- lnp70p: Age profile ?
+- lnhhsn : Average household size
+- lnihr2018 : Adherance to international Health regulation
+- lnsqualty :health care quality index.
+- lnasthma  : Prevalance of Asthma (from Institute of Health Metrics and Evaluation (IHME))
+- lnhiv : Prevalance of HIV (from Institute of Health Metrics and Evaluation (IHME))  
+- lntraffic : Incoming air traffic
