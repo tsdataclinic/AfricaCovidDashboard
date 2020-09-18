@@ -1,46 +1,27 @@
 import React, { useCallback } from 'react';
-import styled from 'styled-components';
+import { Select } from 'antd';
 import i18n from '../i18n';
+
+const { Option } = Select;
 
 const LanguagePanel = () => {
     const changeLanguage = useCallback((language: string) => {
         i18n.changeLanguage(language);
     }, []);
     return (
-        <Languages>
-            <button
-                onClick={() => changeLanguage('en')}
-                className={i18n.language === 'en' ? 'active' : undefined}
+        <div>
+            <Select
+                defaultValue="en"
+                style={{ width: 120 }}
+                onSelect={lng => changeLanguage(lng)}
+                bordered={false}
             >
-                English
-            </button>
-            <button
-                onClick={() => changeLanguage('sw')}
-                className={i18n.language === 'sw' ? 'active' : undefined}
-            >
-                WASWAHILI
-            </button>
-            <button
-                onClick={() => changeLanguage('am')}
-                className={i18n.language === 'am' ? 'active' : undefined}
-            >
-                አማርኛ
-            </button>
-        </Languages>
+                <Option value="en">English</Option>
+                <Option value="sw">WASWAHILI</Option>
+                <Option value="am">አማርኛ</Option>
+            </Select>
+        </div>
     );
 };
 
 export default LanguagePanel;
-
-const Languages = styled.div`
-    display: flex;
-    button {
-        margin-right: 10px;
-        cursor: pointer;
-        border: none;
-        :hover,
-        &.active {
-            background-color: #1890ff;
-        }
-    }
-`;
