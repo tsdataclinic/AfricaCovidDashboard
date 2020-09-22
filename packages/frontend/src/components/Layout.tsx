@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { Layout, Row, Col, Drawer, Tooltip, Button } from 'antd';
 import { MenuUnfoldOutlined, SearchOutlined } from '@ant-design/icons';
+import { CountryMenu } from './CountryMenu';
+import { CountryStats } from './CountryStats';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
 import LanguagePanel from './LanguagePanel';
+import { TrendTable } from './TrendTable';
 
 const { Header, Sider, Content } = Layout;
 
 const AppLayout = () => {
     const [navCollapsed, setNavCollapsed] = useState(false);
+    const [selectedCountry, setSelectedCountry] = useState<string | undefined>(
+        'Egypt'
+    );
     const [showDrawer, setDrawer] = useState(false);
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -51,12 +57,17 @@ const AppLayout = () => {
                     </Tooltip>
                 </StyledHeader>
                 <Content>
+                    <CountryMenu
+                        selectedCountry={selectedCountry}
+                        onCountrySelected={setSelectedCountry}
+                    />
                     <Row>
                         <Col xs={24} lg={16}>
-                            Responsive Table Placeholder
+                            <TrendTable country={selectedCountry} />
                         </Col>
+
                         <Col xs={24} lg={8}>
-                            Responsive Chart
+                            <CountryStats country={selectedCountry} />
                         </Col>
                     </Row>
                 </Content>
