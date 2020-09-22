@@ -12,6 +12,7 @@ async function bootstrap() {
     .addTag('COVID')
     .build();
 
+  app.enableCors();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
 
