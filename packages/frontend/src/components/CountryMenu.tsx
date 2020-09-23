@@ -25,6 +25,7 @@ export function CountryMenu({
     }
     return (
         <Select
+            showSearch
             defaultValue="Egypt"
             style={{ width: 120 }}
             onSelect={handleCountryChange}

@@ -1,6 +1,6 @@
 import React, { useState, FunctionComponent } from 'react';
 import { Layout, Drawer, Tooltip, Button } from 'antd';
-import { MenuUnfoldOutlined, SearchOutlined } from '@ant-design/icons';
+import { MenuUnfoldOutlined } from '@ant-design/icons';
 import { CountryMenu } from './CountryMenu';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
@@ -47,13 +47,6 @@ const AppLayout: FunctionComponent = ({ children }) => {
                             onCountrySelected={updateCountry}
                         />
                     )}
-                    <Tooltip title="search">
-                        <Button
-                            type="primary"
-                            shape="circle"
-                            icon={<SearchOutlined />}
-                        />
-                    </Tooltip>
 
                     <Tooltip title="change language">
                         <LanguagePanel />
