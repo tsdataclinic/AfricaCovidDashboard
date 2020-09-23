@@ -2,11 +2,17 @@ import React from 'react';
 import styled from 'styled-components';
 import AppLayout from './components/Layout';
 
+import { QueryCache, ReactQueryCacheProvider } from 'react-query';
+
+const queryCache = new QueryCache();
+
 function App() {
     return (
-        <Shell>
-            <AppLayout />
-        </Shell>
+        <ReactQueryCacheProvider queryCache={queryCache}>
+            <Shell>
+                <AppLayout />
+            </Shell>
+        </ReactQueryCacheProvider>
     );
 }
 
