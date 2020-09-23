@@ -1,7 +1,6 @@
 import React from 'react';
 import { useAvailableCountries } from '../hooks/useAvailableCountries';
-import { Menu, Dropdown, Skeleton } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { Select } from 'antd';
 
 interface CountryMenuProps {
     selectedCountry: string | undefined;
@@ -12,47 +11,28 @@ export function CountryMenu({
     selectedCountry,
     onCountrySelected,
 }: CountryMenuProps) {
-    const {
-        status,
-        data: countries,
-        error,
-        isFetching,
-    } = useAvailableCountries();
+    const { data: countries, isFetching } = useAvailableCountries();
 
-    console.log(
-        'status ',
-        status,
-        ' error ',
-        error,
-        ' isFetching ',
-        isFetching
-    );
-
-    const handleCountryChange: (a: any) => void = ({ key }) => {
+    const handleCountryChange = (country: string) => {
         if (onCountrySelected) {
-            onCountrySelected(key);
+            onCountrySelected(country);
         }
     };
     if (isFetching) {
         return <p>Loading...</p>;
     }
     return (
-        <Dropdown
-            overlay={() => (
-                <Menu onClick={handleCountryChange}>
-                    {countries.map((country: string) => (
-                        <Menu.Item key={country}>{country} </Menu.Item>
-                    ))}
-                </Menu>
-            )}
+        <Select
+            defaultValue="Egypt"
+            style={{ width: 120 }}
+            onSelect={handleCountryChange}
+            bordered={false}
         >
-            <a
-                className="ant-dropdown-link"
-                onClick={(e) => e.preventDefault()}
-            >
-                {selectedCountry ? selectedCountry : 'Select a country'}
-                <DownOutlined />
-            </a>
-        </Dropdown>
+            {countries.map((country: string) => (
+                <Select.Option key={country} value={country}>
+                    {country}{' '}
+                </Select.Option>
+            ))}
+        </Select>
     );
 }

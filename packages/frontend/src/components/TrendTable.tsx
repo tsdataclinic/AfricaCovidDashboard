@@ -50,7 +50,7 @@ const columns = [
 ];
 
 export function TrendTable({ country }: TrendTableProps) {
-    const { status, data, error, isFetching } = useCountryTrends(country);
+    const { data, isFetching } = useCountryTrends(country);
 
     if (isFetching && !country) {
         return <Skeleton active={isFetching} />;

@@ -7,7 +7,7 @@ interface CountryStatsProps {
 }
 
 export function CountryStats({ country }: CountryStatsProps) {
-    const { status, data, error, isFetching } = useCountryStats(country);
+    const { data, isFetching } = useCountryStats(country);
 
     if (isFetching || !country) {
         return <Skeleton active={isFetching}></Skeleton>;

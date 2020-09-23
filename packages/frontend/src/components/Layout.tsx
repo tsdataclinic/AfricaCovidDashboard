@@ -37,6 +37,10 @@ const AppLayout = () => {
             </StyledDrawer>
             <Main>
                 <StyledHeader>
+                    <CountryMenu
+                        selectedCountry={selectedCountry}
+                        onCountrySelected={setSelectedCountry}
+                    />
                     <Tooltip title="search">
                         <Button
                             type="primary"
@@ -57,10 +61,6 @@ const AppLayout = () => {
                     </Tooltip>
                 </StyledHeader>
                 <Content>
-                    <CountryMenu
-                        selectedCountry={selectedCountry}
-                        onCountrySelected={setSelectedCountry}
-                    />
                     <Row>
                         <Col xs={24} lg={16}>
                             <TrendTable country={selectedCountry} />

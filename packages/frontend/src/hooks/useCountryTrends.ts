@@ -1,4 +1,4 @@
-import { useQuery, getDefaultReactQueryConfig } from 'react-query';
+import { useQuery } from 'react-query';
 
 const getTrendForCountry = async (_: any, country: string | undefined) => {
     const request = await fetch(
