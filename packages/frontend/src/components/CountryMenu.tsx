@@ -11,7 +11,7 @@ export function CountryMenu({
     selectedCountry,
     onCountrySelected,
 }: CountryMenuProps) {
-    const { data: countries, isFetching } = useAvailableCountries();
+    const { data: countries, isFetching, error } = useAvailableCountries();
 
     const handleCountryChange = (country: string) => {
         if (onCountrySelected) {
@@ -20,6 +20,8 @@ export function CountryMenu({
     };
     if (isFetching) {
         return <p>Loading...</p>;
+    } else if (error) {
+        return <p>Could not reach the server</p>;
     }
     return (
         <Select

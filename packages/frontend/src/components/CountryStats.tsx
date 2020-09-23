@@ -7,10 +7,12 @@ interface CountryStatsProps {
 }
 
 export function CountryStats({ country }: CountryStatsProps) {
-    const { data, isFetching } = useCountryStats(country);
+    const { data, isFetching, error } = useCountryStats(country);
 
     if (isFetching || !country) {
         return <Skeleton active={isFetching}></Skeleton>;
+    } else if (error) {
+        return <p>Could not reach server</p>;
     } else {
         return (
             <Descriptions title={country}>
