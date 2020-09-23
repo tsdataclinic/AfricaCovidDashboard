@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
-import { Layout, Row, Col, Drawer, Tooltip, Button } from 'antd';
-import { MenuUnfoldOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState, FunctionComponent } from 'react';
+import { Layout, Drawer, Tooltip, Button } from 'antd';
+import { MenuUnfoldOutlined } from '@ant-design/icons';
 import { CountryMenu } from './CountryMenu';
-import { CountryStats } from './CountryStats';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
 import LanguagePanel from './LanguagePanel';
-import { TrendTable } from './TrendTable';
+import { useParams, useHistory } from 'react-router-dom';
+import { CountryParam } from '../types';
+import { COUNTRY_PATH } from '../Routes';
 
 const { Header, Sider, Content } = Layout;
 
-const AppLayout = () => {
+const AppLayout: FunctionComponent = ({ children }) => {
     const [navCollapsed, setNavCollapsed] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState<string | undefined>(
-        'Egypt'
-    );
     const [showDrawer, setDrawer] = useState(false);
+    const { country } = useParams<CountryParam>();
+    const { push } = useHistory();
+    const updateCountry = (country: string) => {
+        push(`${COUNTRY_PATH}/${country}`);
+    };
+
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider
@@ -37,17 +41,12 @@ const AppLayout = () => {
             </StyledDrawer>
             <Main>
                 <StyledHeader>
-                    <CountryMenu
-                        selectedCountry={selectedCountry}
-                        onCountrySelected={setSelectedCountry}
-                    />
-                    <Tooltip title="search">
-                        <Button
-                            type="primary"
-                            shape="circle"
-                            icon={<SearchOutlined />}
+                    {country && (
+                        <CountryMenu
+                            selectedCountry={country}
+                            onCountrySelected={updateCountry}
                         />
-                    </Tooltip>
+                    )}
 
                     <Tooltip title="change language">
                         <LanguagePanel />
@@ -60,17 +59,7 @@ const AppLayout = () => {
                         />
                     </Tooltip>
                 </StyledHeader>
-                <Content>
-                    <Row>
-                        <Col xs={24} lg={16}>
-                            <TrendTable country={selectedCountry} />
-                        </Col>
-
-                        <Col xs={24} lg={8}>
-                            <CountryStats country={selectedCountry} />
-                        </Col>
-                    </Row>
-                </Content>
+                <Content>{children}</Content>
             </Main>
         </Layout>
     );
