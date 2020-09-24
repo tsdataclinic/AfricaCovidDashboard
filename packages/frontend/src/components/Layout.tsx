@@ -8,6 +8,7 @@ import LanguagePanel from './LanguagePanel';
 import { useParams, useHistory } from 'react-router-dom';
 import { CountryParam } from '../types';
 import { COUNTRY_PATH } from '../Routes';
+import { useAllTrends } from '../hooks/useAllTrends';
 
 const { Header, Sider, Content } = Layout;
 
@@ -19,6 +20,9 @@ const AppLayout: FunctionComponent = ({ children }) => {
     const updateCountry = (country: string) => {
         push(`${COUNTRY_PATH}/${country}`);
     };
+
+    const { data: trends } = useAllTrends();
+    console.log('All trends ', trends);
 
     return (
         <Layout style={{ minHeight: '100vh' }}>

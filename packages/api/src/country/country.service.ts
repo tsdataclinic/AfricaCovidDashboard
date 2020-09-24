@@ -28,7 +28,7 @@ export class CountryService {
       );
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
-        .on('data', row => {
+        .on('data', (row) => {
           const country = row['Country_Region'];
           if (row['New Cases'] === 'NA') {
             return;
@@ -53,7 +53,7 @@ export class CountryService {
         .on('end', () => {
           resolve(data);
         })
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err);
         });
     });
@@ -65,7 +65,7 @@ export class CountryService {
       const readStream = fs.createReadStream('data/filtereddata.csv', 'utf8');
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
-        .on('data', row => {
+        .on('data', (row) => {
           const datum = {
             name: row['countryorarea'],
             population: 10000,
@@ -77,7 +77,7 @@ export class CountryService {
         .on('end', () => {
           resolve(data);
         })
-        .on('error', err => {
+        .on('error', (err) => {
           console.log('something went wrong');
           reject(err);
         });
@@ -103,10 +103,14 @@ export class CountryService {
     }
   }
 
+  getAllTrends(): CountryTrendDict {
+    return this.allCountryTrends;
+  }
+
   getStatsForCountry(country: string): CountryStats {
     console.log('Getting stats for trend ', country);
     if (this.allCountryStats) {
-      return this.allCountryStats.find(cs => cs.name === country);
+      return this.allCountryStats.find((cs) => cs.name === country);
     } else {
       throw new NotFoundException('Country not found');
     }

@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CountryService } from './country.service';
-import { CountryStats, TrendDatum } from './country_types';
+import { CountryStats, TrendDatum, CountryTrendDict } from './country_types';
 import {
   ApiOkResponse,
   ApiParam,
@@ -68,5 +68,13 @@ export class CountryController {
   })
   getStatsForCountry(@Param('country') country: string): CountryStats {
     return this.countryService.getStatsForCountry(country);
+  }
+
+  @Get('/trends')
+  @ApiOkResponse({
+    description: 'JSON dict of the trends for each country',
+  })
+  getAllTrends(): CountryTrendDict {
+    return this.countryService.getAllTrends();
   }
 }
