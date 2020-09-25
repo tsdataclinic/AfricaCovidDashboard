@@ -9,7 +9,7 @@ interface CountryMenuProps {
 
 export function CountryMenu({
     selectedCountry,
-    onCountrySelected,
+    onCountrySelected
 }: CountryMenuProps) {
     const { data: countries, isFetching, error } = useAvailableCountries();
 
@@ -26,10 +26,11 @@ export function CountryMenu({
     return (
         <Select
             showSearch
-            defaultValue="Egypt"
-            style={{ width: 120 }}
+            value={selectedCountry}
+            style={{ width: 150 }}
             onSelect={handleCountryChange}
             bordered={false}
+            placeholder="select a country"
         >
             {countries.map((country: string) => (
                 <Select.Option key={country} value={country}>

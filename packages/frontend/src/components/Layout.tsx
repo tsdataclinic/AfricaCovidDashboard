@@ -1,28 +1,15 @@
 import React, { useState, FunctionComponent } from 'react';
-import { Layout, Drawer, Tooltip, Button } from 'antd';
-import { MenuUnfoldOutlined } from '@ant-design/icons';
-import { CountryMenu } from './CountryMenu';
+import { Layout, Drawer, Row } from 'antd';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
-import LanguagePanel from './LanguagePanel';
-import { useParams, useHistory } from 'react-router-dom';
-import { CountryParam } from '../types';
-import { COUNTRY_PATH } from '../Routes';
-import { useAllTrends } from '../hooks/useAllTrends';
+import HeaderRightControl from './header/HeaderRightControl';
+import HeaderLeftControl from './header/HeaderLeftControl';
 
 const { Header, Sider, Content } = Layout;
 
 const AppLayout: FunctionComponent = ({ children }) => {
     const [navCollapsed, setNavCollapsed] = useState(false);
     const [showDrawer, setDrawer] = useState(false);
-    const { country } = useParams<CountryParam>();
-    const { push } = useHistory();
-    const updateCountry = (country: string) => {
-        push(`${COUNTRY_PATH}/${country}`);
-    };
-
-    const { data: trends } = useAllTrends();
-    console.log('All trends ', trends);
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -45,23 +32,12 @@ const AppLayout: FunctionComponent = ({ children }) => {
             </StyledDrawer>
             <Main>
                 <StyledHeader>
-                    {country && (
-                        <CountryMenu
-                            selectedCountry={country}
-                            onCountrySelected={updateCountry}
+                    <Row justify="space-between" align="middle">
+                        <HeaderLeftControl />
+                        <HeaderRightControl
+                            openDrawer={() => setDrawer(true)}
                         />
-                    )}
-
-                    <Tooltip title="change language">
-                        <LanguagePanel />
-                    </Tooltip>
-                    <Tooltip title="menu" className="hide-large">
-                        <Button
-                            shape="circle"
-                            icon={<MenuUnfoldOutlined />}
-                            onClick={() => setDrawer(true)}
-                        />
-                    </Tooltip>
+                    </Row>
                 </StyledHeader>
                 <Content>{children}</Content>
             </Main>
@@ -73,11 +49,8 @@ export default AppLayout;
 
 const StyledHeader = styled(Header)`
     background: white;
-    padding: 0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
     padding: 0 16px;
+    line-height: 48px;
     &.ant-layout-header {
         height: 48px;
     }
