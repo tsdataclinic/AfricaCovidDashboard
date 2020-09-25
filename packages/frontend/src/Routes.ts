@@ -1,5 +1,4 @@
 import Home from './components/Home';
-import Country from './components/Country';
 import Forecast from './components/Forecast';
 import About from './components/About';
 
@@ -15,21 +14,21 @@ export const ABOUT_PATH = '/about';
 
 const routes: RouteProps[] = [
     {
-        path: HOME_PATH,
-        component: Home,
+        path: `${HOME_PATH}`,
+        component: Home
     },
     {
         path: `${COUNTRY_PATH}/:country`,
-        component: Country,
+        component: Home
     },
     {
         path: FORECAST_PATH,
-        component: Forecast,
+        component: Forecast
     },
     {
         path: ABOUT_PATH,
-        component: About,
-    },
+        component: About
+    }
 ];
 
 export default routes;
