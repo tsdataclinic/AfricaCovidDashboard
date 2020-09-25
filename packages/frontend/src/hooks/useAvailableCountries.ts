@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query';
 
 const getAvailableCountries = async () => {
-    const request = await fetch('api/country/');
+    const request = await fetch('/api/country/');
     const result = await request.json();
     return result;
 };
