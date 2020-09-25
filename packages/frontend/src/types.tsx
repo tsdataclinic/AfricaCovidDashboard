@@ -3,7 +3,7 @@ export interface CountryParam {
 }
 
 export type DataType = 'cumulative' | 'daily';
-export type Category = 'confirmed' | 'active' | 'discovered' | 'Deceased';
+export type Category = 'confirmed' | 'recoveries' | 'deaths';
 
 export interface SearchQuery {
     selectedDate?: string;
