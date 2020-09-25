@@ -12,11 +12,16 @@ const useQueryParams = () => {
     const { country } = useParams<CountryParam>();
     const {
         push,
-        location: { pathname, search }
+        location: { pathname, search },
     } = useHistory();
+
     const updateCountry = useCallback(
-        (country: string) => {
-            push(`${COUNTRY_PATH}/${country}${search}`);
+        (country: string | undefined) => {
+            if (country !== undefined) {
+                push(`${COUNTRY_PATH}/${country}${search}`);
+            } else {
+                push(`/${search}`);
+            }
         },
         [push, search]
     );
@@ -45,7 +50,7 @@ const useQueryParams = () => {
         selectedDate: selectedDate ? moment(selectedDate) : undefined,
         updateQuery,
         dataType: (dataType || 'cumulative') as DataType,
-        categoy: (categoy || 'confirmed') as Category
+        categoy: (categoy || 'confirmed') as Category,
     };
 };
 

@@ -1,14 +1,23 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { CountryParam } from '../types';
 import Country from './Country';
+import AfricaMap from './africa-map/AfricaMap';
+import { Col, Row } from 'antd';
+import useQueryParams from '../hooks/useQueryParams';
 
 const Home = () => {
-    const { country } = useParams<CountryParam>();
-    if (country) {
-        return <Country />;
-    }
-    return <div>Home</div>;
+    const { country, updateCountry } = useQueryParams();
+
+    return (
+        <Row gutter={[16, 16]}>
+            <Col span={12}>
+                <AfricaMap
+                    selectedCountry={country}
+                    onCountrySelect={updateCountry}
+                />
+            </Col>
+            <Col span={12}>{country && <Country />}</Col>
+        </Row>
+    );
 };
 
 export default Home;
