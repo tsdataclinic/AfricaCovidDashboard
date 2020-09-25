@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@juggle/resize-observer": "^3.2.0",
         "@testing-library/jest-dom": "^4.2.4",
         "@testing-library/react": "^9.3.2",
         "@testing-library/user-event": "^7.1.2",
@@ -15,6 +16,7 @@
         "@types/topojson": "^3.2.2",
         "antd": "^4.6.4",
         "d3": "^6.2.0",
+        "d3-interpolate-path": "^2.2.1",
         "d3-svg-legend": "^2.25.6",
         "http-proxy-middleware": "^1.0.5",
         "i18next": "^19.7.0",
@@ -53,6 +55,7 @@
         ]
     },
     "devDependencies": {
+        "@types/d3-interpolate-path": "^2.0.0",
         "@types/react-router-dom": "^5.1.5",
         "@typescript-eslint/eslint-plugin": "^4.1.0",
         "@typescript-eslint/parser": "^4.1.0",

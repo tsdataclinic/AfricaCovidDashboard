@@ -1,0 +1,1 @@
+export const D3_TRANSITION_DURATION = 300;
