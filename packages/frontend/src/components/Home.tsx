@@ -5,6 +5,7 @@ import { Col, Row } from 'antd';
 import useQueryParams from '../hooks/useQueryParams';
 import { useCountryTrends } from '../hooks/useCountryTrends';
 import StatsBar from './StatsBar';
+import Trend from './Trend';
 
 const Home = () => {
     const {
@@ -12,13 +13,13 @@ const Home = () => {
         updateCountry,
         dataType,
         category,
-        updateQuery,
+        updateQuery
     } = useQueryParams();
 
     const {
         data: countryTrends,
         isFetching: isFetchingTrends,
-        error: countryTrendsError,
+        error: countryTrendsError
     } = useCountryTrends(country);
 
     return (
@@ -27,7 +28,7 @@ const Home = () => {
                 <StatsBar
                     dataType={dataType}
                     category={category}
-                    selectCategory={(category) =>
+                    selectCategory={category =>
                         updateQuery('category', category)
                     }
                     loading={isFetchingTrends}
@@ -42,7 +43,9 @@ const Home = () => {
                     onCountrySelect={updateCountry}
                 />
             </Col>
-            <Col span={12}>{country && <Country />}</Col>
+            <Col span={12}>
+                <Trend />
+            </Col>
         </Row>
     );
 };

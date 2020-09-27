@@ -10,3 +10,21 @@ export interface SearchQuery {
     dataType?: DataType;
     categofy?: Category;
 }
+
+export interface TrendDatum {
+    date: string;
+    deaths: number;
+    confirmed: number;
+    recoveries: number;
+    new_deaths: number;
+    new_case: number;
+    new_recoveries: number;
+    days_since_first_case: number;
+}
+
+export interface StatsBarItem {
+    label: String;
+    value: keyof TrendDatum;
+    category: Category;
+    color: string;
+}

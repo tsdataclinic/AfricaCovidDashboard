@@ -1,18 +1,8 @@
 import React from 'react';
 import { Card, Skeleton, Statistic } from 'antd';
-import { Category, DataType } from '../types';
-import { GREEN, GREY, RED } from '../colors';
+import { Category, DataType, TrendDatum, StatsBarItem } from '../types';
 import styled from 'styled-components';
-
-interface TrendDatum {
-    confirmed: number;
-    date: string;
-    deaths: number;
-    recoveries: number;
-    new_confirmed: number;
-    new_deaths: number;
-    new_recoveries: number;
-}
+import { getCategories } from '../helper';
 
 interface StatsBarProps {
     dataType: DataType;
@@ -22,65 +12,18 @@ interface StatsBarProps {
     loading?: boolean;
 }
 
-interface StatsBarItem {
-    label: String;
-    value: keyof TrendDatum;
-    category: Category;
-    color: string;
-}
 const StatsBar: React.FC<StatsBarProps> = ({
     dataType,
     category,
     selectCategory,
     data,
-    loading,
+    loading
 }) => {
-    const items: StatsBarItem[] =
-        dataType === 'cumulative'
-            ? [
-                  {
-                      label: 'Confirmed',
-                      value: 'confirmed',
-                      category: 'confirmed',
-                      color: RED,
-                  },
-                  {
-                      label: 'Recovered',
-                      value: 'recoveries',
-                      category: 'recoveries',
-                      color: GREEN,
-                  },
-                  {
-                      label: 'Deaths',
-                      value: 'deaths',
-                      category: 'deaths',
-                      color: GREY,
-                  },
-              ]
-            : [
-                  {
-                      label: 'New Cases',
-                      value: 'new_confirmed',
-                      category: 'confirmed',
-                      color: RED,
-                  },
-                  {
-                      label: 'New Recoveries',
-                      value: 'new_recoveries',
-                      category: 'recoveries',
-                      color: GREEN,
-                  },
-                  {
-                      label: 'New Deaths',
-                      value: 'new_deaths',
-                      category: 'deaths',
-                      color: GREY,
-                  },
-              ];
+    const items: StatsBarItem[] = getCategories(dataType);
 
     return (
         <Container>
-            {items.map((column) => {
+            {items.map(column => {
                 return (
                     <Skeleton active loading={data === undefined || loading}>
                         <StyledCard
@@ -111,7 +54,7 @@ const Container = styled.div`
 const StyledCard = styled(Card)<{ selected: boolean }>`
     flex: 1 0 0px;
     margin: 10px;
-    ${(props) =>
+    ${props =>
         props.selected &&
         `
     font-weight: bold;
