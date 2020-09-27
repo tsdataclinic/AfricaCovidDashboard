@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { Skeleton } from 'antd';
+import styled from 'styled-components';
 import { useAllTrends } from '../hooks/useAllTrends';
 import useQueryParams from '../hooks/useQueryParams';
 import Timeseries from './Timeseries';
@@ -28,14 +29,18 @@ const Trend = () => {
         return <p>Could not reach server</p>;
     }
     return (
-        <div>
+        <TrendWrapper>
             <Timeseries
                 timeseries={data[country] || []}
                 dataType={dataType}
                 dates={dates}
             />
-        </div>
+        </TrendWrapper>
     );
 };
 
 export default Trend;
+
+const TrendWrapper = styled.div`
+    padding: 20px;
+`;
