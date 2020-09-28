@@ -3,7 +3,7 @@ import moment from 'moment';
 import { GREEN, GREY, RED } from './colors';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1
+    maximumFractionDigits: 1,
 });
 
 export const abbreviateNumber = (num: number) => {
@@ -27,7 +27,7 @@ export const getStatistic = (
         case 'recoveries':
             return type === 'daily' ? data.new_recoveries : data.recoveries;
         case 'deaths':
-            return type === 'daily' ? data.deaths : data.new_deaths;
+            return type === 'daily' ? data.new_deaths : data.deaths;
         default:
             return 0;
     }
@@ -37,7 +37,7 @@ export const findTrendData = (
     timeseries: TrendDatum[],
     date: Date
 ): TrendDatum => {
-    const trendData = timeseries?.find(item =>
+    const trendData = timeseries?.find((item) =>
         moment(date).isSame(moment(item.date), 'day')
     );
 
@@ -50,7 +50,7 @@ export const findTrendData = (
             new_deaths: 0,
             new_case: 0,
             new_recoveries: 0,
-            days_since_first_case: 0
+            days_since_first_case: 0,
         }
     );
 };
@@ -76,38 +76,38 @@ export const getCategories = (dataType: DataType): StatsBarItem[] =>
                   label: 'Confirmed',
                   value: 'confirmed',
                   category: 'confirmed',
-                  color: RED
+                  color: RED,
               },
               {
                   label: 'Recovered',
                   value: 'recoveries',
                   category: 'recoveries',
-                  color: GREEN
+                  color: GREEN,
               },
               {
                   label: 'Deaths',
                   value: 'deaths',
                   category: 'deaths',
-                  color: GREY
-              }
+                  color: GREY,
+              },
           ]
         : [
               {
                   label: 'New Cases',
                   value: 'new_case',
                   category: 'confirmed',
-                  color: RED
+                  color: RED,
               },
               {
                   label: 'New Recoveries',
                   value: 'new_recoveries',
                   category: 'recoveries',
-                  color: GREEN
+                  color: GREEN,
               },
               {
                   label: 'New Deaths',
                   value: 'new_deaths',
                   category: 'deaths',
-                  color: GREY
-              }
+                  color: GREY,
+              },
           ];

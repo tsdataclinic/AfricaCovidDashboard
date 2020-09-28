@@ -58,7 +58,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             })
             .transition()
             .duration(1000)
-            .style('fill', (d) => {
+            .style('fill', (d: any) => {
                 return '#ccc';
             });
     };

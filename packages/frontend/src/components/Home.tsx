@@ -13,22 +13,22 @@ const Home = () => {
         updateCountry,
         dataType,
         category,
-        updateQuery
+        updateQuery,
     } = useQueryParams();
 
     const {
         data: countryTrends,
         isFetching: isFetchingTrends,
-        error: countryTrendsError
+        error: countryTrendsError,
     } = useCountryTrends(country);
 
     return (
         <Row gutter={[16, 16]}>
-            <Col span={12}>
+            <Col md={24} lg={12}>
                 <StatsBar
                     dataType={dataType}
                     category={category}
-                    selectCategory={category =>
+                    selectCategory={(category) =>
                         updateQuery('category', category)
                     }
                     loading={isFetchingTrends}
@@ -43,7 +43,7 @@ const Home = () => {
                     onCountrySelect={updateCountry}
                 />
             </Col>
-            <Col span={12}>
+            <Col md={24} lg={12}>
                 <Trend />
             </Col>
         </Row>

@@ -6,7 +6,7 @@ import {
     formatDateToStr,
     getCategories,
     getColor,
-    getStatistic
+    getStatistic,
 } from '../helper';
 import styled from 'styled-components';
 import { min, max, bisector } from 'd3-array';
@@ -14,15 +14,14 @@ import { axisBottom, axisRight, AxisScale, AxisDomain } from 'd3-axis';
 import { interpolatePath } from 'd3-interpolate-path';
 import { scaleTime, scaleLinear } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
-import { select, mouse } from 'd3-selection';
+import { select, pointer } from 'd3-selection';
 import { line, curveMonotoneX } from 'd3-shape';
-import moment from 'moment';
 import React, {
     useCallback,
     useEffect,
     useRef,
     useMemo,
-    useState
+    useState,
 } from 'react';
 import { Category, DataType, StatsBarItem, TrendDatum } from '../types';
 import { GREY, RED, GREEN } from '../colors';
@@ -47,7 +46,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
     );
 
     const categories: StatsBarItem[] = useMemo(() => getCategories(dataType), [
-        dataType
+        dataType,
     ]);
 
     useEffect(() => {
@@ -92,16 +91,12 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
             g.attr('class', 'x-axis').call(
                 axisBottom(xScale)
                     .ticks(numTicksX)
-                    .tickFormat(date => formatter(date as Date))
+                    .tickFormat((date) => formatter(date as Date))
             );
 
         const xAxis2 = (g: any, yScale: AxisScale<AxisDomain>) => {
             g.attr('class', 'x-axis2')
-                .call(
-                    axisBottom(xScale)
-                        .tickValues([])
-                        .tickSize(0)
-                )
+                .call(axisBottom(xScale).tickValues([]).tickSize(0))
                 .select('.domain')
                 .style('transform', `translateY(${yScale(0)}px)`);
 
@@ -114,54 +109,56 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
             g.attr('class', 'y-axis').call(
                 axisRight(yScale)
                     .ticks(4)
-                    .tickFormat(num => abbreviateNumber(num))
+                    .tickFormat((num) => abbreviateNumber(num))
                     .tickPadding(4)
             );
 
         const generateYScale = (category: Category) => {
+            const minNum =
+                yBufferBottom *
+                Math.min(
+                    0,
+                    min(dates, (date) =>
+                        getStatistic(
+                            findTrendData(timeseries, date),
+                            dataType,
+                            category
+                        )
+                    ) || 0
+                );
+            const maxNum = Math.max(
+                1,
+                yBufferTop *
+                    (max(dates, (date) =>
+                        getStatistic(
+                            findTrendData(timeseries, date),
+                            dataType,
+                            category
+                        )
+                    ) || 0)
+            );
             return scaleLinear()
                 .clamp(true)
-                .domain([
-                    yBufferBottom *
-                        Math.min(
-                            0,
-                            min(dates, date =>
-                                getStatistic(
-                                    findTrendData(timeseries, date),
-                                    dataType,
-                                    category
-                                )
-                            ) || 0
-                        ),
-                    Math.max(
-                        1,
-                        yBufferTop *
-                            (max(dates, date =>
-                                getStatistic(
-                                    findTrendData(timeseries, date),
-                                    dataType,
-                                    category
-                                )
-                            ) || 0)
-                    )
-                ])
+                .domain([minNum, maxNum])
                 .nice(4)
                 .range([chartBottom, margin.top]);
         };
 
         function mousemove(res: any) {
-            // console.log(res);
-            // const xm = mouse(this)[0];
-            // const date = xScale.invert(xm);
-            // if (!isNaN(date)) {
-            //     const bisectDate = bisector((date) => date).left;
-            //     const index = bisectDate(dates, date, 1);
-            //     const dateLeft = dates[index - 1];
-            //     const dateRight = dates[index];
-            //     setHighlightedDate(
-            //         date - dateLeft < dateRight - date ? dateLeft : dateRight
-            //     );
-            // }
+            const xm = pointer(res)[0];
+            const date = xScale.invert(xm);
+            if (date) {
+                const bisectDate = bisector((date) => date).left;
+                const index = bisectDate(dates, date, 1);
+                const dateLeft = dates[index - 1];
+                const dateRight = dates[index];
+                setHighlightedDate(
+                    date.valueOf() - dateLeft.valueOf() <
+                        dateRight.valueOf() - date.valueOf()
+                        ? dateLeft
+                        : dateRight
+                );
+            }
         }
 
         function mouseout() {
@@ -183,9 +180,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                 .transition(t)
                 .call(xAxis);
 
-            svg.select('.x-axis2')
-                .transition(t)
-                .call(xAxis2, yScale);
+            svg.select('.x-axis2').transition(t).call(xAxis2, yScale);
 
             /* Y axis */
             svg.select('.y-axis')
@@ -226,8 +221,8 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
 
                 const linePath = line()
                     .curve(curveMonotoneX)
-                    .x(date => xScale(date as any))
-                    .y(date =>
+                    .x((date) => xScale(date as any))
+                    .y((date) =>
                         yScale(
                             getStatistic(
                                 findTrendData(timeseries, date as any),
@@ -237,35 +232,36 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                         )
                     );
 
-                // svg.selectAll('.trend')
-                //     .data(T ? [dates] : [])
-                //     .join(
-                //         (enter: any) =>
-                //             enter
-                //                 .append('path')
-                //                 .attr('class', 'trend')
-                //                 .attr('fill', 'none')
-                //                 .attr('stroke', color + '50')
-                //                 .attr('stroke-width', 4)
-                //                 .attr('d', linePath)
-                //                 .call((enter: any) =>
-                //                     enter
-                //                         .attr('stroke-dashoffset', 1)
-                //                         .transition(t)
-                //                         .attr('stroke-dashoffset', 0)
-                //                 ),
-                //         (update: any) =>
-                //             update
-                //                 .attr('stroke-dasharray', null)
-                //                 .transition(t)
-                //                 .attrTween('d', function (
-                //                     date: [number, number][]
-                //                 ) {
-                //                     // const previous = select(ref).attr('d');
-                //                     const current = linePath(date) || '';
-                //                     return interpolatePath(current, current);
-                //                 })
-                //     );
+                svg.selectAll('.trend')
+                    .data(T ? [dates] : [])
+                    .join(
+                        (enter: any) =>
+                            enter
+                                .append('path')
+                                .attr('class', 'trend')
+                                .attr('fill', 'none')
+                                .attr('stroke', color + '50')
+                                .attr('stroke-width', 4)
+                                .attr('d', linePath)
+                                .call((enter: any) =>
+                                    enter
+                                        .attr('stroke-dashoffset', 1)
+                                        .transition(t)
+                                        .attr('stroke-dashoffset', 0)
+                                )
+                        // TODO: fix the animations
+                        // (update: any) =>
+                        //     update
+                        //         .attr('stroke-dasharray', null)
+                        //         .transition(t)
+                        //         .attrTween('d', function (
+                        //             date: [number, number][]
+                        //         ) {
+                        //             // const previous = select(ref).attr('d');
+                        //             const current = linePath(date) || '';
+                        //             return interpolatePath(current, current);
+                        //         })
+                    );
             } else {
                 /* DAILY TRENDS */
                 svg.selectAll('.trend').remove();
@@ -308,16 +304,16 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
 
     useEffect(() => {
         const barWidth = getBarWidth();
-        refs.current.forEach(ref => {
+        refs.current.forEach((ref) => {
             const svg = select(ref);
-            svg.selectAll('circle').attr('r', date =>
+            svg.selectAll('circle').attr('r', (date: any) =>
                 date === highlightedDate ? barWidth : barWidth / 2
             );
         });
     }, [highlightedDate, getBarWidth]);
 
     const getStatisticDelta = useCallback(
-        category => {
+        (category) => {
             if (!highlightedDate) return;
             const currCount = getStatistic(
                 findTrendData(timeseries, highlightedDate),
@@ -325,7 +321,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                 category
             );
             const prevDate =
-                dates[dates.findIndex(date => date === highlightedDate) - 1];
+                dates[dates.findIndex((date) => date === highlightedDate) - 1];
 
             const prevCount = getStatistic(
                 findTrendData(timeseries, prevDate),
@@ -342,7 +338,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
 
         [0, 0, 0, 0, 0].map((element, index) => {
             styles.push({
-                animationDelay: `${index * 250}ms`
+                animationDelay: `${index * 250}ms`,
             });
             return null;
         });
@@ -362,7 +358,9 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                     return (
                         <Wrapper
                             key={category}
-                            className={`svg-parent fadeInUp is-${category}`}
+                            className={`svg-parent ${
+                                index > 0 ? 'fadeInUp' : ''
+                            } is-${category}`}
                             ref={wrapperRef}
                             style={trail[index]}
                         >
@@ -382,7 +380,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                                 </div>
                             )}
                             <svg
-                                ref={element => {
+                                ref={(element) => {
                                     refs.current[index] = element;
                                 }}
                                 preserveAspectRatio="xMidYMid meet"
@@ -403,6 +401,15 @@ export default Timeseries;
 
 const Wrapper = styled.div`
     position: relative;
+    align-self: center;
+    background: rgba(255, 7, 58, 0.12);
+    border-radius: 5px;
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 10rem;
+    margin-bottom: 1rem;
+
     .stats {
         border-radius: 3px;
         display: flex;
@@ -412,19 +419,48 @@ const Wrapper = styled.div`
         pointer-events: none;
         position: absolute;
         top: 0.5rem;
-        &.is-recoveries {
-            h5.title,
-            h2,
-            h6 {
-                color: ${GREEN};
+    }
+
+    svg {
+        width: 100%;
+        path,
+        .tick,
+        line {
+            stroke: ${RED};
+        }
+        text {
+            opacity: 0.5;
+        }
+    }
+
+    &.is-recoveries {
+        background: rgba(40, 167, 69, 0.12);
+        h5.title,
+        h2,
+        h6 {
+            color: ${GREEN};
+        }
+        svg {
+            path,
+            .tick,
+            line {
+                stroke: ${GREEN};
             }
         }
+    }
 
-        &.is-deaths {
-            h5.title,
-            h2,
-            h6 {
-                color: ${GREY};
+    &.is-deaths {
+        background: rgba(108, 117, 125, 0.06);
+        h5.title,
+        h2,
+        h6 {
+            color: ${GREY};
+        }
+        svg {
+            path,
+            .tick,
+            line {
+                stroke: ${GREY};
             }
         }
     }
@@ -434,6 +470,8 @@ const Wrapper = styled.div`
         transition: all 0.15s ease-in-out;
         opacity: 0.6;
         color: ${RED};
+        font-weight: 900;
+        line-height: 10px;
     }
     h2,
     h6 {
@@ -444,9 +482,5 @@ const Wrapper = styled.div`
     .stats-bottom {
         display: flex;
         align-items: center;
-    }
-
-    svg {
-        width: 100%;
     }
 `;
