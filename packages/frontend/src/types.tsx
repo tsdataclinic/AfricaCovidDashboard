@@ -4,6 +4,7 @@ export interface CountryParam {
 
 export type DataType = 'cumulative' | 'daily';
 export type Category = 'confirmed' | 'recoveries' | 'deaths';
+export type LookBackMonth = 'one_month' | 'three_month' | 'beginning';
 
 export interface SearchQuery {
     selectedDate?: string;
