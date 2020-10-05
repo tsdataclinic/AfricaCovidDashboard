@@ -12,7 +12,7 @@ import styled from 'styled-components';
 import { min, max, bisector } from 'd3-array';
 import { axisBottom, axisRight, AxisScale, AxisDomain } from 'd3-axis';
 import { interpolatePath } from 'd3-interpolate-path';
-import { scaleTime, scaleLinear } from 'd3-scale';
+import { scaleTime, scaleLinear, scaleLog } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
 import { select, pointer } from 'd3-selection';
 import { line, curveMonotoneX } from 'd3-shape';
@@ -34,9 +34,15 @@ interface TimeseriesProps {
     timeseries: TrendDatum[];
     dates: Date[];
     dataType: DataType;
+    isLog: boolean;
 }
 
-const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
+const Timeseries = ({
+    timeseries,
+    dates,
+    dataType,
+    isLog,
+}: TimeseriesProps) => {
     const refs = useRef<(SVGSVGElement | null)[]>([]);
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const dimensions = useResizeObserver(wrapperRef) || { width: 0, height: 0 };
@@ -114,6 +120,36 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
             );
 
         const generateYScale = (category: Category) => {
+            if (isLog) {
+                return scaleLog()
+                    .clamp(true)
+                    .domain([
+                        Math.max(
+                            1,
+                            min(dates, (date) =>
+                                getStatistic(
+                                    findTrendData(timeseries, date),
+                                    dataType,
+                                    category
+                                )
+                            ) || 1
+                        ),
+                        Math.max(
+                            10,
+                            yBufferTop *
+                                (max(dates, (date) =>
+                                    getStatistic(
+                                        findTrendData(timeseries, date),
+                                        dataType,
+                                        category
+                                    )
+                                ) || 1)
+                        ),
+                    ])
+                    .nice()
+                    .range([chartBottom, margin.top]);
+            }
+
             const minNum =
                 yBufferBottom *
                 Math.min(
@@ -137,6 +173,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                         )
                     ) || 0)
             );
+
             return scaleLinear()
                 .clamp(true)
                 .domain([minNum, maxNum])
@@ -300,7 +337,7 @@ const Timeseries = ({ timeseries, dates, dataType }: TimeseriesProps) => {
                 .on('mouseout', mouseout)
                 .on('touchend', mouseout);
         });
-    }, [dataType, dimensions, getBarWidth, timeseries, dates]);
+    }, [dataType, dimensions, getBarWidth, timeseries, dates, isLog]);
 
     useEffect(() => {
         const barWidth = getBarWidth();
