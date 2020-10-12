@@ -1,14 +1,15 @@
 import React from 'react';
 import { Card, Skeleton, Statistic } from 'antd';
-import { Category, DataType, TrendDatum, StatsBarItem } from '../types';
+import { Category, DataType, StatsBarItem } from '../types';
 import styled from 'styled-components';
 import { getCategories } from '../helper';
+import { CountryTrend } from '../hooks/useCountryTrends';
 
 interface StatsBarProps {
     dataType: DataType;
     category: Category;
     selectCategory: (category: Category) => void;
-    data?: TrendDatum;
+    data?: CountryTrend;
     loading?: boolean;
 }
 

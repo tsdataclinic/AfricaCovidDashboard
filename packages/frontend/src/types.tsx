@@ -1,3 +1,5 @@
+import { CountryTrend } from './hooks/useCountryTrends';
+
 export interface CountryParam {
     country: string;
 }
@@ -12,20 +14,9 @@ export interface SearchQuery {
     categofy?: Category;
 }
 
-export interface TrendDatum {
-    date: string;
-    deaths: number;
-    confirmed: number;
-    recoveries: number;
-    new_deaths: number;
-    new_case: number;
-    new_recoveries: number;
-    days_since_first_case: number;
-}
-
 export interface StatsBarItem {
     label: String;
-    value: keyof TrendDatum;
+    value: keyof CountryTrend;
     category: Category;
     color: string;
 }

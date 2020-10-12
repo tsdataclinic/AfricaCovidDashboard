@@ -1,11 +1,11 @@
 import React from 'react';
-import Country from './Country';
 import AfricaMap from './africa-map/AfricaMap';
 import { Col, Row } from 'antd';
 import useQueryParams from '../hooks/useQueryParams';
-import { useCountryTrends } from '../hooks/useCountryTrends';
+import { useAllCountryTrends } from '../hooks/useCountryTrends';
 import StatsBar from './StatsBar';
 import Trend from './Trend';
+import moment from 'moment';
 
 const Home = () => {
     const {
@@ -14,13 +14,14 @@ const Home = () => {
         dataType,
         category,
         updateQuery,
+        selectedDate
     } = useQueryParams();
 
     const {
-        data: countryTrends,
-        isFetching: isFetchingTrends,
-        error: countryTrendsError,
-    } = useCountryTrends(country);
+        data: allCountryTrends,
+        isFetching: isFetchingAllTrends,
+        error: allCountryTrendsError
+    } = useAllCountryTrends();
 
     return (
         <Row gutter={[16, 16]}>
@@ -28,19 +29,23 @@ const Home = () => {
                 <StatsBar
                     dataType={dataType}
                     category={category}
-                    selectCategory={(category) =>
+                    selectCategory={category =>
                         updateQuery('category', category)
                     }
-                    loading={isFetchingTrends}
+                    loading={isFetchingAllTrends}
                     data={
-                        typeof countryTrends == 'object' &&
-                        Array.isArray(countryTrends) &&
-                        countryTrends.slice(-1).pop()
+                        allCountryTrends &&
+                        allCountryTrends[country] &&
+                        allCountryTrends[country].slice(-1)[0]
                     }
                 />
                 <AfricaMap
                     selectedCountry={country}
                     onCountrySelect={updateCountry}
+                    category={category}
+                    date={selectedDate || moment()}
+                    dataType={dataType}
+                    data={allCountryTrends}
                 />
             </Col>
             <Col md={24} lg={12}>

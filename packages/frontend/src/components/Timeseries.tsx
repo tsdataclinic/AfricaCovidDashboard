@@ -6,32 +6,32 @@ import {
     formatDateToStr,
     getCategories,
     getColor,
-    getStatistic,
+    getStatistic
 } from '../helper';
 import styled from 'styled-components';
-import { min, max, bisector } from 'd3-array';
-import { axisBottom, axisRight, AxisScale, AxisDomain } from 'd3-axis';
-import { interpolatePath } from 'd3-interpolate-path';
-import { scaleTime, scaleLinear, scaleLog } from 'd3-scale';
+import { bisector, max, min } from 'd3-array';
+import { axisBottom, AxisDomain, axisRight, AxisScale } from 'd3-axis';
+import { scaleLinear, scaleLog, scaleTime } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
-import { select, pointer } from 'd3-selection';
-import { line, curveMonotoneX } from 'd3-shape';
+import { pointer, select } from 'd3-selection';
+import { curveMonotoneX, line } from 'd3-shape';
 import React, {
     useCallback,
     useEffect,
-    useRef,
     useMemo,
-    useState,
+    useRef,
+    useState
 } from 'react';
-import { Category, DataType, StatsBarItem, TrendDatum } from '../types';
-import { GREY, RED, GREEN } from '../colors';
+import { Category, DataType, StatsBarItem } from '../types';
+import { GREEN, GREY, RED } from '../colors';
+import { CountryTrend } from '../hooks/useCountryTrends';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
 const formatter = timeFormat('%m-%d');
 
 interface TimeseriesProps {
-    timeseries: TrendDatum[];
+    timeseries: CountryTrend[];
     dates: Date[];
     dataType: DataType;
     isLog: boolean;
@@ -41,7 +41,7 @@ const Timeseries = ({
     timeseries,
     dates,
     dataType,
-    isLog,
+    isLog
 }: TimeseriesProps) => {
     const refs = useRef<(SVGSVGElement | null)[]>([]);
     const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -52,7 +52,7 @@ const Timeseries = ({
     );
 
     const categories: StatsBarItem[] = useMemo(() => getCategories(dataType), [
-        dataType,
+        dataType
     ]);
 
     useEffect(() => {
@@ -97,12 +97,16 @@ const Timeseries = ({
             g.attr('class', 'x-axis').call(
                 axisBottom(xScale)
                     .ticks(numTicksX)
-                    .tickFormat((date) => formatter(date as Date))
+                    .tickFormat(date => formatter(date as Date))
             );
 
         const xAxis2 = (g: any, yScale: AxisScale<AxisDomain>) => {
             g.attr('class', 'x-axis2')
-                .call(axisBottom(xScale).tickValues([]).tickSize(0))
+                .call(
+                    axisBottom(xScale)
+                        .tickValues([])
+                        .tickSize(0)
+                )
                 .select('.domain')
                 .style('transform', `translateY(${yScale(0)}px)`);
 
@@ -115,7 +119,7 @@ const Timeseries = ({
             g.attr('class', 'y-axis').call(
                 axisRight(yScale)
                     .ticks(4)
-                    .tickFormat((num) => abbreviateNumber(num))
+                    .tickFormat(num => abbreviateNumber(num))
                     .tickPadding(4)
             );
 
@@ -126,7 +130,7 @@ const Timeseries = ({
                     .domain([
                         Math.max(
                             1,
-                            min(dates, (date) =>
+                            min(dates, date =>
                                 getStatistic(
                                     findTrendData(timeseries, date),
                                     dataType,
@@ -137,14 +141,14 @@ const Timeseries = ({
                         Math.max(
                             10,
                             yBufferTop *
-                                (max(dates, (date) =>
+                                (max(dates, date =>
                                     getStatistic(
                                         findTrendData(timeseries, date),
                                         dataType,
                                         category
                                     )
                                 ) || 1)
-                        ),
+                        )
                     ])
                     .nice()
                     .range([chartBottom, margin.top]);
@@ -154,7 +158,7 @@ const Timeseries = ({
                 yBufferBottom *
                 Math.min(
                     0,
-                    min(dates, (date) =>
+                    min(dates, date =>
                         getStatistic(
                             findTrendData(timeseries, date),
                             dataType,
@@ -165,7 +169,7 @@ const Timeseries = ({
             const maxNum = Math.max(
                 1,
                 yBufferTop *
-                    (max(dates, (date) =>
+                    (max(dates, date =>
                         getStatistic(
                             findTrendData(timeseries, date),
                             dataType,
@@ -185,7 +189,7 @@ const Timeseries = ({
             const xm = pointer(res)[0];
             const date = xScale.invert(xm);
             if (date) {
-                const bisectDate = bisector((date) => date).left;
+                const bisectDate = bisector(date => date).left;
                 const index = bisectDate(dates, date, 1);
                 const dateLeft = dates[index - 1];
                 const dateRight = dates[index];
@@ -217,7 +221,9 @@ const Timeseries = ({
                 .transition(t)
                 .call(xAxis);
 
-            svg.select('.x-axis2').transition(t).call(xAxis2, yScale);
+            svg.select('.x-axis2')
+                .transition(t)
+                .call(xAxis2, yScale);
 
             /* Y axis */
             svg.select('.y-axis')
@@ -258,8 +264,8 @@ const Timeseries = ({
 
                 const linePath = line()
                     .curve(curveMonotoneX)
-                    .x((date) => xScale(date as any))
-                    .y((date) =>
+                    .x(date => xScale(date as any))
+                    .y(date =>
                         yScale(
                             getStatistic(
                                 findTrendData(timeseries, date as any),
@@ -341,7 +347,7 @@ const Timeseries = ({
 
     useEffect(() => {
         const barWidth = getBarWidth();
-        refs.current.forEach((ref) => {
+        refs.current.forEach(ref => {
             const svg = select(ref);
             svg.selectAll('circle').attr('r', (date: any) =>
                 date === highlightedDate ? barWidth : barWidth / 2
@@ -350,7 +356,7 @@ const Timeseries = ({
     }, [highlightedDate, getBarWidth]);
 
     const getStatisticDelta = useCallback(
-        (category) => {
+        category => {
             if (!highlightedDate) return;
             const currCount = getStatistic(
                 findTrendData(timeseries, highlightedDate),
@@ -358,7 +364,7 @@ const Timeseries = ({
                 category
             );
             const prevDate =
-                dates[dates.findIndex((date) => date === highlightedDate) - 1];
+                dates[dates.findIndex(date => date === highlightedDate) - 1];
 
             const prevCount = getStatistic(
                 findTrendData(timeseries, prevDate),
@@ -375,7 +381,7 @@ const Timeseries = ({
 
         [0, 0, 0, 0, 0].map((element, index) => {
             styles.push({
-                animationDelay: `${index * 250}ms`,
+                animationDelay: `${index * 250}ms`
             });
             return null;
         });
@@ -417,7 +423,7 @@ const Timeseries = ({
                                 </div>
                             )}
                             <svg
-                                ref={(element) => {
+                                ref={element => {
                                     refs.current[index] = element;
                                 }}
                                 preserveAspectRatio="xMidYMid meet"

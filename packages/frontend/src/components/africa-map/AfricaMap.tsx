@@ -1,15 +1,23 @@
-import React, { useCallback, useEffect, useLayoutEffect } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
 import africaTopology from './africa.json';
 import * as topojson from 'topojson-client';
 import { Topology } from 'topojson-specification';
 import styled from 'styled-components';
+import { CountryTrend, CountryTrends } from '../../hooks/useCountryTrends';
+import { Category, DataType } from '../../types';
+import { values, flatten, pick } from 'lodash';
+import * as colors from '../../colors';
+import { Moment } from 'moment';
 
 interface AfricaMapProps {
     selectedCountry?: string;
     onCountrySelect?: (country: string | undefined) => void;
-    category?: string;
+    date: Moment;
+    category: Category;
+    dataType: DataType;
+    data?: CountryTrends;
 }
 
 const MAP_TARGET = '#africa-map';
@@ -22,6 +30,10 @@ const africaMapFeatures =
 const AfricaMap: React.FC<AfricaMapProps> = ({
     selectedCountry,
     onCountrySelect,
+    date,
+    category,
+    dataType,
+    data
 }) => {
     const width = 960;
     const height = 720;
@@ -34,9 +46,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
     const handleCountryClick = useCallback(
         (country: string) => {
-            if (selectedCountry === country) {
-                onCountrySelect?.(undefined);
-            } else {
+            if (Boolean(country)) {
                 onCountrySelect?.(country);
             }
         },
@@ -46,21 +56,81 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     const fillMap = () => {
         const svg = d3.select(MAP_TARGET);
         const countries = svg.selectAll('.country-border');
-        countries
-            .classed('selected-country', (d: any) => {
-                return d.properties.name === selectedCountry;
-            })
-            .on('click', (e: any, d: any) => {
-                const country = d.properties?.name;
-                if (country) {
-                    handleCountryClick(country);
+        countries.classed('selected-country', (d: any) => {
+            return d.properties.name === selectedCountry;
+        });
+
+        // Update colors
+        if (data !== undefined) {
+            let colorRange = [
+                colors.LIGHT_GREY,
+                colors.LIGHT_GREEN,
+                colors.GREEN
+            ];
+            switch (category) {
+                case 'confirmed':
+                    colorRange = [
+                        colors.LIGHT_GREY,
+                        colors.LIGHT_RED,
+                        colors.RED
+                    ];
+                    break;
+                case 'recoveries':
+                    colorRange = [
+                        colors.LIGHT_GREY,
+                        colors.LIGHT_GREEN,
+                        colors.GREEN
+                    ];
+                    break;
+                case 'deaths':
+                    colorRange = [colors.LIGHT_GREY, colors.GREY];
+                    break;
+            }
+            let trendKey: keyof CountryTrend = 'confirmed';
+            if (dataType === 'daily') {
+                if (category === 'confirmed') {
+                    trendKey = 'new_case';
+                } else if (category === 'recoveries') {
+                    trendKey = 'new_recoveries';
+                } else if (category === 'deaths') {
+                    trendKey = 'new_deaths';
                 }
-            })
-            .transition()
-            .duration(1000)
-            .style('fill', (d: any) => {
-                return '#ccc';
-            });
+            } else {
+                if (category === 'confirmed') {
+                    trendKey = 'confirmed';
+                } else if (category === 'recoveries') {
+                    trendKey = 'recoveries';
+                } else if (category === 'deaths') {
+                    trendKey = 'deaths';
+                }
+            }
+            let extent = d3.extent(
+                flatten(values(data).map(d => d.slice(-1))),
+                d => d[trendKey] as number
+            );
+            if (extent[0] == undefined) {
+                extent = [0, 1];
+            }
+            const colorScale = d3
+                .scaleLinear()
+                .domain(extent)
+                // @ts-ignore
+                .range(colorRange)
+                // @ts-ignore
+                .interpolate(d3.interpolateHcl);
+            countries
+                .transition()
+                .duration(1000)
+                .style('fill', (d: any) => {
+                    const countryData: CountryTrend | undefined = data?.[
+                        d.properties.name
+                    ]?.slice(-1)[0];
+                    if (countryData?.[trendKey] !== undefined) {
+                        return colorScale(countryData[trendKey] as number);
+                    }
+                    return colors.LIGHT_GREY;
+                });
+        }
     };
 
     const initializeMap = () => {
@@ -89,7 +159,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         // create background box for zoom
         svg.append('rect')
             .attr('class', 'background')
-            .style('background-color', '#eff2f5')
+            .style('background-color', colors.LIGHT_GREY)
             .attr('width', width)
             .attr('height', height);
 
@@ -102,7 +172,13 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .enter()
             .append('path')
             .attr('class', 'country-border')
-            .attr('d', path);
+            .attr('d', path)
+            .on('click', (e: any, d: any) => {
+                const country = d.properties?.name;
+                if (country) {
+                    handleCountryClick(country);
+                }
+            });
 
         fillMap();
         setResponsiveSVG();
@@ -134,7 +210,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     };
 
     useLayoutEffect(() => initializeMap(), []);
-    useEffect(fillMap, [selectedCountry]);
+    useEffect(fillMap, [selectedCountry, category, data, dataType, date]);
 
     return (
         <MapContainer id="svg-parent" className="scaling-svg-container">
@@ -161,4 +237,4 @@ const MapContainer = styled.div`
         }
     }
 `;
-export default AfricaMap;
+export default React.memo(AfricaMap);
