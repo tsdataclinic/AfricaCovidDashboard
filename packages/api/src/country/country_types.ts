@@ -107,6 +107,36 @@ export class TrendDatum {
     minimum: 0,
   })
   days_since_first_case: number;
+
+  add(other: TrendDatum): TrendDatum {
+    if (this.date !== other.date) {
+      throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);
+    }
+    this.deaths += other.deaths;
+    this.confirmed += other.confirmed;
+    this.recoveries += other.recoveries;
+    this.new_deaths += other.new_deaths;
+    this.new_case += other.new_case;
+    this.new_recoveries += other.new_recoveries;
+    return this;
+  }
 }
 
 export type CountryTrendDict = { [country: string]: TrendDatum[] };
+
+export type JHDatum = {
+  FIPS: string;
+  Admin2: string;
+  Province_State: string;
+  Country_Region: string;
+  Last_Update: Date;
+  Lat: number;
+  Long_: number;
+  Confirmed: number;
+  Deaths: number;
+  Recovered: number;
+  Active: number;
+  Combined_Key: string;
+  Incidence_Rate: number;
+  'Case-Fatality_Ratio': number;
+};

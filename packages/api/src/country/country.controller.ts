@@ -14,10 +14,37 @@ export class CountryController {
 
   @Get('/')
   @ApiOkResponse({
-    description: 'JSON array of avaliable countries',
+    description: 'JSON array of available countries',
   })
-  getAvaliable(): string[] {
-    return this.countryService.getAvaliableCountries();
+  getAvailable(): string[] {
+    return this.countryService.getAvailableCountries();
+  }
+
+  @Get('/africa/trends')
+  @ApiQuery({
+    name: 'startDate',
+    description: 'The date to start retrieving the data for',
+    type: Date,
+    example: '2020-10-01',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'endDate',
+    description: 'The date to stop retrieving the data for',
+    type: Date,
+    example: '2020-10-04',
+    required: false,
+  })
+  @ApiOkResponse({
+    description: 'Time series data array of trend data for a country',
+    type: TrendDatum,
+    isArray: true,
+  })
+  continentTrends(
+    @Query('startDate') startDate?: Date,
+    @Query('endDate') endDate?: Date,
+  ) {
+    return this.countryService.getContinentTrends();
   }
 
   @Get('/:country/trends')
@@ -28,7 +55,7 @@ export class CountryController {
   })
   @ApiQuery({
     name: 'startDate',
-    description: 'The date to start retreving the data for',
+    description: 'The date to start retrieving the data for',
     type: Date,
     example: '2020-10-01',
     required: false,
@@ -56,7 +83,7 @@ export class CountryController {
   @Get('/:country/stats')
   @ApiParam({
     name: 'country',
-    description: 'The country to retrive stats form',
+    description: 'The country to retrieve stats form',
     example: 'Spain',
   })
   @ApiOkResponse({
