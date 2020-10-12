@@ -1,13 +1,14 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Skeleton } from 'antd';
 import styled from 'styled-components';
 import { useAllTrends } from '../hooks/useAllTrends';
 import useQueryParams from '../hooks/useQueryParams';
 import Timeseries from './Timeseries';
-import { LookBackMonth, TrendDatum } from '../types';
+import { LookBackMonth } from '../types';
 import { convertDateStrToDate } from '../helper';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
+import { CountryTrend } from '../hooks/useCountryTrends';
 
 const Trend = () => {
     const { t } = useTranslation();
@@ -22,7 +23,7 @@ const Trend = () => {
             pastDates = [];
         } else {
             pastDates =
-                data[country]?.map((item: TrendDatum) =>
+                data[country]?.map((item: CountryTrend) =>
                     convertDateStrToDate(item.date)
                 ) || [];
         }
@@ -36,12 +37,16 @@ const Trend = () => {
         }
 
         if (lookback === 'one_month') {
-            const firstDate = moment(lastDate).subtract(1, 'months').toDate();
+            const firstDate = moment(lastDate)
+                .subtract(1, 'months')
+                .toDate();
             return pastDates.filter((d: Date) => d > firstDate);
         }
 
         if (lookback === 'three_month') {
-            const firstDate = moment(lastDate).subtract(3, 'months').toDate();
+            const firstDate = moment(lastDate)
+                .subtract(3, 'months')
+                .toDate();
             return pastDates.filter((d: Date) => d > firstDate);
         }
         return pastDates;
@@ -70,7 +75,7 @@ const Trend = () => {
                 isLog={isLog}
             />
             <Pill>
-                {['beginning', 'three_month', 'one_month'].map((option) => (
+                {['beginning', 'three_month', 'one_month'].map(option => (
                     <Button
                         key={option}
                         type="button"
