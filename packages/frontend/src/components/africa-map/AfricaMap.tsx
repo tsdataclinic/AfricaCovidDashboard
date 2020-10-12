@@ -33,7 +33,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     date,
     category,
     dataType,
-    data
+    data,
 }) => {
     const width = 960;
     const height = 720;
@@ -50,7 +50,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 onCountrySelect?.(country);
             }
         },
-        [onCountrySelect]
+        [onCountrySelect, selectedCountry]
     );
 
     const fillMap = () => {
@@ -65,21 +65,21 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             let colorRange = [
                 colors.LIGHT_GREY,
                 colors.LIGHT_GREEN,
-                colors.GREEN
+                colors.GREEN,
             ];
             switch (category) {
                 case 'confirmed':
                     colorRange = [
                         colors.LIGHT_GREY,
                         colors.LIGHT_RED,
-                        colors.RED
+                        colors.RED,
                     ];
                     break;
                 case 'recoveries':
                     colorRange = [
                         colors.LIGHT_GREY,
                         colors.LIGHT_GREEN,
-                        colors.GREEN
+                        colors.GREEN,
                     ];
                     break;
                 case 'deaths':
@@ -105,10 +105,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 }
             }
             let extent = d3.extent(
-                flatten(values(data).map(d => d.slice(-1))),
-                d => d[trendKey] as number
+                flatten(values(data).map((d) => d.slice(-1))),
+                (d) => d[trendKey] as number
             );
-            if (extent[0] == undefined) {
+            if (extent[0] === undefined) {
                 extent = [0, 1];
             }
             const colorScale = d3
@@ -209,7 +209,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         svgParent.style('padding-bottom', calcString);
     };
 
-    useLayoutEffect(() => initializeMap(), []);
+    useLayoutEffect(() => initializeMap(), [initializeMap]);
     useEffect(fillMap, [selectedCountry, category, data, dataType, date]);
 
     return (

@@ -14,13 +14,12 @@ const Home = () => {
         dataType,
         category,
         updateQuery,
-        selectedDate
+        selectedDate,
     } = useQueryParams();
 
     const {
         data: allCountryTrends,
         isFetching: isFetchingAllTrends,
-        error: allCountryTrendsError
     } = useAllCountryTrends();
 
     return (
@@ -29,7 +28,7 @@ const Home = () => {
                 <StatsBar
                     dataType={dataType}
                     category={category}
-                    selectCategory={category =>
+                    selectCategory={(category) =>
                         updateQuery('category', category)
                     }
                     loading={isFetchingAllTrends}
