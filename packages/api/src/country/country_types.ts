@@ -123,20 +123,3 @@ export class TrendDatum {
 }
 
 export type CountryTrendDict = { [country: string]: TrendDatum[] };
-
-export type JHDatum = {
-  FIPS: string;
-  Admin2: string;
-  Province_State: string;
-  Country_Region: string;
-  Last_Update: Date;
-  Lat: number;
-  Long_: number;
-  Confirmed: number;
-  Deaths: number;
-  Recovered: number;
-  Active: number;
-  Combined_Key: string;
-  Incidence_Rate: number;
-  'Case-Fatality_Ratio': number;
-};
