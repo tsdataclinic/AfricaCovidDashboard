@@ -189,12 +189,14 @@ const Timeseries = ({
                 const index = bisectDate(dates, date, 1);
                 const dateLeft = dates[index - 1];
                 const dateRight = dates[index];
-                setHighlightedDate(
-                    date.valueOf() - dateLeft.valueOf() <
-                        dateRight.valueOf() - date.valueOf()
-                        ? dateLeft
-                        : dateRight
-                );
+                if (dateLeft && dateRight) {
+                    setHighlightedDate(
+                        date.valueOf() - dateLeft.valueOf() <
+                            dateRight.valueOf() - date.valueOf()
+                            ? dateLeft
+                            : dateRight
+                    );
+                }
             }
         }
 
@@ -243,8 +245,6 @@ const Timeseries = ({
                 .attr('r', barWidth / 2)
                 .merge(circles)
                 .transition(t)
-                .duration(200)
-                .attr('cx', (date: Date) => xScale(date))
                 .attr('cy', (date: Date) =>
                     yScale(
                         getStatistic(
@@ -253,7 +253,8 @@ const Timeseries = ({
                             category
                         )
                     )
-                );
+                )
+                .attr('cx', (date: Date) => xScale(date));
 
             if (dataType === 'cumulative') {
                 svg.selectAll('.stem')

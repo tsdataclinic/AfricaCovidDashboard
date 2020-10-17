@@ -28,6 +28,9 @@ const useQueryParams = () => {
 
     const updateQuery = useCallback(
         (key: SeachQueryKey, value: SearchQueryValue) => {
+            if (!value) {
+                return;
+            }
             const searchParams = qs.parse(search.replace('?', ''));
             const parseValue =
                 key === 'selectedDate'
