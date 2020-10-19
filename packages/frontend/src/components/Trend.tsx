@@ -13,11 +13,11 @@ import { CountryTrend } from '../hooks/useCountryTrends';
 const Trend = () => {
     const { t } = useTranslation();
     const { data, isFetching, error } = useAllTrends();
-    const { country, dataType } = useQueryParams();
+    const { country, dataType, selectedDate } = useQueryParams();
     const [lookback, setLookBack] = useState<LookBackMonth>('beginning');
     const [isLog, setIsLog] = useState(false);
     const dates = useMemo(() => {
-        let pastDates = [];
+        let pastDates: Date[] = [];
         if (!country || !data) {
             // TODO: summary
             pastDates = [];
@@ -28,6 +28,11 @@ const Trend = () => {
                 ) || [];
         }
 
+        if (selectedDate) {
+            pastDates = pastDates.filter((d) =>
+                selectedDate.isSameOrAfter(d, 'day')
+            );
+        }
         if (pastDates.length === 0) {
             return pastDates;
         }
@@ -37,20 +42,16 @@ const Trend = () => {
         }
 
         if (lookback === 'one_month') {
-            const firstDate = moment(lastDate)
-                .subtract(1, 'months')
-                .toDate();
+            const firstDate = moment(lastDate).subtract(1, 'months').toDate();
             return pastDates.filter((d: Date) => d > firstDate);
         }
 
         if (lookback === 'three_month') {
-            const firstDate = moment(lastDate)
-                .subtract(3, 'months')
-                .toDate();
+            const firstDate = moment(lastDate).subtract(3, 'months').toDate();
             return pastDates.filter((d: Date) => d > firstDate);
         }
         return pastDates;
-    }, [data, country, lookback]);
+    }, [data, country, lookback, selectedDate]);
 
     if (isFetching) {
         return <Skeleton active={isFetching}></Skeleton>;
@@ -75,7 +76,7 @@ const Trend = () => {
                 isLog={isLog}
             />
             <Pill>
-                {['beginning', 'three_month', 'one_month'].map(option => (
+                {['beginning', 'three_month', 'one_month'].map((option) => (
                     <Button
                         key={option}
                         type="button"

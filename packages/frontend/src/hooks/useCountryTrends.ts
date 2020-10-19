@@ -14,10 +14,14 @@ export interface CountryTrend {
 export type CountryTrends = { [k in string]: CountryTrend[] };
 
 const getTrendForCountry = async (_: any, country: string | undefined) => {
-    if (!country) {
-        return [];
-    }
-    const request = await fetch(`/api/country/${country}/trends`);
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const promise = fetch(`/api/country/${country}/trends`, { signal });
+    // Cancel the request if React Query calls the `promise.cancel` method
+    (promise as any).cancel = () => controller.abort();
+
+    const request = await promise;
     const result = await request.json();
     return result;
 };
@@ -25,7 +29,11 @@ const getTrendForCountry = async (_: any, country: string | undefined) => {
 export function useCountryTrends(country: string | undefined) {
     return useQuery<CountryTrend[]>(
         ['countryTrend', country],
-        getTrendForCountry
+        getTrendForCountry,
+        {
+            enabled: country,
+            initialData: [],
+        }
     );
 }
 

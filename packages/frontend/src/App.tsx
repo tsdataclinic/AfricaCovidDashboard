@@ -6,7 +6,13 @@ import Routes from './Routes';
 
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 
-const queryCache = new QueryCache();
+const queryCache = new QueryCache({
+    defaultConfig: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
 function App() {
     const children = useMemo(
@@ -15,7 +21,7 @@ function App() {
                 <Route
                     exact
                     path={page.path}
-                    render={props => (
+                    render={(props) => (
                         <AppLayout>
                             <page.component {...props} />
                         </AppLayout>
