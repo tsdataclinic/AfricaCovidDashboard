@@ -9,13 +9,20 @@ import { convertDateStrToDate } from '../helper';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import { CountryTrend } from '../hooks/useCountryTrends';
+import useCountryStats from '../hooks/useCountryStats';
 
 const Trend = () => {
     const { t } = useTranslation();
-    const { data, isFetching, error } = useAllTrends();
+    const { data, isLoading: allTrendsLoading, error } = useAllTrends();
     const { country, dataType, selectedDate } = useQueryParams();
     const [lookback, setLookBack] = useState<LookBackMonth>('beginning');
     const [isLog, setIsLog] = useState(false);
+    const [per100K, setPer100K] = useState(false);
+    const {
+        data: countryStatsData,
+        isLoading: countryStatsLoading,
+    } = useCountryStats(country);
+
     const dates = useMemo(() => {
         let pastDates: Date[] = [];
         if (!country || !data) {
@@ -53,24 +60,55 @@ const Trend = () => {
         return pastDates;
     }, [data, country, lookback, selectedDate]);
 
-    if (isFetching) {
-        return <Skeleton active={isFetching}></Skeleton>;
+    const timeseries = useMemo(() => {
+        const countryData: CountryTrend[] = data?.[country] || [];
+        const populartion = countryStatsData?.population;
+        if (populartion && per100K) {
+            const multiplier = (1 / populartion) * 100000;
+            return countryData.map((item) => ({
+                confirmed: item.confirmed * multiplier,
+                date: item.date,
+                deaths: item.deaths * multiplier,
+                new_case: item.new_case * multiplier,
+                new_deaths: item.new_deaths * multiplier,
+                new_recoveries: item.new_recoveries * multiplier,
+                recoveries: item.recoveries * multiplier,
+                days_since_first_case: item.days_since_first_case,
+            }));
+        }
+        return countryData;
+    }, [data, country, countryStatsData, per100K]);
+
+    if (allTrendsLoading || countryStatsLoading) {
+        return <Skeleton active></Skeleton>;
     } else if (error || !data) {
         return <p>Could not reach server</p>;
     }
     return (
         <TrendWrapper>
             <Scale>
-                <Label htmlFor="timeseries-logmode">Logarithmic</Label>
-                <Input
-                    id="timeseries-logmode"
-                    type="checkbox"
-                    checked={isLog}
-                    onChange={() => setIsLog(!isLog)}
-                />
+                <Scale>
+                    <Label htmlFor="timeseries-logmode">Logarithmic</Label>
+                    <Input
+                        id="timeseries-logmode"
+                        type="checkbox"
+                        checked={isLog}
+                        onChange={() => setIsLog(!isLog)}
+                    />
+                </Scale>
+                <Scale>
+                    <Label htmlFor="timeseries-100k">Per 100K</Label>
+                    <Input
+                        id="timeseries-100k"
+                        type="checkbox"
+                        checked={per100K}
+                        onChange={() => setPer100K(!per100K)}
+                    />
+                </Scale>
             </Scale>
+
             <Timeseries
-                timeseries={data[country] || []}
+                timeseries={timeseries}
                 dataType={dataType}
                 dates={dates}
                 isLog={isLog}
@@ -132,7 +170,8 @@ const Button = styled.button`
 const Scale = styled.div`
     display: flex;
     flex-direction: row;
-    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 0.2rem;
 `;
 
 const Label = styled.label`

@@ -7,5 +7,7 @@ const getCountryStats = async (_: any, country: string | undefined) => {
 };
 
 export default function useCountryStats(country: string | undefined) {
-    return useQuery(['countryStats', country], getCountryStats);
+    return useQuery(['countryStats', country], getCountryStats, {
+        enabled: country,
+    });
 }
