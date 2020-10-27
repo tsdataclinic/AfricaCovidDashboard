@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAvailableCountries } from '../hooks/useAvailableCountries';
+import { useAvailableCountries, Country } from '../hooks/useAvailableCountries';
 import { Select } from 'antd';
 
 interface CountryMenuProps {
@@ -32,9 +32,9 @@ export function CountryMenu({
             bordered={false}
             placeholder="select a country"
         >
-            {countries.map((country: string) => (
-                <Select.Option key={country} value={country}>
-                    {country}{' '}
+            {countries.map((country: Country) => (
+                <Select.Option key={country.name} value={country.iso3}>
+                    {country.name}{' '}
                 </Select.Option>
             ))}
         </Select>
