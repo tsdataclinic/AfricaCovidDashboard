@@ -1,5 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class Country {
+  @ApiProperty({
+    description: 'The name of the country',
+    examples: ['Spain', 'France', 'Egypt'],
+    example: 'Egypt',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'Region in which the country resides',
+  })
+  region: string;
+
+  @ApiProperty({
+    description: 'The continent where the country is located',
+  })
+  continent: string;
+
+  @ApiProperty({
+    description: 'The Iso3 string for the country',
+  })
+  iso3: string;
+}
+
 export class CountryStats {
   @ApiProperty({
     description: 'The name of the country',
@@ -12,6 +36,16 @@ export class CountryStats {
     description: 'Region in which the country resides',
   })
   region: string;
+
+  @ApiProperty({
+    description: 'The continent where the country is located',
+  })
+  continent: string;
+
+  @ApiProperty({
+    description: 'The Iso3 string for the country',
+  })
+  iso3: string;
 
   @ApiProperty({
     description: 'Population of the country',
@@ -109,7 +143,7 @@ export class TrendDatum {
   days_since_first_case: number;
 
   add(other: TrendDatum): TrendDatum {
-    if (this.date !== other.date) {
+    if (this.date.getTime() !== other.date.getTime()) {
       throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);
     }
     this.deaths += other.deaths;

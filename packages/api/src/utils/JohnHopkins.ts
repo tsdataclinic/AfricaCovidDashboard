@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import CsvReadableStream from 'csv-reader';
 import { Readable } from 'stream';
 import { TrendDatum, CountryTrendDict } from '../country/country_types';
+import { getCountryISO } from './countryISO';
 
 async function getJHFTimeSeriesFile(
   type: 'deaths' | 'recovered' | 'confirmed',
@@ -98,7 +99,10 @@ export async function getDataFromJHTS() {
       }
     });
 
-    all_results[country] = sortedCountryResults;
+    const countryISO = getCountryISO(country);
+    if (countryISO) {
+      all_results[countryISO.iso3] = sortedCountryResults;
+    }
   });
 
   return all_results;
