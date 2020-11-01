@@ -9,3 +9,10 @@ const getAvailableCountries = async () => {
 export function useAvailableCountries() {
     return useQuery('availableCountries', getAvailableCountries);
 }
+
+export type Country = {
+    name: string;
+    iso3: string;
+    continent: string;
+    region: string;
+};

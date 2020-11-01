@@ -1,6 +1,11 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CountryService } from './country.service';
-import { CountryStats, TrendDatum, CountryTrendDict } from './country_types';
+import {
+  CountryStats,
+  TrendDatum,
+  CountryTrendDict,
+  Country,
+} from './country_types';
 import {
   ApiOkResponse,
   ApiParam,
@@ -15,8 +20,9 @@ export class CountryController {
   @Get('/')
   @ApiOkResponse({
     description: 'JSON array of available countries',
+    type: Country,
   })
-  getAvailable(): string[] {
+  getAvailable(): Country[] {
     return this.countryService.getAvailableCountries();
   }
 
@@ -47,11 +53,11 @@ export class CountryController {
     return this.countryService.getContinentTrends();
   }
 
-  @Get('/:country/trends')
+  @Get('/:countryISO/trends')
   @ApiParam({
-    name: 'country',
-    description: 'The country you want trend data from',
-    example: 'Egypt',
+    name: 'countryISO',
+    description: 'The country iso3 you want trend data from',
+    example: 'UGA',
   })
   @ApiQuery({
     name: 'startDate',
@@ -73,18 +79,22 @@ export class CountryController {
     isArray: true,
   })
   getTrendForCountry(
-    @Param('country') country: string,
+    @Param('countryISO') countryISO: string,
     @Query('startDate') startDate?: Date,
     @Query('endDate') endDate?: Date,
   ): TrendDatum[] {
-    return this.countryService.getTrendForCountry(country, startDate, endDate);
+    return this.countryService.getTrendForCountryISO(
+      countryISO,
+      startDate,
+      endDate,
+    );
   }
 
-  @Get('/:country/stats')
+  @Get('/:countryISO/stats')
   @ApiParam({
     name: 'country',
-    description: 'The country to retrieve stats form',
-    example: 'Spain',
+    description: 'The country iso3 to retrieve stats form',
+    example: 'USA',
   })
   @ApiOkResponse({
     description: 'JSON array of relevant stats for a country',
@@ -93,8 +103,8 @@ export class CountryController {
   @ApiNotFoundResponse({
     description: "We don't have data for this country",
   })
-  getStatsForCountry(@Param('country') country: string): CountryStats {
-    return this.countryService.getStatsForCountry(country);
+  getStatsForCountry(@Param('countryISO') countryISO: string): CountryStats {
+    return this.countryService.getStatsForCountryISO(countryISO);
   }
 
   @Get('/trends')

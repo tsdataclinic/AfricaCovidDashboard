@@ -6000,6 +6000,11 @@ cosmiconfig@^7.0.0:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
+country-code-lookup@^0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/country-code-lookup/-/country-code-lookup-0.0.18.tgz#389f4cd170e4c52c3fe84192db4dceaf6ae87f1a"
+  integrity sha512-wg6ZIa8PFiFhKBNPPzLWFm+wkK4ZPsT8AWitoYMcC6zRKqw3lR4my25AJ67+VKZ24VLEZg96SZmWW9IaNmGBDg==
+
 create-ecdh@^4.0.0:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.4.tgz#d6e7f4bffa66736085a0762fd3a632684dabcc4e"

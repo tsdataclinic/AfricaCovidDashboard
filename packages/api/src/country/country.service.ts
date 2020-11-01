@@ -1,15 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CountryStats, TrendDatum, CountryTrendDict } from './country_types';
+import {
+  CountryStats,
+  TrendDatum,
+  CountryTrendDict,
+  Country,
+} from './country_types';
 import CsvReadableStream from 'csv-reader';
 import { getDataFromJHTS } from '../utils/JohnHopkins';
 
 import * as fs from 'fs';
+import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
 
 @Injectable()
 export class CountryService {
-  allCountryTrends: CountryTrendDict;
+  allCountryTrends: CountryTrendDict | null;
   allCountryStats: CountryStats[];
-
+  countries: Country[];
   avaliableCountries: string[];
 
   constructor() {
@@ -17,9 +23,14 @@ export class CountryService {
       this.allCountryStats = data;
     });
 
-    getDataFromJHTS().then((data: CountryTrendDict) => {
-      this.allCountryTrends = data;
-    });
+    if (!this.allCountryStats) {
+      getDataFromJHTS().then((data: CountryTrendDict) => {
+        this.allCountryTrends = data;
+        this.countries = Object.keys(this.allCountryTrends).map(
+          getCountryDetailsForISO,
+        );
+      });
+    }
   }
 
   //** Loads the stats from the data file, need to hook this up live datasources*/
@@ -30,9 +41,17 @@ export class CountryService {
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
         .on('data', row => {
+          // Get the ISO details of the country so we can link things up
+          // using the iso3 number
+          const countryDetails = getCountryISO(row['countryorarea']);
+          if (!countryDetails) {
+            console.log(row['countryorarea']);
+          }
           const datum = {
             name: row['countryorarea'],
             population: 10000,
+            continent: countryDetails ? countryDetails.continent : '',
+            iso3: countryDetails ? countryDetails.iso3 : '',
             ...row,
           };
           delete datum['countryorarea'];
@@ -50,20 +69,20 @@ export class CountryService {
 
   //** Returns a list of countries for which we have data*/
   getAvailableCountries() {
-    return this.allCountryStats ? Object.keys(this.allCountryTrends) : [];
+    return this.countries ? this.countries : [];
   }
 
   //** Get trend data for the specified country */
-  getTrendForCountry(
-    country: string,
+  getTrendForCountryISO(
+    countryISO: string,
     startDate: Date,
     endDate: Date,
   ): TrendDatum[] {
     if (
       this.allCountryTrends &&
-      Object.keys(this.allCountryTrends).includes(country)
+      Object.keys(this.allCountryTrends).includes(countryISO)
     ) {
-      return this.allCountryTrends[country];
+      return this.allCountryTrends[countryISO];
     } else {
       throw new NotFoundException('Count not find country');
     }
@@ -71,7 +90,11 @@ export class CountryService {
 
   //** Returns a TrendDatum of data aggregated to the entire continent */
   getContinentTrends(): TrendDatum[] {
-    return Object.values(this.allCountryTrends).reduce(
+    const africaISOS = this.countries
+      .filter(c => c.continent === 'Africa')
+      .map(c => c.iso3);
+    const africaTrends = africaISOS.map(iso => this.allCountryTrends[iso]);
+    return africaTrends.reduce(
       (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
         trend.length == 0
           ? countryTrend
@@ -86,10 +109,9 @@ export class CountryService {
   }
 
   //** Returns a Country Stats for the requested country*/
-  getStatsForCountry(country: string): CountryStats {
-    console.log('Getting stats for trend ', country);
+  getStatsForCountryISO(countryISO: string): CountryStats {
     if (this.allCountryStats) {
-      return this.allCountryStats.find(cs => cs.name === country);
+      return this.allCountryStats.find(cs => cs.iso3 === countryISO);
     } else {
       throw new NotFoundException('Country not found');
     }

@@ -33,7 +33,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     date,
     category,
     dataType,
-    data,
+    data
 }) => {
     const width = 960;
     const height = 720;
@@ -65,21 +65,21 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             let colorRange = [
                 colors.LIGHT_GREY,
                 colors.LIGHT_GREEN,
-                colors.GREEN,
+                colors.GREEN
             ];
             switch (category) {
                 case 'confirmed':
                     colorRange = [
                         colors.LIGHT_GREY,
                         colors.LIGHT_RED,
-                        colors.RED,
+                        colors.RED
                     ];
                     break;
                 case 'recoveries':
                     colorRange = [
                         colors.LIGHT_GREY,
                         colors.LIGHT_GREEN,
-                        colors.GREEN,
+                        colors.GREEN
                     ];
                     break;
                 case 'deaths':
@@ -105,8 +105,8 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 }
             }
             let extent = d3.extent(
-                flatten(values(data).map((d) => d.slice(-1))),
-                (d) => d[trendKey] as number
+                flatten(values(data).map(d => d.slice(-1))),
+                d => d[trendKey] as number
             );
             if (extent[0] === undefined) {
                 extent = [0, 1];
@@ -123,7 +123,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .duration(1000)
                 .style('fill', (d: any) => {
                     const countryData: CountryTrend | undefined = data?.[
-                        d.properties.name
+                        d.properties.iso_a3
                     ]?.slice(-1)[0];
                     if (countryData?.[trendKey] !== undefined) {
                         return colorScale(countryData[trendKey] as number);
@@ -174,7 +174,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .attr('class', 'country-border')
             .attr('d', path)
             .on('click', (e: any, d: any) => {
-                const country = d.properties?.name;
+                const country = d.properties?.iso_a3;
                 if (country) {
                     handleCountryClick(country);
                 }
