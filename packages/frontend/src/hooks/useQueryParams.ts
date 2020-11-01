@@ -5,8 +5,8 @@ import qs from 'query-string';
 import { COUNTRY_PATH } from '../Routes';
 import moment, { Moment } from 'moment';
 
-type SeachQueryKey = 'selectedDate' | 'dataType' | 'category';
-type SearchQueryValue = Moment | DataType | Category | null;
+export type SeachQueryKey = 'selectedDate' | 'dataType' | 'category';
+export type SearchQueryValue = Moment | DataType | Category | null;
 
 const useQueryParams = () => {
     const { country } = useParams<CountryParam>();

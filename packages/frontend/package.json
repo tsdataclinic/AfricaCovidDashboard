@@ -69,6 +69,7 @@
         "husky": ">=4",
         "lint-staged": ">=10",
         "prettier": "^2.1.1",
+        "react-query-devtools": "^2.6.1",
         "typescript-plugin-styled-components": "^1.4.4"
     },
     "husky": {

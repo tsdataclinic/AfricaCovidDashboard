@@ -1,20 +1,29 @@
 import React, { useMemo, useState } from 'react';
 import { Skeleton } from 'antd';
 import styled from 'styled-components';
-import { useAllTrends } from '../hooks/useAllTrends';
-import useQueryParams from '../hooks/useQueryParams';
 import Timeseries from './Timeseries';
-import { LookBackMonth } from '../types';
-import { convertDateStrToDate } from '../helper';
-import moment from 'moment';
+import { DataType, LookBackMonth } from '../types';
+import moment, { Moment } from 'moment';
 import { useTranslation } from 'react-i18next';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import useCountryStats from '../hooks/useCountryStats';
 
-const Trend = () => {
+interface TrendProps {
+    trendData: CountryTrend[];
+    selectedDate?: Moment;
+    dataType: DataType;
+    country: string;
+    allDates: Date[];
+}
+
+const Trend = ({
+    trendData,
+    selectedDate,
+    dataType,
+    country,
+    allDates,
+}: TrendProps) => {
     const { t } = useTranslation();
-    const { data, isLoading: allTrendsLoading, error } = useAllTrends();
-    const { country, dataType, selectedDate } = useQueryParams();
     const [lookback, setLookBack] = useState<LookBackMonth>('beginning');
     const [isLog, setIsLog] = useState(false);
     const [per100K, setPer100K] = useState(false);
@@ -24,16 +33,7 @@ const Trend = () => {
     } = useCountryStats(country);
 
     const dates = useMemo(() => {
-        let pastDates: Date[] = [];
-        if (!country || !data) {
-            // TODO: summary
-            pastDates = [];
-        } else {
-            pastDates =
-                data[country]?.map((item: CountryTrend) =>
-                    convertDateStrToDate(item.date)
-                ) || [];
-        }
+        let pastDates: Date[] = allDates;
 
         if (selectedDate) {
             pastDates = pastDates.filter((d) =>
@@ -58,14 +58,13 @@ const Trend = () => {
             return pastDates.filter((d: Date) => d > firstDate);
         }
         return pastDates;
-    }, [data, country, lookback, selectedDate]);
+    }, [allDates, lookback, selectedDate]);
 
     const timeseries = useMemo(() => {
-        const countryData: CountryTrend[] = data?.[country] || [];
         const populartion = countryStatsData?.population;
         if (populartion && per100K) {
             const multiplier = (1 / populartion) * 100000;
-            return countryData.map((item) => ({
+            return trendData.map((item) => ({
                 confirmed: item.confirmed * multiplier,
                 date: item.date,
                 deaths: item.deaths * multiplier,
@@ -76,14 +75,13 @@ const Trend = () => {
                 days_since_first_case: item.days_since_first_case,
             }));
         }
-        return countryData;
-    }, [data, country, countryStatsData, per100K]);
+        return trendData;
+    }, [trendData, countryStatsData, per100K]);
 
-    if (allTrendsLoading || countryStatsLoading) {
-        return <Skeleton active></Skeleton>;
-    } else if (error || !data) {
-        return <p>Could not reach server</p>;
+    if (countryStatsLoading) {
+        return <Skeleton active />;
     }
+
     return (
         <TrendWrapper>
             <Scale>
