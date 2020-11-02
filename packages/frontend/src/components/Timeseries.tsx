@@ -2,15 +2,14 @@ import { D3_TRANSITION_DURATION } from '../constants';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import {
     abbreviateNumber,
-    findTrendData,
     formatDateToStr,
     getCategories,
     getColor,
     getStatistic,
 } from '../helper';
 import styled from 'styled-components';
-import { bisector, max, min } from 'd3-array';
-import { axisBottom, AxisDomain, axisRight, AxisScale } from 'd3-axis';
+import { bisector } from 'd3-array';
+import { axisBottom, axisRight, AxisScale } from 'd3-axis';
 import { scaleLinear, scaleLog, scaleTime } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
 import { pointer, select } from 'd3-selection';
@@ -25,6 +24,7 @@ import React, {
 import { Category, DataType, StatsBarItem } from '../types';
 import { GREEN, GREY, RED } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
+import moment from 'moment';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
@@ -35,6 +35,10 @@ interface TimeseriesProps {
     dates: Date[];
     dataType: DataType;
     isLog: boolean;
+}
+
+interface TimeseriesMapper {
+    [key: number]: CountryTrend;
 }
 
 const Timeseries = ({
@@ -55,6 +59,15 @@ const Timeseries = ({
         dataType,
     ]);
 
+    const timeseriesMapper = useMemo(() => {
+        const mapper: TimeseriesMapper = {};
+        timeseries.forEach((item) => {
+            const key = moment(item.date).valueOf();
+            mapper[key] = item;
+        });
+        return mapper;
+    }, [timeseries]);
+
     useEffect(() => {
         setHighlightedDate(dates[dates.length - 1]);
     }, [dates]);
@@ -73,6 +86,9 @@ const Timeseries = ({
 
     useEffect(() => {
         const T = dates.length;
+        if (T === 0 || timeseries.length === 0) {
+            return;
+        }
         // Dimensions
         const { width, height } =
             dimensions || wrapperRef.current?.getBoundingClientRect();
@@ -100,17 +116,6 @@ const Timeseries = ({
                     .tickFormat((date) => formatter(date as Date))
             );
 
-        const xAxis2 = (g: any, yScale: AxisScale<AxisDomain>) => {
-            g.attr('class', 'x-axis2')
-                .call(axisBottom(xScale).tickValues([]).tickSize(0))
-                .select('.domain')
-                .style('transform', `translateY(${yScale(0)}px)`);
-
-            if (yScale(0) !== chartBottom)
-                g.select('.domain').attr('opacity', 0.4);
-            else g.select('.domain').attr('opacity', 0);
-        };
-
         const yAxis = (g: any, yScale: AxisScale<number>) =>
             g.attr('class', 'y-axis').call(
                 axisRight(yScale)
@@ -120,59 +125,28 @@ const Timeseries = ({
             );
 
         const generateYScale = (category: Category) => {
+            let minTrend = 0;
+            let maxTrend = 0;
+            for (let i = 0; i < timeseries.length; i++) {
+                const value = getStatistic(dataType, category, timeseries[i]);
+                minTrend = Math.min(minTrend, value);
+                maxTrend = Math.max(maxTrend, value);
+            }
+
             if (isLog) {
                 return scaleLog()
                     .clamp(true)
                     .domain([
-                        Math.max(
-                            1,
-                            min(dates, (date) =>
-                                getStatistic(
-                                    findTrendData(timeseries, date),
-                                    dataType,
-                                    category
-                                )
-                            ) || 1
-                        ),
-                        Math.max(
-                            10,
-                            yBufferTop *
-                                (max(dates, (date) =>
-                                    getStatistic(
-                                        findTrendData(timeseries, date),
-                                        dataType,
-                                        category
-                                    )
-                                ) || 1)
-                        ),
+                        Math.max(1, minTrend),
+                        Math.max(10, yBufferTop * maxTrend),
                     ])
                     .nice()
                     .range([chartBottom, margin.top]);
             }
 
-            const minNum =
-                yBufferBottom *
-                Math.min(
-                    0,
-                    min(dates, (date) =>
-                        getStatistic(
-                            findTrendData(timeseries, date),
-                            dataType,
-                            category
-                        )
-                    ) || 0
-                );
-            const maxNum = Math.max(
-                1,
-                yBufferTop *
-                    (max(dates, (date) =>
-                        getStatistic(
-                            findTrendData(timeseries, date),
-                            dataType,
-                            category
-                        )
-                    ) || 0)
-            );
+            const minNum = yBufferBottom * minTrend;
+
+            const maxNum = Math.max(1, yBufferTop * maxTrend);
 
             return scaleLinear()
                 .clamp(true)
@@ -220,8 +194,6 @@ const Timeseries = ({
                 .transition(t)
                 .call(xAxis);
 
-            svg.select('.x-axis2').transition(t).call(xAxis2, yScale);
-
             /* Y axis */
             svg.select('.y-axis')
                 .style('transform', `translateX(${chartRight}px)`)
@@ -248,9 +220,9 @@ const Timeseries = ({
                 .attr('cy', (date: Date) =>
                     yScale(
                         getStatistic(
-                            findTrendData(timeseries, date),
                             dataType,
-                            category
+                            category,
+                            timeseriesMapper[date.valueOf()]
                         )
                     )
                 )
@@ -272,9 +244,9 @@ const Timeseries = ({
                     .y((date) =>
                         yScale(
                             getStatistic(
-                                findTrendData(timeseries, date as any),
                                 dataType,
-                                category
+                                category,
+                                timeseriesMapper[(date as any).valueOf()]
                             )
                         )
                     );
@@ -332,9 +304,9 @@ const Timeseries = ({
                     .attr('y2', (date: Date) =>
                         yScale(
                             getStatistic(
-                                findTrendData(timeseries, date),
                                 dataType,
-                                category
+                                category,
+                                timeseriesMapper[date.valueOf()]
                             )
                         )
                     );
@@ -351,6 +323,7 @@ const Timeseries = ({
         dimensions,
         getBarWidth,
         timeseries,
+        timeseriesMapper,
         dates,
         isLog,
         categories,
@@ -370,21 +343,23 @@ const Timeseries = ({
         (category) => {
             if (!highlightedDate) return;
             const currCount = getStatistic(
-                findTrendData(timeseries, highlightedDate),
                 dataType,
-                category
+                category,
+                highlightedDate
+                    ? timeseriesMapper[highlightedDate.valueOf()]
+                    : undefined
             );
             const prevDate =
                 dates[dates.findIndex((date) => date === highlightedDate) - 1];
 
             const prevCount = getStatistic(
-                findTrendData(timeseries, prevDate),
                 dataType,
-                category
+                category,
+                prevDate ? timeseriesMapper[prevDate.valueOf()] : undefined
             );
             return currCount - prevCount;
         },
-        [timeseries, dates, highlightedDate, dataType]
+        [dates, highlightedDate, dataType, timeseriesMapper]
     );
 
     const trail = useMemo(() => {
@@ -405,9 +380,11 @@ const Timeseries = ({
                 {categories.map(({ category, label }, index) => {
                     const delta = getStatisticDelta(category);
                     const highlight = getStatistic(
-                        findTrendData(timeseries, highlightedDate),
                         dataType,
-                        category
+                        category,
+                        highlightedDate
+                            ? timeseriesMapper[highlightedDate.valueOf()]
+                            : undefined
                     );
                     return (
                         <Wrapper

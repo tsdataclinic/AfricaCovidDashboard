@@ -4,13 +4,22 @@ import styled from 'styled-components';
 import AppMenu from './AppMenu';
 import HeaderRightControl from './header/HeaderRightControl';
 import HeaderLeftControl from './header/HeaderLeftControl';
+import useQueryParams from '../hooks/useQueryParams';
+import QueryParamsContext from './QueryParamsContext';
 
 const { Header, Sider, Content } = Layout;
 
 const AppLayout: FunctionComponent = ({ children }) => {
     const [navCollapsed, setNavCollapsed] = useState(false);
     const [showDrawer, setDrawer] = useState(false);
-
+    const {
+        country,
+        updateCountry,
+        dataType,
+        category,
+        updateQuery,
+        selectedDate,
+    } = useQueryParams();
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider
@@ -33,13 +42,31 @@ const AppLayout: FunctionComponent = ({ children }) => {
             <Main>
                 <StyledHeader>
                     <Row justify="space-between" align="middle">
-                        <HeaderLeftControl />
+                        <HeaderLeftControl
+                            dataType={dataType}
+                            updateQuery={updateQuery}
+                        />
                         <HeaderRightControl
                             openDrawer={() => setDrawer(true)}
+                            country={country}
+                            updateCountry={updateCountry}
                         />
                     </Row>
                 </StyledHeader>
-                <Content>{children}</Content>
+                <Content>
+                    <QueryParamsContext.Provider
+                        value={{
+                            country,
+                            updateCountry,
+                            dataType,
+                            category,
+                            updateQuery,
+                            selectedDate,
+                        }}
+                    >
+                        {children}
+                    </QueryParamsContext.Provider>
+                </Content>
             </Main>
         </Layout>
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Skeleton, Statistic } from 'antd';
+import { Alert, Card, Skeleton, Statistic } from 'antd';
 import { Category, DataType, StatsBarItem } from '../types';
 import styled from 'styled-components';
 import { getCategories } from '../helper';
@@ -18,15 +18,17 @@ const StatsBar: React.FC<StatsBarProps> = ({
     category,
     selectCategory,
     data,
-    loading
+    loading,
 }) => {
     const items: StatsBarItem[] = getCategories(dataType);
-
+    if (data === undefined) {
+        return <StyledAlert message="There is no data" type="error" />;
+    }
     return (
         <Container>
-            {items.map(column => {
+            {items.map((column) => {
                 return (
-                    <Skeleton active loading={data === undefined || loading}>
+                    <Skeleton active loading={loading} key={column.category}>
                         <StyledCard
                             onClick={() => {
                                 selectCategory(column.category);
@@ -48,6 +50,10 @@ const StatsBar: React.FC<StatsBarProps> = ({
     );
 };
 
+const StyledAlert = styled(Alert)`
+    margin: 0 20px;
+`;
+
 const Container = styled.div`
     display: flex;
     justify-content: space-between;
@@ -55,7 +61,7 @@ const Container = styled.div`
 const StyledCard = styled(Card)<{ selected: boolean }>`
     flex: 1 0 0px;
     margin: 10px;
-    ${props =>
+    ${(props) =>
         props.selected &&
         `
     font-weight: bold;

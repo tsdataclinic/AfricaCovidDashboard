@@ -31,8 +31,8 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
     const dimensions = useResizeObserver(wrapperRef) || { width: 0, height: 0 };
     const sliderRef = useRef<SVGSVGElement | null>();
     const timer = useRef<number>();
-    const startDate = dates[0];
-    const endDate = dates[dates.length - 1];
+    const startDate = dates[0] || new Date();
+    const endDate = dates[dates.length - 1] || new Date();
     const { width } = dimensions || wrapperRef.current?.getBoundingClientRect();
 
     const targetValue = width - margin.right;
@@ -155,7 +155,11 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
                 setCurrentValue((prev) => {
                     const newValue =
                         (prev ? prev : 0) + targetValue / dates.length;
-                    if (newValue > targetValue) {
+                    const isSameDay = moment(xAxis.invert(prev || 0)).isSame(
+                        xAxis.invert(newValue),
+                        'day'
+                    );
+                    if (isSameDay || newValue > targetValue) {
                         // Stop play when reach end
                         setIsMoving(false);
                         if (timer.current) {
@@ -163,7 +167,6 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
                         }
                         return 0;
                     }
-
                     return newValue;
                 });
             };
@@ -174,7 +177,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
                 timer.current = setInterval(step, 300);
             }
         },
-        [targetValue, dates]
+        [targetValue, dates, xAxis]
     );
 
     return (

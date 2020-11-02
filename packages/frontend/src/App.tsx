@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import AppLayout from './components/Layout';
 import Routes from './Routes';
+import { ReactQueryDevtools } from 'react-query-devtools';
 
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 
@@ -41,6 +42,7 @@ function App() {
                     </Switch>
                 </Shell>
             </BrowserRouter>
+            <ReactQueryDevtools initialIsOpen />
         </ReactQueryCacheProvider>
     );
 }

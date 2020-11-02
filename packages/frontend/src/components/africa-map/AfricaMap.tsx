@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect } from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
 import africaTopology from './africa.json';
@@ -7,14 +7,14 @@ import { Topology } from 'topojson-specification';
 import styled from 'styled-components';
 import { CountryTrend, CountryTrends } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
-import { values, flatten, pick } from 'lodash';
+import { values, flatten } from 'lodash';
 import * as colors from '../../colors';
 import { Moment } from 'moment';
 
 interface AfricaMapProps {
     selectedCountry?: string;
     onCountrySelect?: (country: string | undefined) => void;
-    date: Moment;
+    date?: Moment;
     category: Category;
     dataType: DataType;
     data?: CountryTrends;
@@ -33,31 +33,22 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     date,
     category,
     dataType,
-    data
+    data,
 }) => {
     const width = 960;
     const height = 720;
-    const projection = d3
-        .geoMercator()
-        .scale(410)
-        .translate([width / 3, height / 2]);
 
-    const path = d3.geoPath().projection(projection);
+    const handleCountryClick = useCallback((country: string) => {
+        if (Boolean(country)) {
+            onCountrySelect?.(country);
+        }
+    }, []);
 
-    const handleCountryClick = useCallback(
-        (country: string) => {
-            if (Boolean(country)) {
-                onCountrySelect?.(country);
-            }
-        },
-        [onCountrySelect, selectedCountry]
-    );
-
-    const fillMap = () => {
+    const fillMap = useCallback(() => {
         const svg = d3.select(MAP_TARGET);
         const countries = svg.selectAll('.country-border');
         countries.classed('selected-country', (d: any) => {
-            return d.properties.name === selectedCountry;
+            return d.properties.iso_a3 === selectedCountry;
         });
 
         // Update colors
@@ -65,21 +56,21 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             let colorRange = [
                 colors.LIGHT_GREY,
                 colors.LIGHT_GREEN,
-                colors.GREEN
+                colors.GREEN,
             ];
             switch (category) {
                 case 'confirmed':
                     colorRange = [
                         colors.LIGHT_GREY,
                         colors.LIGHT_RED,
-                        colors.RED
+                        colors.RED,
                     ];
                     break;
                 case 'recoveries':
                     colorRange = [
                         colors.LIGHT_GREY,
                         colors.LIGHT_GREEN,
-                        colors.GREEN
+                        colors.GREEN,
                     ];
                     break;
                 case 'deaths':
@@ -105,9 +96,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 }
             }
             let extent = d3.extent(
-                flatten(values(data).map(d => d.slice(-1))),
-                d => d[trendKey] as number
+                flatten(values(data).map((d) => d.slice(-1))),
+                (d) => d[trendKey] as number
             );
+
             if (extent[0] === undefined) {
                 extent = [0, 1];
             }
@@ -131,9 +123,41 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     return colors.LIGHT_GREY;
                 });
         }
-    };
+    }, [category, data, dataType, selectedCountry]);
 
-    const initializeMap = () => {
+    const initializeMap = useCallback(() => {
+        // Many browsers -- IE particularly -- will not auto-size inline SVG
+        // IE applies default width and height sizing
+        // padding-bottom hack on a container solves IE inconsistencies in size
+        // https://css-tricks.com/scale-svg/#article-header-id-10
+        const setResponsiveSVG = () => {
+            let width = +d3.select(MAP_TARGET).attr('width');
+            let height = +d3.select(MAP_TARGET).attr('height');
+            let calcString = +(height / width) * 100 + '%';
+
+            const svgElement = d3.select(MAP_TARGET);
+            if (svgElement === null || svgElement.node() === null) {
+                return;
+            }
+            const svgParent = d3.select('#svg-parent');
+
+            svgElement
+                .attr('class', 'scaling-svg')
+                .attr('preserveAspectRatio', 'xMinYMin')
+                .attr('viewBox', '0 0 ' + width + ' ' + height)
+                .attr('width', null)
+                .attr('height', null);
+
+            svgParent.style('padding-bottom', calcString);
+        };
+
+        const projection = d3
+            .geoMercator()
+            .scale(410)
+            .translate([width / 3, height / 2]);
+
+        const path = d3.geoPath().projection(projection);
+
         const svg = d3
             .select(MAP_TARGET)
             .attr('width', width)
@@ -182,35 +206,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
         fillMap();
         setResponsiveSVG();
-    };
-
-    // Many browsers -- IE particularly -- will not auto-size inline SVG
-    // IE applies default width and height sizing
-    // padding-bottom hack on a container solves IE inconsistencies in size
-    // https://css-tricks.com/scale-svg/#article-header-id-10
-    const setResponsiveSVG = () => {
-        let width = +d3.select(MAP_TARGET).attr('width');
-        let height = +d3.select(MAP_TARGET).attr('height');
-        let calcString = +(height / width) * 100 + '%';
-
-        const svgElement = d3.select(MAP_TARGET);
-        if (svgElement === null || svgElement.node() === null) {
-            return;
-        }
-        const svgParent = d3.select('#svg-parent');
-
-        svgElement
-            .attr('class', 'scaling-svg')
-            .attr('preserveAspectRatio', 'xMinYMin')
-            .attr('viewBox', '0 0 ' + width + ' ' + height)
-            .attr('width', null)
-            .attr('height', null);
-
-        svgParent.style('padding-bottom', calcString);
-    };
+    }, [fillMap, handleCountryClick]);
 
     useLayoutEffect(() => initializeMap(), [initializeMap]);
-    useEffect(fillMap, [selectedCountry, category, data, dataType, date]);
+    useEffect(fillMap, [fillMap]);
 
     return (
         <MapContainer id="svg-parent" className="scaling-svg-container">
