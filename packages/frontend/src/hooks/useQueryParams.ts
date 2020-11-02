@@ -32,10 +32,9 @@ const useQueryParams = () => {
                 return;
             }
             const searchParams = qs.parse(search.replace('?', ''));
-            const parseValue =
-                key === 'selectedDate'
-                    ? (value as Moment).format('YYYY-MM-DD')
-                    : value;
+            const parseValue = moment.isMoment(value)
+                ? value.format('YYYY-MM-DD')
+                : value;
             const newSearch = { ...searchParams, [key]: parseValue };
             push(`${pathname}?${qs.stringify(newSearch)}`);
         },
@@ -47,10 +46,17 @@ const useQueryParams = () => {
         [search]
     );
 
+    const selectedMoment = useMemo(
+        () =>
+            selectedDate && moment(selectedDate).isValid()
+                ? moment(selectedDate)
+                : undefined,
+        [selectedDate]
+    );
     return {
         country,
         updateCountry,
-        selectedDate: selectedDate ? moment(selectedDate) : undefined,
+        selectedDate: selectedMoment,
         updateQuery,
         dataType: (dataType || 'cumulative') as DataType,
         category: (category || 'confirmed') as Category,

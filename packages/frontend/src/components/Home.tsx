@@ -1,14 +1,19 @@
-import React, { useMemo, useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import AfricaMap from './africa-map/AfricaMap';
-import { Col, Row, Skeleton } from 'antd';
-import { useCountryTrends } from '../hooks/useCountryTrends';
+import { Alert, Col, Row } from 'antd';
+import {
+    CountryTrend,
+    useAfricaTrends,
+    useAllCountryTrends,
+} from '../hooks/useCountryTrends';
 import StatsBar from './StatsBar';
 import Trend from './Trend';
-import { Moment } from 'moment';
+import moment, { Moment } from 'moment';
 import DateSlider from './DateSlider';
 import { convertDateStrToDate } from '../helper';
 import QueryParamsContext from './QueryParamsContext';
-import { useAllTrends } from '../hooks/useAllTrends';
+import styled from 'styled-components';
+import { mapValues, pickBy, Dictionary, isNil, negate } from 'lodash';
 
 const Home = () => {
     const {
@@ -21,25 +26,36 @@ const Home = () => {
     } = useContext(QueryParamsContext);
 
     const {
-        data: countryTrendData,
-        isFetching: isFetchingTrend,
-        isLoading,
-        error,
-    } = useCountryTrends(country);
+        data: allCountryTrends,
+        error: allTrendsError,
+        isLoading: allTrendsLoading,
+    } = useAllCountryTrends();
+    const {
+        data: africaTrends,
+        error: africaTrendsError,
+        isLoading: africaTrendsLoading,
+    } = useAfricaTrends();
 
-    const { data: allCountryTrends } = useAllTrends();
-
-    const countryTrend = useMemo(() => {
-        if (error || !Array.isArray(countryTrendData)) {
+    const currentCountryTrends = useMemo(() => {
+        if (!country) {
+            // If no country is selected lets show all the stats
+            return africaTrends || [];
+        }
+        if (
+            allTrendsError ||
+            !allCountryTrends ||
+            !(country in allCountryTrends)
+        ) {
             return [];
         }
-        return countryTrendData;
-    }, [error, countryTrendData]);
+        return allCountryTrends[country];
+    }, [allCountryTrends, allTrendsError, country]);
 
-    const dates = useMemo(
-        () => countryTrend.map((item) => convertDateStrToDate(item.date)),
-        [countryTrend]
-    );
+    const dates = useMemo(() => {
+        return currentCountryTrends.map((item) =>
+            convertDateStrToDate(item.date)
+        );
+    }, [currentCountryTrends]);
 
     const onSelectDate = useCallback(
         (value: Moment) => {
@@ -48,14 +64,54 @@ const Home = () => {
         [updateQuery]
     );
 
+    const trendsByDateByCountry = useMemo(() => {
+        if (!allCountryTrends) {
+            return undefined;
+        }
+        return mapValues(allCountryTrends, (trends) =>
+            trends.reduce(
+                (a: { [k in string]: CountryTrend }, b: CountryTrend) => {
+                    a[moment(b.date).format('YYYY-MM-DD')] = b;
+                    return a;
+                },
+                {}
+            )
+        );
+    }, [allCountryTrends]);
+
+    const selectedStatsByCountry:
+        | Dictionary<CountryTrend>
+        | undefined = useMemo(() => {
+        if (!trendsByDateByCountry) {
+            return undefined;
+        }
+        const withSelectedDate = mapValues(
+            trendsByDateByCountry,
+            (trendsByDate) =>
+                trendsByDate[(selectedDate || moment()).format('YYYY-MM-DD')]
+        );
+        // Filter out entries with empty values
+        return pickBy(withSelectedDate, negate(isNil));
+    }, [trendsByDateByCountry, selectedDate]);
+
     const selectedStats = useMemo(
         () =>
-            countryTrend.find((item) => selectedDate?.isSame(item.date, 'day')),
-        [selectedDate, countryTrend]
+            currentCountryTrends.find((item) =>
+                selectedDate?.isSame(item.date, 'day')
+            ),
+        [selectedDate, currentCountryTrends]
     );
 
-    if (isLoading) {
-        return <Skeleton active />;
+    const isLoading = country ? allTrendsLoading : africaTrendsLoading;
+    const error = country ? allTrendsError : africaTrendsError;
+
+    if (error) {
+        return (
+            <StyledAlert
+                message="Error retrieving data. Please reload to try again."
+                type="error"
+            />
+        );
     }
 
     return (
@@ -73,21 +129,21 @@ const Home = () => {
                         selectCategory={(category) =>
                             updateQuery('category', category)
                         }
-                        loading={isFetchingTrend}
+                        loading={isLoading}
                         data={selectedStats}
                     />
                     <AfricaMap
                         selectedCountry={country}
                         onCountrySelect={updateCountry}
                         category={category}
-                        date={selectedDate}
                         dataType={dataType}
-                        data={allCountryTrends}
+                        data={selectedStatsByCountry}
+                        loading={isLoading}
                     />
                 </Col>
                 <Col md={24} lg={12}>
                     <Trend
-                        trendData={countryTrend}
+                        trendData={currentCountryTrends}
                         allDates={dates}
                         selectedDate={selectedDate}
                         dataType={dataType}
@@ -98,5 +154,9 @@ const Home = () => {
         </div>
     );
 };
+
+const StyledAlert = styled(Alert)`
+    margin: 0 20px;
+`;
 
 export default Home;
