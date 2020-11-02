@@ -1,4 +1,3 @@
-// @ts-ignore
 import CountryLookup from 'country-code-lookup';
 import { Country } from 'src/country/country_types';
 
