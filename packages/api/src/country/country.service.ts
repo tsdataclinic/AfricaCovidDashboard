@@ -33,10 +33,10 @@ export class CountryService {
     }
   }
 
-  //** Loads the stats from the data file, need to hook this up live datasources*/
-  loadCountryStats() {
-    let data: CountryStats[] = [];
+  //** Loads the stats from the model based stats file */
+  async loadCountryModelStats(): Promise<CountryStats[]> {
     return new Promise((resolve, reject) => {
+      let data: CountryStats[] = [];
       const readStream = fs.createReadStream('data/filtereddata.csv', 'utf8');
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
@@ -44,9 +44,6 @@ export class CountryService {
           // Get the ISO details of the country so we can link things up
           // using the iso3 number
           const countryDetails = getCountryISO(row['countryorarea']);
-          if (!countryDetails) {
-            console.log(row['countryorarea']);
-          }
           const datum = {
             name: row['countryorarea'],
             population: 10000,
@@ -61,10 +58,44 @@ export class CountryService {
           resolve(data);
         })
         .on('error', err => {
-          console.log('something went wrong');
           reject(err);
         });
     });
+  }
+
+  //** Loads the stats from the population stats file */
+  //** NOTE THE DATA ISN'T AVALIBLE FOR 2020, we should record when it last was recorded */
+  async loadPopulationStats() {
+    return new Promise((resolve, reject) => {
+      let result = {};
+      const readStream = fs.createReadStream(
+        'data/API_SP.POP.TOTL_DS2_en_csv_v2_1593924.csv',
+        'utf8',
+      );
+      let lineNo = 0;
+      readStream
+        .pipe(new CsvReadableStream({ parseNumbers: true, asObject: false }))
+        .on('data', (row, index) => {
+          if (lineNo > 3) result[row[1]] = row[row.length - 3];
+          lineNo += 1;
+        })
+        .on('end', () => {
+          resolve(result);
+        })
+        .on('error', err => {
+          reject(err);
+        });
+    });
+  }
+
+  //Load the stats about countries
+  async loadCountryStats() {
+    const modelStats = await this.loadCountryModelStats();
+    const population = await this.loadPopulationStats();
+    return modelStats.map(ms => ({
+      ...ms,
+      population: population[ms.iso3],
+    }));
   }
 
   //** Returns a list of countries for which we have data*/
