@@ -16,6 +16,8 @@ interface TrendProps {
     allDates: Date[];
 }
 
+const safeFormatInteger = (num: number): number => (num ? Math.round(num) : 0);
+
 const Trend = ({
     trendData,
     selectedDate,
@@ -65,14 +67,18 @@ const Trend = ({
         if (populartion && per100K) {
             const multiplier = (1 / populartion) * 100000;
             return trendData.map((item) => ({
-                confirmed: item.confirmed * multiplier,
+                confirmed: safeFormatInteger(item.confirmed * multiplier),
                 date: item.date,
-                deaths: item.deaths * multiplier,
-                new_case: item.new_case * multiplier,
-                new_deaths: item.new_deaths * multiplier,
-                new_recoveries: item.new_recoveries * multiplier,
-                recoveries: item.recoveries * multiplier,
-                days_since_first_case: item.days_since_first_case,
+                deaths: safeFormatInteger(item.deaths * multiplier),
+                new_case: safeFormatInteger(item.new_case * multiplier),
+                new_deaths: safeFormatInteger(item.new_deaths * multiplier),
+                new_recoveries: safeFormatInteger(
+                    item.new_recoveries * multiplier
+                ),
+                recoveries: safeFormatInteger(item.recoveries * multiplier),
+                days_since_first_case: safeFormatInteger(
+                    item.days_since_first_case
+                ),
             }));
         }
         return trendData;
