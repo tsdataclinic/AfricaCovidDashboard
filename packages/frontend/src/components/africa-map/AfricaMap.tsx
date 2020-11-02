@@ -5,19 +5,18 @@ import africaTopology from './africa.json';
 import * as topojson from 'topojson-client';
 import { Topology } from 'topojson-specification';
 import styled from 'styled-components';
-import { CountryTrend, CountryTrends } from '../../hooks/useCountryTrends';
+import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
-import { values, flatten } from 'lodash';
+import { values } from 'lodash';
 import * as colors from '../../colors';
-import { Moment } from 'moment';
 
 interface AfricaMapProps {
-    selectedCountry?: string;
-    onCountrySelect?: (country: string | undefined) => void;
-    date?: Moment;
     category: Category;
     dataType: DataType;
-    data?: CountryTrends;
+    selectedCountry?: string;
+    onCountrySelect?: (country: string | undefined) => void;
+    data?: { [k in string]: CountryTrend }; // Data should be a map of country A3 to trend datum
+    loading?: boolean;
 }
 
 const MAP_TARGET = '#africa-map';
@@ -28,27 +27,34 @@ const africaMapFeatures =
     feature.type === 'FeatureCollection' ? feature.features : [feature];
 
 const AfricaMap: React.FC<AfricaMapProps> = ({
-    selectedCountry,
-    onCountrySelect,
-    date,
     category,
     dataType,
+    selectedCountry,
+    onCountrySelect,
     data,
 }) => {
     const width = 960;
     const height = 720;
 
-    const handleCountryClick = useCallback((country: string) => {
-        if (Boolean(country)) {
-            onCountrySelect?.(country);
-        }
-    }, []);
+    const handleCountryClick = useCallback(
+        (country: string) => {
+            if (!Boolean(country)) {
+                return;
+            }
+            if (country !== selectedCountry) {
+                onCountrySelect?.(country);
+            } else {
+                onCountrySelect?.(undefined);
+            }
+        },
+        [onCountrySelect, selectedCountry]
+    );
 
     const fillMap = useCallback(() => {
         const svg = d3.select(MAP_TARGET);
         const countries = svg.selectAll('.country-border');
         countries.classed('selected-country', (d: any) => {
-            return d.properties.iso_a3 === selectedCountry;
+            return d.properties.sov_a3 === selectedCountry;
         });
 
         // Update colors
@@ -95,91 +101,70 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     trendKey = 'deaths';
                 }
             }
-            let extent = d3.extent(
-                flatten(values(data).map((d) => d.slice(-1))),
-                (d) => d[trendKey] as number
+            let extent = d3.extent(values(data), (d) =>
+                typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
 
             if (extent[0] === undefined) {
-                extent = [0, 1];
+                extent = [1, 1];
             }
+            const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
+            extent[1] = Math.pow(10, maxPowerOfTen);
+            extent[0] = 1;
             const colorScale = d3
-                .scaleLinear()
+                .scaleLog()
                 .domain(extent)
                 // @ts-ignore
                 .range(colorRange)
                 // @ts-ignore
                 .interpolate(d3.interpolateHcl);
+
+            // update the legend color
+            var legend = legendColor()
+                .labelFormat(d3.format(',.2r'))
+                // .useClass(true)
+                .cells(colorScale.ticks(Math.min(5, maxPowerOfTen)))
+                .labelOffset(3)
+                .shapePadding(2)
+                .scale(colorScale);
+
+            svg.select('.legend').remove();
+
+            svg.select('.legend-container')
+                .append('g')
+                .attr('class', 'legend')
+                .call(legend);
             countries
                 .transition()
                 .duration(1000)
                 .style('fill', (d: any) => {
-                    const countryData: CountryTrend | undefined = data?.[
-                        d.properties.iso_a3
-                    ]?.slice(-1)[0];
+                    const countryCode = d.properties.sov_a3 as string;
+                    if (!(countryCode in data)) {
+                        return colors.DARK_GREY;
+                    }
+                    const countryData: CountryTrend | undefined =
+                        data?.[d.properties.sov_a3];
                     if (countryData?.[trendKey] !== undefined) {
-                        return colorScale(countryData[trendKey] as number);
+                        return colorScale(
+                            Math.max(1, countryData[trendKey] as number)
+                        );
                     }
                     return colors.LIGHT_GREY;
                 });
         }
-    }, [category, data, dataType, selectedCountry]);
+    }, [selectedCountry, category, data, dataType]);
 
     const initializeMap = useCallback(() => {
-        // Many browsers -- IE particularly -- will not auto-size inline SVG
-        // IE applies default width and height sizing
-        // padding-bottom hack on a container solves IE inconsistencies in size
-        // https://css-tricks.com/scale-svg/#article-header-id-10
-        const setResponsiveSVG = () => {
-            let width = +d3.select(MAP_TARGET).attr('width');
-            let height = +d3.select(MAP_TARGET).attr('height');
-            let calcString = +(height / width) * 100 + '%';
-
-            const svgElement = d3.select(MAP_TARGET);
-            if (svgElement === null || svgElement.node() === null) {
-                return;
-            }
-            const svgParent = d3.select('#svg-parent');
-
-            svgElement
-                .attr('class', 'scaling-svg')
-                .attr('preserveAspectRatio', 'xMinYMin')
-                .attr('viewBox', '0 0 ' + width + ' ' + height)
-                .attr('width', null)
-                .attr('height', null);
-
-            svgParent.style('padding-bottom', calcString);
-        };
-
-        const projection = d3
-            .geoMercator()
-            .scale(410)
-            .translate([width / 3, height / 2]);
-
-        const path = d3.geoPath().projection(projection);
-
         const svg = d3
             .select(MAP_TARGET)
             .attr('width', width)
             .attr('height', height);
-        // use Susie Lu's d3-legend plugin
-        // http://d3-legend.susielu.com/
-        const d3legend = legendColor()
-            .shapeWidth(width / 10)
-            .cells(9)
-            .orient('horizontal')
-            .labelOffset(3)
-            .ascending(true)
-            .labelAlign('middle')
-            .shapePadding(2);
-        const legend = svg
-            .append('g')
-            .attr('class', 'legend')
-            .attr(
-                'transform',
-                'translate(' + width / 24 + ',' + (height * 6) / 7 + ')'
-            );
-        legend.call(d3legend.scale);
+
+        // PLace legend target onto the map
+        svg.append('g')
+            .attr('class', 'legend-container')
+            .attr('transform', 'translate(20,20)');
+
         // create background box for zoom
         svg.append('rect')
             .attr('class', 'background')
@@ -189,6 +174,12 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
         const group = svg.append('g').attr('class', 'continent');
 
+        const projection = d3
+            .geoMercator()
+            .scale(410)
+            .translate([width / 3, height / 2]);
+
+        const path = d3.geoPath().projection(projection);
         // Draw the countries in the continent
         group
             .selectAll('.countries')
@@ -196,19 +187,49 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .enter()
             .append('path')
             .attr('class', 'country-border')
-            .attr('d', path)
+            .attr('d', path);
+
+        fillMap();
+        setResponsiveSVG();
+    }, []);
+
+    // Many browsers -- IE particularly -- will not auto-size inline SVG
+    // IE applies default width and height sizing
+    // padding-bottom hack on a container solves IE inconsistencies in size
+    // https://css-tricks.com/scale-svg/#article-header-id-10
+    const setResponsiveSVG = () => {
+        let width = +d3.select(MAP_TARGET).attr('width');
+        let height = +d3.select(MAP_TARGET).attr('height');
+        let calcString = +(height / width) * 100 + '%';
+
+        const svgElement = d3.select(MAP_TARGET);
+        if (svgElement === null || svgElement.node() === null) {
+            return;
+        }
+        const svgParent = d3.select('#svg-parent');
+
+        svgElement
+            .attr('class', 'scaling-svg')
+            .attr('preserveAspectRatio', 'xMinYMin')
+            .attr('viewBox', '0 0 ' + width + ' ' + height)
+            .attr('width', null)
+            .attr('height', null);
+
+        svgParent.style('padding-bottom', calcString);
+    };
+
+    // Set up onClick handler
+    useEffect(() => {
+        d3.select('.continent')
+            .selectAll('.country-border')
             .on('click', (e: any, d: any) => {
-                const country = d.properties?.iso_a3;
+                const country = d.properties?.sov_a3;
                 if (country) {
                     handleCountryClick(country);
                 }
             });
-
-        fillMap();
-        setResponsiveSVG();
-    }, [fillMap, handleCountryClick]);
-
-    useLayoutEffect(() => initializeMap(), [initializeMap]);
+    }, [handleCountryClick]);
+    useLayoutEffect(() => initializeMap(), []);
     useEffect(fillMap, [fillMap]);
 
     return (
