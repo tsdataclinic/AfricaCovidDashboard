@@ -10,6 +10,7 @@ import { getDataFromJHTS } from '../utils/JohnHopkins';
 
 import * as fs from 'fs';
 import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
+import { ModelService } from '../model/model.service';
 
 @Injectable()
 export class CountryService {
@@ -18,7 +19,7 @@ export class CountryService {
   countries: Country[];
   avaliableCountries: string[];
 
-  constructor() {
+  constructor(private readonly modelService: ModelService) {
     this.loadCountryStats().then((data: CountryStats[]) => {
       this.allCountryStats = data;
     });
@@ -108,12 +109,15 @@ export class CountryService {
     countryISO: string,
     startDate: Date,
     endDate: Date,
+    includePrediction: boolean = false,
   ): TrendDatum[] {
     if (
       this.allCountryTrends &&
       Object.keys(this.allCountryTrends).includes(countryISO)
     ) {
-      return this.allCountryTrends[countryISO];
+      const trend = this.allCountryTrends[countryISO];
+      const prediction = this.modelService.predictForCountry(countryISO, trend);
+      return [...trend, ...prediction];
     } else {
       throw new NotFoundException('Count not find country');
     }
@@ -150,7 +154,6 @@ export class CountryService {
 
   //** Returns the unique region list */
   getRegions(): string[] {
-    console.log(this.countries);
     return Array.from(new Set(this.countries.map((c) => c.region)));
   }
 }
