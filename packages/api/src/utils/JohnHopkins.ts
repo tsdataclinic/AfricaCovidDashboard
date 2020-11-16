@@ -19,7 +19,7 @@ async function getJHFTimeSeriesFile(
   return new Promise((resolve, reject) => {
     stream
       .pipe(new CsvReadableStream({ parseNumbers: true, asObject: false }))
-      .on('data', row => {
+      .on('data', (row) => {
         if (!headers) {
           headers = row as [];
         } else {
@@ -38,7 +38,7 @@ async function getJHFTimeSeriesFile(
       .on('end', () => {
         resolve(data);
       })
-      .on('error', err => {
+      .on('error', (err) => {
         console.log('something went wrong');
       });
   });
@@ -53,21 +53,23 @@ export async function getDataFromJHTS() {
   // here and just focus on country level stats
   const countries = Array.from(
     new Set(
-      (deaths as any[]).filter(obs => obs.prov === '').map(obs => obs.country),
+      (deaths as any[])
+        .filter((obs) => obs.prov === '')
+        .map((obs) => obs.country),
     ),
   );
 
   const all_results: CountryTrendDict = {};
 
-  countries.forEach(country => {
+  countries.forEach((country) => {
     const countryDeaths = (deaths as any).filter(
-      obs => obs.country === country,
+      (obs) => obs.country === country,
     );
     const countryConfirmed = (confirmed as any).filter(
-      obs => obs.country === country,
+      (obs) => obs.country === country,
     );
     const countryRecovery = (recovered as any).filter(
-      obs => obs.country === country,
+      (obs) => obs.country === country,
     );
 
     //Format the daily numbers properly
@@ -77,6 +79,7 @@ export async function getDataFromJHTS() {
       trendDatum.deaths = obs.value;
       trendDatum.confirmed = countryConfirmed[index].value;
       trendDatum.recoveries = countryRecovery[index].value;
+      trendDatum.isPrediction = false;
       return trendDatum;
     });
 

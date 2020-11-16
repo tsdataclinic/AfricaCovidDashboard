@@ -142,6 +142,35 @@ export class TrendDatum {
   })
   days_since_first_case: number;
 
+  @ApiProperty({
+    description: 'is this data point a prediction or an observation',
+  })
+  isPrediction: boolean;
+
+  @ApiProperty({
+    description: 'Model exposure',
+    nullable: true,
+  })
+  exposure: number | null;
+
+  @ApiProperty({
+    description: 'Cumulative cases prediction',
+    nullable: true,
+  })
+  confirmed_prediction: number | null;
+
+  @ApiProperty({
+    description: 'Upper limit of cumulative cases prediction ',
+    nullable: true,
+  })
+  confirmed_prediction_upper: number | null;
+
+  @ApiProperty({
+    description: 'Upper limit of cumulative cases prediction ',
+    nullable: true,
+  })
+  confirmed_prediction_lower: number | null;
+
   add(other: TrendDatum): TrendDatum {
     if (this.date.getTime() !== other.date.getTime()) {
       throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);

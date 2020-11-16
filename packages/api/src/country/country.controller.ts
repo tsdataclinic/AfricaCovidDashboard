@@ -16,7 +16,7 @@ import {
 @Controller('country')
 export class CountryController {
   constructor(private readonly countryService: CountryService) {}
-
+  e;
   @Get('/')
   @ApiOkResponse({
     description: 'JSON array of available countries',
@@ -24,6 +24,16 @@ export class CountryController {
   })
   getAvailable(): Country[] {
     return this.countryService.getAvailableCountries();
+  }
+
+  @Get('/regions')
+  @ApiOkResponse({
+    description: 'Available regions',
+    type: String,
+    isArray: true,
+  })
+  regions() {
+    return this.countryService.getRegions();
   }
 
   @Get('/africa/trends')
