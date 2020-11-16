@@ -26,6 +26,16 @@ export class CountryController {
     return this.countryService.getAvailableCountries();
   }
 
+  @Get('/regions')
+  @ApiOkResponse({
+    description: 'Available regions',
+    type: String,
+    isArray: true,
+  })
+  regions() {
+    return this.countryService.getRegions();
+  }
+
   @Get('/africa/trends')
   @ApiQuery({
     name: 'startDate',
