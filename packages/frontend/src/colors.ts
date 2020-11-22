@@ -1,5 +1,6 @@
 export const LIGHT_GREEN = '#67b87b';
 export const GREEN = '#28a745';
+export const WHITE = '#eaeaea';
 export const LIGHT_GREY = '#e2e2e2';
 export const GREY = '#7a7a7a';
 export const DARK_GREY = '#414141';

@@ -137,7 +137,7 @@ const Home = () => {
                         onCountrySelect={updateCountry}
                         category={category}
                         dataType={dataType}
-                        data={selectedStatsByCountry}
+                        trendData={selectedStatsByCountry}
                         loading={isLoading}
                     />
                 </Col>
