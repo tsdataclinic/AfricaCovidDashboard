@@ -1,44 +1,54 @@
-import React, { useCallback, useEffect, useLayoutEffect } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
 import africaTopology from './africa.json';
 import * as topojson from 'topojson-client';
-import { Topology } from 'topojson-specification';
+import { GeometryCollection, Topology } from 'topojson-specification';
 import styled from 'styled-components';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
 import { values } from 'lodash';
 import * as colors from '../../colors';
+import { CountryProperties } from './types';
+import { Feature, Geometry } from 'geojson';
+import getTooltipContent, { tooltipCSS } from './getTooltipContent';
+import { getCountryA3 } from './utils';
 
 interface AfricaMapProps {
     category: Category;
     dataType: DataType;
     selectedCountry?: string;
     onCountrySelect?: (country: string | undefined) => void;
-    data?: { [k in string]: CountryTrend }; // Data should be a map of country A3 to trend datum
+    trendData?: { [k in string]: CountryTrend }; // Data should be a map of country A3 to trend datum
     loading?: boolean;
 }
 
-const MAP_TARGET = '#africa-map';
+type MapData = Feature<Geometry, CountryProperties>;
 
-const topology = (africaTopology as unknown) as Topology;
+const MAP_TARGET = '#africa-map';
+const TOOLTIP_HEIGHT = 250;
+const TOOLTIP_WIDTH = 200;
+
+const topology = (africaTopology as unknown) as Topology<{
+    collection: GeometryCollection<CountryProperties>;
+}>;
 const feature = topojson.feature(topology, topology.objects.collection);
-const africaMapFeatures =
-    feature.type === 'FeatureCollection' ? feature.features : [feature];
+const africaMapFeatures: MapData[] = feature.features;
 
 const AfricaMap: React.FC<AfricaMapProps> = ({
     category,
     dataType,
     selectedCountry,
     onCountrySelect,
-    data,
+    trendData,
 }) => {
     const width = 960;
     const height = 720;
+    const svgNode = useRef<SVGSVGElement>(null);
 
     const handleCountryClick = useCallback(
         (country: string) => {
-            if (!Boolean(country)) {
+            if (!Boolean(country) || !trendData || !(country in trendData)) {
                 return;
             }
             if (country !== selectedCountry) {
@@ -47,18 +57,18 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 onCountrySelect?.(undefined);
             }
         },
-        [onCountrySelect, selectedCountry]
+        [onCountrySelect, selectedCountry, trendData]
     );
 
     const fillMap = useCallback(() => {
-        const svg = d3.select(MAP_TARGET);
+        const svg = d3.select(svgNode.current);
         const countries = svg.selectAll('.country-border');
-        countries.classed('selected-country', (d: any) => {
-            return d.properties.sov_a3 === selectedCountry;
+        countries.classed('selected-country', (d: MapData) => {
+            return getCountryA3(d.properties) === selectedCountry;
         });
 
         // Update colors
-        if (data !== undefined) {
+        if (trendData !== undefined) {
             let colorRange = [
                 colors.LIGHT_GREY,
                 colors.LIGHT_GREEN,
@@ -101,7 +111,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     trendKey = 'deaths';
                 }
             }
-            let extent = d3.extent(values(data), (d) =>
+            let extent = d3.extent(values(trendData), (d) =>
                 typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
 
@@ -137,13 +147,13 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             countries
                 .transition()
                 .duration(1000)
-                .style('fill', (d: any) => {
-                    const countryCode = d.properties.sov_a3 as string;
-                    if (!(countryCode in data)) {
+                .style('fill', (d: MapData) => {
+                    const countryCode = getCountryA3(d.properties);
+                    if (!(countryCode in trendData)) {
                         return colors.DARK_GREY;
                     }
                     const countryData: CountryTrend | undefined =
-                        data?.[d.properties.sov_a3];
+                        trendData?.[countryCode];
                     if (countryData?.[trendKey] !== undefined) {
                         return colorScale(
                             Math.max(1, countryData[trendKey] as number)
@@ -152,7 +162,39 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     return colors.LIGHT_GREY;
                 });
         }
-    }, [selectedCountry, category, data, dataType]);
+    }, [selectedCountry, category, trendData, dataType]);
+
+    const createTooltip = useCallback(() => {
+        const svg = d3.select(svgNode.current);
+        const showTooltip = (e: any, data: MapData) => {
+            if (e.target?.nodeName === 'path') {
+                const bBox = e.target.getBBox();
+                const x = bBox.x + bBox.width + 10;
+                const y = Math.max(
+                    bBox.y + bBox.height / 2 - TOOLTIP_HEIGHT / 2,
+                    0
+                );
+
+                // Display and update the tooltip
+                svg.select('.map-tooltip')
+                    .style('opacity', '0.8')
+                    .attr('transform', `translate(${x}, ${y})`)
+                    .selectAll('foreignObject')
+                    .data([data.properties])
+                    .join('foreignObject')
+                    .attr('height', TOOLTIP_HEIGHT)
+                    .attr('width', TOOLTIP_WIDTH)
+                    .html((d: CountryProperties) =>
+                        getTooltipContent(d, trendData?.[getCountryA3(d)])
+                    );
+            }
+        };
+        const hideTooltip = (e: any) => {
+            svg.select('.map-tooltip').style('opacity', '0');
+        };
+        svg.selectAll('.overlay-country-border').on('mouseenter', showTooltip);
+        svg.selectAll('.overlay-country-border').on('mouseout', hideTooltip);
+    }, [trendData]);
 
     const initializeMap = useCallback(() => {
         const svg = d3
@@ -160,33 +202,45 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .attr('width', width)
             .attr('height', height);
 
-        // PLace legend target onto the map
-        svg.append('g')
-            .attr('class', 'legend-container')
-            .attr('transform', 'translate(20,20)');
-
-        // create background box for zoom
+        const projection = d3
+            .geoMercator()
+            .scale(410)
+            .translate([width / 3, height / 2]);
+        const path = d3.geoPath().projection(projection);
+        // create background box
         svg.append('rect')
             .attr('class', 'background')
             .style('background-color', colors.LIGHT_GREY)
             .attr('width', width)
             .attr('height', height);
 
-        const group = svg.append('g').attr('class', 'continent');
+        // Place legend target onto the map
+        svg.append('g')
+            .attr('class', 'legend-container')
+            .attr('transform', 'translate(20,20)');
 
-        const projection = d3
-            .geoMercator()
-            .scale(410)
-            .translate([width / 3, height / 2]);
-
-        const path = d3.geoPath().projection(projection);
         // Draw the countries in the continent
-        group
-            .selectAll('.countries')
+        svg.append('g')
+            .attr('class', 'continent')
+            .selectAll('path')
             .data(africaMapFeatures)
-            .enter()
-            .append('path')
+            .join('path')
             .attr('class', 'country-border')
+            .attr('d', path);
+
+        // Create the tooltip
+        svg.append('g').attr('class', 'map-tooltip').append('rect');
+
+        /* Create a transparent country overlay. The overlay sits on top of the other elements and is used
+        as the click and hover target. The lets us listen to mouse events without worrying about the
+        tooltip "covering" the element we want to listen to. The overlay should be kept transparent.
+         */
+        svg.append('g')
+            .attr('class', 'overlay')
+            .selectAll('path')
+            .data(africaMapFeatures)
+            .join('path')
+            .attr('class', 'overlay-country-border')
             .attr('d', path);
 
         fillMap();
@@ -220,10 +274,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
     // Set up onClick handler
     useEffect(() => {
-        d3.select('.continent')
-            .selectAll('.country-border')
+        d3.select('.overlay')
+            .selectAll('.overlay-country-border')
             .on('click', (e: any, d: any) => {
-                const country = d.properties?.sov_a3;
+                const country = getCountryA3(d.properties);
                 if (country) {
                     handleCountryClick(country);
                 }
@@ -231,10 +285,11 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     }, [handleCountryClick]);
     useLayoutEffect(() => initializeMap(), []);
     useEffect(fillMap, [fillMap]);
+    useEffect(createTooltip, [createTooltip]);
 
     return (
         <MapContainer id="svg-parent" className="scaling-svg-container">
-            <svg id="africa-map" />
+            <svg id="africa-map" ref={svgNode} />
         </MapContainer>
     );
 };
@@ -244,17 +299,39 @@ const MapContainer = styled.div`
         fill: #f5f5f5;
         fill-opacity: 0.5;
     }
-    .country-border {
-        fill: none;
-        stroke: #000000;
-        stroke-width: 0.5px;
-        pointer-events: all;
-        stroke-linejoin: round;
-        stroke-linecap: round;
-        cursor: pointer;
-        &.selected-country {
-            stroke-width: 3px;
+    .continent { 
+        .country-border {
+            fill: none;
+            stroke: #000000;
+            stroke-width: 0.5px;
+            pointer-events: all;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+            &.selected-country {
+                stroke-width: 3px;
+            }
         }
+    }
+    .overlay {
+        opacity: 1;
+        path {
+            fill: none;
+            cursor: pointer;
+            pointer-events: all;
+            &:hover {
+                stroke: ${colors.LIGHT_GREY};
+                stroke-width: 2px;
+            }
+        }
+    }
+    .map-tooltip {
+        opacity: 0;
+        rect {
+            height: ${TOOLTIP_HEIGHT}px;
+            width: ${TOOLTIP_WIDTH}px;
+            background-color ${colors.DARK_GREY};
+        }
+        ${tooltipCSS}
     }
 `;
 export default React.memo(AfricaMap);
