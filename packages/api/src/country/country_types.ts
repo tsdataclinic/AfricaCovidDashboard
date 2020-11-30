@@ -172,7 +172,7 @@ export class TrendDatum {
   confirmed_prediction_lower: number | null;
 
   add(other: TrendDatum): TrendDatum {
-    if (this.date.getTime() !== other.date.getTime()) {
+    if (!datesAreOnSameDay(this.date, other.date)) {
       throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);
     }
     this.deaths += other.deaths;
@@ -181,8 +181,22 @@ export class TrendDatum {
     this.new_deaths += other.new_deaths;
     this.new_case += other.new_case;
     this.new_recoveries += other.new_recoveries;
+    if (this.isPrediction) {
+      this.confirmed_prediction += other.confirmed_prediction;
+      // TODO: update prediction
+      this.confirmed_prediction_upper =
+        this.confirmed_prediction + 22 + Math.random() * 5;
+      this.confirmed_prediction_lower =
+        this.confirmed_prediction - 23 - Math.random() * 10;
+    }
+
     return this;
   }
 }
 
 export type CountryTrendDict = { [country: string]: TrendDatum[] };
+
+const datesAreOnSameDay = (first: Date, second: Date) =>
+  first.getFullYear() === second.getFullYear() &&
+  first.getMonth() === second.getMonth() &&
+  first.getDate() === second.getDate();

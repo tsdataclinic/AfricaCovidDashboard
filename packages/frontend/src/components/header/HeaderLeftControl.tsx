@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { SeachQueryKey, SearchQueryValue } from '../../hooks/useQueryParams';
 import { DataType } from '../../types';
 import { useLocation } from 'react-router-dom';
-import { ABOUT_PATH, FORECAST_PATH } from '../../Routes';
+import { ABOUT_PATH } from '../../Routes';
 const { Option } = Select;
 
 interface HeaderLeftControlProps {
@@ -17,7 +17,7 @@ const HeaderLeftControl = ({
     updateQuery,
 }: HeaderLeftControlProps) => {
     const { pathname } = useLocation();
-    const isHome = pathname !== FORECAST_PATH && pathname !== ABOUT_PATH;
+    const isHome = pathname !== ABOUT_PATH;
     return (
         <Col span={12}>
             {isHome && (

@@ -5,8 +5,8 @@ import { memoize } from 'lodash';
 import * as colors from '../../colors';
 import { format } from 'd3';
 
-const formatNumber = format(',');
-const formatDelta = format('+,');
+const formatNumber = (num: number) => (num ? format(',')(num) : '-');
+const formatDelta = (num: number) => (num ? format('+,')(num) : '-');
 function getTooltipContent(
     countryProperties: CountryProperties,
     trendData?: CountryTrend
@@ -19,9 +19,13 @@ function getTooltipContent(
             countryProperties.pop_est
         )}</li>
         <li>
-          <span class="label confirmed">Confirmed:&nbsp;</span>
+          <span class="label confirmed">Confirmed${
+              trendData.isPrediction && ' Prediction'
+          }:&nbsp;</span>
           ${formatNumber(
-              trendData.confirmed
+              trendData.confirmed_prediction
+                  ? trendData.confirmed_prediction
+                  : trendData.confirmed
           )}&nbsp;<span class="delta">${formatDelta(trendData.new_case)}</span>
         </li>
         <li>

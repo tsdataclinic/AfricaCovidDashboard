@@ -1,14 +1,10 @@
 import React from 'react';
-import {
-    HeatMapOutlined,
-    AreaChartOutlined,
-    GithubOutlined
-} from '@ant-design/icons';
+import { HeatMapOutlined, GithubOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useLocation, Link } from 'react-router-dom';
-import { ABOUT_PATH, FORECAST_PATH, HOME_PATH } from '../Routes';
+import { ABOUT_PATH, HOME_PATH } from '../Routes';
 
 interface MenuProps {
     navCollapsed: boolean;
@@ -32,9 +28,6 @@ const AppMenu = ({ navCollapsed }: MenuProps) => {
                 <Menu.Item key="exploration" icon={<HeatMapOutlined />}>
                     <Link to={HOME_PATH}>{t('Exploration')}</Link>
                 </Menu.Item>
-                <Menu.Item key="forecast" icon={<AreaChartOutlined />}>
-                    <Link to={FORECAST_PATH}>{t('Forecast')}</Link>
-                </Menu.Item>
                 <Menu.Item key="about" icon={<GithubOutlined />}>
                     <Link to={ABOUT_PATH}>{t('About')}</Link>
                 </Menu.Item>
@@ -52,8 +45,6 @@ const Logo = styled.div`
 
 const getMenuSelectedKey = (pathname: string) => {
     switch (pathname) {
-        case FORECAST_PATH:
-            return 'forecast';
         case ABOUT_PATH:
             return 'about';
         default:

@@ -16,7 +16,8 @@ interface TrendProps {
     allDates: Date[];
 }
 
-const safeFormatInteger = (num: number): number => (num ? Math.round(num) : 0);
+const safeFormatInteger = (num: number | undefined): number =>
+    num ? Math.round(num) : 0;
 
 const Trend = ({
     trendData,
@@ -64,9 +65,23 @@ const Trend = ({
 
     const timeseries = useMemo(() => {
         const populartion = countryStatsData?.population;
+        const trimData =
+            dates.length === 0
+                ? []
+                : trendData.filter(
+                      (countryTrend) =>
+                          moment(dates[0]).isSameOrBefore(
+                              countryTrend.date,
+                              'day'
+                          ) &&
+                          moment(dates[dates.length - 1]).isSameOrAfter(
+                              countryTrend.date,
+                              'day'
+                          )
+                  );
         if (populartion && per100K) {
             const multiplier = (1 / populartion) * 100000;
-            return trendData.map((item) => ({
+            return trimData.map((item) => ({
                 confirmed: safeFormatInteger(item.confirmed * multiplier),
                 date: item.date,
                 deaths: safeFormatInteger(item.deaths * multiplier),
@@ -79,10 +94,19 @@ const Trend = ({
                 days_since_first_case: safeFormatInteger(
                     item.days_since_first_case
                 ),
+                confirmed_prediction: safeFormatInteger(
+                    (item.confirmed_prediction || 0) * multiplier
+                ),
+                confirmed_prediction_lower: safeFormatInteger(
+                    (item.confirmed_prediction_lower || 0) * multiplier
+                ),
+                confirmed_prediction_upper: safeFormatInteger(
+                    (item.confirmed_prediction_upper || 0) * multiplier
+                ),
             }));
         }
-        return trendData;
-    }, [trendData, countryStatsData, per100K]);
+        return trimData;
+    }, [trendData, countryStatsData, per100K, dates]);
 
     if (countryStatsLoading) {
         return <Skeleton active />;
