@@ -1,6 +1,6 @@
 import { Category, DataType, StatsBarItem } from './types';
 import moment from 'moment';
-import { GREEN, GREY, RED } from './colors';
+import { BLUE, GREEN, GREY, RED } from './colors';
 import { CountryTrend } from './hooks/useCountryTrends';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
@@ -25,17 +25,26 @@ export const getStatistic = (
     if (!data) {
         return 0;
     }
+
     switch (category) {
         case 'confirmed':
-            return type === 'daily' ? data.new_case : data.confirmed;
+            return type === 'daily'
+                ? safeGet(data.new_case)
+                : safeGet(data.confirmed) || safeGet(data.confirmed_prediction);
         case 'recoveries':
-            return type === 'daily' ? data.new_recoveries : data.recoveries;
+            return type === 'daily'
+                ? safeGet(data.new_recoveries)
+                : safeGet(data.recoveries);
         case 'deaths':
-            return type === 'daily' ? data.new_deaths : data.deaths;
+            return type === 'daily'
+                ? safeGet(data.new_deaths)
+                : safeGet(data.deaths);
         default:
             return 0;
     }
 };
+
+const safeGet = (value?: number) => (value ? value : 0);
 
 export const getColor = (category: Category) => {
     switch (category) {
@@ -51,15 +60,25 @@ export const getColor = (category: Category) => {
 export const formatDateToStr = (date: Date) => moment(date).format('MMM DD');
 export const convertDateStrToDate = (str: string) => moment(str).toDate();
 
-export const getCategories = (dataType: DataType): StatsBarItem[] =>
+export const getCategories = (
+    dataType: DataType,
+    isPrediction?: boolean
+): StatsBarItem[] =>
     dataType === 'cumulative'
         ? [
-              {
-                  label: 'Confirmed',
-                  value: 'confirmed',
-                  category: 'confirmed',
-                  color: RED,
-              },
+              isPrediction
+                  ? {
+                        label: 'Confirmed Prediction',
+                        value: 'confirmed_prediction',
+                        category: 'confirmed',
+                        color: BLUE,
+                    }
+                  : {
+                        label: 'Confirmed',
+                        value: 'confirmed',
+                        category: 'confirmed',
+                        color: RED,
+                    },
               {
                   label: 'Recovered',
                   value: 'recoveries',

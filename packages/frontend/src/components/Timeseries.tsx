@@ -2,6 +2,7 @@ import { D3_TRANSITION_DURATION } from '../constants';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import {
     abbreviateNumber,
+    convertDateStrToDate,
     formatDateToStr,
     getCategories,
     getColor,
@@ -13,7 +14,7 @@ import { axisBottom, axisRight, AxisScale } from 'd3-axis';
 import { scaleLinear, scaleLog, scaleTime } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
 import { pointer, select } from 'd3-selection';
-import { curveMonotoneX, line } from 'd3-shape';
+import { curveMonotoneX, line, area } from 'd3-shape';
 import React, {
     useCallback,
     useEffect,
@@ -22,7 +23,7 @@ import React, {
     useState,
 } from 'react';
 import { Category, DataType, StatsBarItem } from '../types';
-import { GREEN, GREY, RED } from '../colors';
+import { GREEN, GREY, RED, BLUE } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
 
@@ -132,7 +133,6 @@ const Timeseries = ({
                 minTrend = Math.min(minTrend, value);
                 maxTrend = Math.max(maxTrend, value);
             }
-
             if (isLog) {
                 return scaleLog()
                     .clamp(true)
@@ -147,7 +147,6 @@ const Timeseries = ({
             const minNum = yBufferBottom * minTrend;
 
             const maxNum = Math.max(1, yBufferTop * maxTrend);
-
             return scaleLinear()
                 .clamp(true)
                 .domain([minNum, maxNum])
@@ -179,6 +178,10 @@ const Timeseries = ({
         }
 
         /* Begin drawing charts */
+        const unpredictedDates = timeseries
+            .filter((t) => !t.isPrediction)
+            .map((t) => convertDateStrToDate(t.date));
+        const predictedTimeseries = timeseries.filter((t) => t.isPrediction);
 
         refs.current.forEach((ref, i) => {
             const svg = select(ref) as any;
@@ -203,7 +206,7 @@ const Timeseries = ({
             /* Path dots */
             const circles = svg
                 .selectAll('circle')
-                .data(dates, (date: Date) => date);
+                .data(unpredictedDates, (date: Date) => date);
 
             circles.exit().style('fill-opacity', 0).remove();
 
@@ -227,6 +230,10 @@ const Timeseries = ({
                     )
                 )
                 .attr('cx', (date: Date) => xScale(date));
+
+            // Remove prediction
+            svg.selectAll('.confirmed-prediction').remove();
+            svg.selectAll('.confirmed-prediction-error').remove();
 
             if (dataType === 'cumulative') {
                 svg.selectAll('.stem')
@@ -253,7 +260,7 @@ const Timeseries = ({
 
                 svg.selectAll('.trend')
                     .remove()
-                    .data([dates])
+                    .data([unpredictedDates])
                     .join(
                         (enter: any) =>
                             enter
@@ -280,12 +287,54 @@ const Timeseries = ({
                         //     return interpolatePath(previous, current);
                         // })
                     );
+
+                if (!predictedTimeseries.length || category !== 'confirmed') {
+                    return;
+                }
+                svg.append('path')
+                    .datum(predictedTimeseries)
+                    .attr('class', 'confirmed-prediction-error')
+                    .attr('fill', '#cce5df')
+                    .attr('stroke', 'none')
+                    .attr(
+                        'd',
+                        area()
+                            .x(function (d: any) {
+                                return xScale(convertDateStrToDate(d.date));
+                            })
+                            .y0(function (d: any) {
+                                return yScale(
+                                    d.confirmed_prediction_upper + 2000
+                                );
+                            })
+                            .y1(function (d: any) {
+                                return yScale(
+                                    d.confirmed_prediction_lower - 2000
+                                );
+                            })
+                    );
+                svg.append('path')
+                    .datum(predictedTimeseries)
+                    .attr('fill', 'none')
+                    .attr('class', 'confirmed-prediction')
+                    .attr('stroke', 'steelblue')
+                    .attr('stroke-width', 1.5)
+                    .attr(
+                        'd',
+                        line()
+                            .x(function (d: any) {
+                                return xScale(convertDateStrToDate(d.date));
+                            })
+                            .y(function (d: any) {
+                                return yScale(d.confirmed_prediction);
+                            })
+                    );
             } else {
                 /* DAILY TRENDS */
                 svg.selectAll('.trend').remove();
 
                 svg.selectAll('.stem')
-                    .data(dates, (date: Date) => date)
+                    .data(unpredictedDates, (date: Date) => date)
                     .join((enter: any) =>
                         enter
                             .append('line')
@@ -386,6 +435,11 @@ const Timeseries = ({
                             ? timeseriesMapper[highlightedDate.valueOf()]
                             : undefined
                     );
+                    const isPrediction =
+                        highlightedDate &&
+                        timeseriesMapper[highlightedDate.valueOf()]
+                            ?.isPrediction &&
+                        category === 'confirmed';
                     return (
                         <Wrapper
                             key={category}
@@ -396,8 +450,14 @@ const Timeseries = ({
                             style={trail[index]}
                         >
                             {highlightedDate && (
-                                <div className={`stats is-${category}`}>
-                                    <h5 className="title">{label}</h5>
+                                <div
+                                    className={`stats is-${category} ${
+                                        isPrediction && 'predicted'
+                                    }`}
+                                >
+                                    <h5 className="title">
+                                        {label} {isPrediction && 'Predicted'}
+                                    </h5>
                                     <h5 className="title">
                                         {formatDateToStr(highlightedDate)}
                                     </h5>
@@ -459,6 +519,12 @@ const Wrapper = styled.div`
         line {
             stroke: ${RED};
         }
+        path.confirmed-prediction {
+            stroke: ${BLUE};
+        }
+        path.confirmed-prediction-error {
+            stroke: none;
+        }
         text {
             opacity: 0.5;
         }
@@ -507,11 +573,18 @@ const Wrapper = styled.div`
     h2,
     h6 {
         color: ${RED};
-        ont-weight: 400;
+        font-weight: 400;
     }
 
     .stats-bottom {
         display: flex;
         align-items: center;
+    }
+    .predicted {
+        h5.title,
+        h2,
+        h6 {
+            color: ${BLUE};
+        }
     }
 `;

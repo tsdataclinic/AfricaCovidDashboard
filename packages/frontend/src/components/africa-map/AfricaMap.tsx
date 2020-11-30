@@ -45,7 +45,9 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     const width = 960;
     const height = 720;
     const svgNode = useRef<SVGSVGElement>(null);
-
+    const isPrediction = Object.keys(trendData || {}).find(
+        (key) => trendData?.[key].isPrediction
+    );
     const handleCountryClick = useCallback(
         (country: string) => {
             if (!Boolean(country) || !trendData || !(country in trendData)) {
@@ -104,7 +106,9 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 }
             } else {
                 if (category === 'confirmed') {
-                    trendKey = 'confirmed';
+                    trendKey = isPrediction
+                        ? 'confirmed_prediction'
+                        : 'confirmed';
                 } else if (category === 'recoveries') {
                     trendKey = 'recoveries';
                 } else if (category === 'deaths') {

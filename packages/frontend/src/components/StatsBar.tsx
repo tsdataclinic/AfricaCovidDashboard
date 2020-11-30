@@ -20,7 +20,7 @@ const StatsBar: React.FC<StatsBarProps> = ({
     data,
     loading,
 }) => {
-    const items: StatsBarItem[] = getCategories(dataType);
+    const items: StatsBarItem[] = getCategories(dataType, data?.isPrediction);
     if (data === undefined) {
         return <StyledAlert message="There is no data" type="error" />;
     }
@@ -38,7 +38,11 @@ const StatsBar: React.FC<StatsBarProps> = ({
                         >
                             <Statistic
                                 title={column.label}
-                                value={data && data[column.value]}
+                                value={
+                                    data[column.value] === undefined
+                                        ? '--'
+                                        : (data[column.value] as number)
+                                }
                                 precision={0}
                                 valueStyle={{ color: column.color }}
                             />

@@ -9,12 +9,16 @@ export interface CountryTrend {
     deaths: number;
     recoveries: number;
     confirmed: number;
+    isPrediction?: boolean;
+    confirmed_prediction?: number;
+    confirmed_prediction_lower?: number;
+    confirmed_prediction_upper?: number;
 }
 
 export type CountryTrends = { [k in string]: CountryTrend[] };
 
 const getTrendForCountry = async (_: any, country: string | undefined) => {
-    if (country == undefined) {
+    if (country === undefined) {
         return [];
     }
     const controller = new AbortController();

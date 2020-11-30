@@ -30,6 +30,13 @@ export class CountryService {
         this.countries = Object.keys(this.allCountryTrends).map(
           getCountryDetailsForISO,
         );
+        Object.keys(data).forEach(iso => {
+          const prediction = this.modelService.predictForCountry(
+            iso,
+            data[iso],
+          );
+          this.allCountryTrends[iso] = [...data[iso], ...prediction];
+        });
       });
     }
   }
@@ -41,7 +48,7 @@ export class CountryService {
       const readStream = fs.createReadStream('data/filtereddata.csv', 'utf8');
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
-        .on('data', (row) => {
+        .on('data', row => {
           // Get the ISO details of the country so we can link things up
           // using the iso3 number
           const countryDetails = getCountryISO(row['countryorarea']);
@@ -58,7 +65,7 @@ export class CountryService {
         .on('end', () => {
           resolve(data);
         })
-        .on('error', (err) => {
+        .on('error', err => {
           reject(err);
         });
     });
@@ -83,7 +90,7 @@ export class CountryService {
         .on('end', () => {
           resolve(result);
         })
-        .on('error', (err) => {
+        .on('error', err => {
           reject(err);
         });
     });
@@ -93,7 +100,7 @@ export class CountryService {
   async loadCountryStats() {
     const modelStats = await this.loadCountryModelStats();
     const population = await this.loadPopulationStats();
-    return modelStats.map((ms) => ({
+    return modelStats.map(ms => ({
       ...ms,
       population: population[ms.iso3],
     }));
@@ -115,9 +122,7 @@ export class CountryService {
       this.allCountryTrends &&
       Object.keys(this.allCountryTrends).includes(countryISO)
     ) {
-      const trend = this.allCountryTrends[countryISO];
-      const prediction = this.modelService.predictForCountry(countryISO, trend);
-      return [...trend, ...prediction];
+      return this.allCountryTrends[countryISO];
     } else {
       throw new NotFoundException('Count not find country');
     }
@@ -126,9 +131,9 @@ export class CountryService {
   //** Returns a TrendDatum of data aggregated to the entire continent */
   getContinentTrends(): TrendDatum[] {
     const africaISOS = this.countries
-      .filter((c) => c.continent === 'Africa')
-      .map((c) => c.iso3);
-    const africaTrends = africaISOS.map((iso) => this.allCountryTrends[iso]);
+      .filter(c => c.continent === 'Africa')
+      .map(c => c.iso3);
+    const africaTrends = africaISOS.map(iso => this.allCountryTrends[iso]);
     return africaTrends.reduce(
       (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
         trend.length == 0
@@ -146,7 +151,7 @@ export class CountryService {
   //** Returns a Country Stats for the requested country*/
   getStatsForCountryISO(countryISO: string): CountryStats {
     if (this.allCountryStats) {
-      return this.allCountryStats.find((cs) => cs.iso3 === countryISO);
+      return this.allCountryStats.find(cs => cs.iso3 === countryISO);
     } else {
       throw new NotFoundException('Country not found');
     }
@@ -154,6 +159,6 @@ export class CountryService {
 
   //** Returns the unique region list */
   getRegions(): string[] {
-    return Array.from(new Set(this.countries.map((c) => c.region)));
+    return Array.from(new Set(this.countries.map(c => c.region)));
   }
 }
