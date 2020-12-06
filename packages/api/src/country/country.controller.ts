@@ -5,6 +5,7 @@ import {
   TrendDatum,
   CountryTrendDict,
   Country,
+  CountryStatsDict,
 } from './country_types';
 import {
   ApiOkResponse,
@@ -117,6 +118,17 @@ export class CountryController {
     return this.countryService.getStatsForCountryISO(countryISO);
   }
 
+  @Get('/stats')
+  @ApiOkResponse({
+    description: 'JSON array of relevant stats for a country',
+    type: CountryStats,
+  })
+  @ApiNotFoundResponse({
+    description: "We don't have data for this country",
+  })
+  getAllStats(): CountryStatsDict {
+    return this.countryService.getAllStats();
+  }
   @Get('/trends')
   @ApiOkResponse({
     description: 'JSON dict of the trends for each country',

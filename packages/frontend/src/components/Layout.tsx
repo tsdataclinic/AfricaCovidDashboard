@@ -5,7 +5,8 @@ import AppMenu from './AppMenu';
 import HeaderRightControl from './header/HeaderRightControl';
 import HeaderLeftControl from './header/HeaderLeftControl';
 import useQueryParams from '../hooks/useQueryParams';
-import QueryParamsContext from './QueryParamsContext';
+import QueryParamsContext from '../contexts/QueryParamsContext';
+import { CountryStatsStore } from '../contexts/CountryStatsContext';
 
 const { Header, Sider, Content } = Layout;
 
@@ -64,7 +65,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
                             selectedDate,
                         }}
                     >
-                        {children}
+                        <CountryStatsStore>{children}</CountryStatsStore>
                     </QueryParamsContext.Provider>
                 </Content>
             </Main>
