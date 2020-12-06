@@ -1,10 +1,11 @@
 import React from 'react';
-import { Row, Col, Select } from 'antd';
+import { Row, Col, Select, Switch } from 'antd';
 import styled from 'styled-components';
 import { SeachQueryKey, SearchQueryValue } from '../../hooks/useQueryParams';
 import { DataType } from '../../types';
 import { useLocation } from 'react-router-dom';
 import { ABOUT_PATH } from '../../Routes';
+import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 const { Option } = Select;
 
 interface HeaderLeftControlProps {
@@ -19,10 +20,9 @@ const HeaderLeftControl = ({
     const { pathname } = useLocation();
     const isHome = pathname !== ABOUT_PATH;
     return (
-        <Col span={12}>
+        <Col xs={24} md={12} lg={12}>
             {isHome && (
                 <Row align="middle">
-                    <Text>Show</Text>
                     <Select
                         defaultValue={dataType}
                         style={{ width: 120, textAlign: 'left' }}
@@ -33,6 +33,11 @@ const HeaderLeftControl = ({
                         <Option value="cumulative">Cumulative</Option>
                         <Option value="daily">Daily</Option>
                     </Select>
+                    <Text>Region</Text>
+                    <Switch
+                        checkedChildren={<CheckOutlined />}
+                        defaultChecked
+                    />
                 </Row>
             )}
         </Col>

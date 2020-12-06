@@ -21,7 +21,7 @@ const HeaderRightControl = ({
     const isNotAbout = pathname !== ABOUT_PATH;
 
     return (
-        <Col span={12}>
+        <Col xs={24} md={12} lg={12}>
             <Row justify="end" align="middle">
                 {isNotAbout && (
                     <CountryMenu

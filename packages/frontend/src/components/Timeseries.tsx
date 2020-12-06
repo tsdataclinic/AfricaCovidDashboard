@@ -26,6 +26,7 @@ import { Category, DataType, StatsBarItem } from '../types';
 import { GREEN, GREY, RED, BLUE } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
+import { Statistic } from 'antd';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
@@ -462,10 +463,35 @@ const Timeseries = ({
                                         {formatDateToStr(highlightedDate)}
                                     </h5>
                                     <div className="stats-bottom">
-                                        <h2>{highlight}</h2>
+                                        <h2>
+                                            <Statistic
+                                                value={highlight}
+                                                precision={0}
+                                                valueStyle={{
+                                                    color: getStatColor(
+                                                        category,
+                                                        !!isPrediction
+                                                    ),
+                                                }}
+                                            />
+                                        </h2>
                                         <h6>
-                                            {delta && delta > 0 ? '+' : ''}
-                                            {delta}
+                                            <Statistic
+                                                value={delta}
+                                                prefix={
+                                                    delta && delta > 0
+                                                        ? '+'
+                                                        : ''
+                                                }
+                                                precision={0}
+                                                valueStyle={{
+                                                    color: getStatColor(
+                                                        category,
+                                                        !!isPrediction
+                                                    ),
+                                                    fontSize: 10,
+                                                }}
+                                            />
                                         </h6>
                                     </div>
                                 </div>
@@ -489,6 +515,18 @@ const Timeseries = ({
 };
 
 export default Timeseries;
+
+const getStatColor = (category: Category, isPrediction: boolean) => {
+    switch (category) {
+        case 'confirmed':
+            return isPrediction ? BLUE : RED;
+        case 'deaths':
+            return GREY;
+        case 'recoveries':
+        default:
+            return GREEN;
+    }
+};
 
 const Wrapper = styled.div`
     position: relative;

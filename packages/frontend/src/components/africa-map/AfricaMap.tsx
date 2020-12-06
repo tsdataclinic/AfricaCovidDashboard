@@ -273,7 +273,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .attr('width', null)
             .attr('height', null);
 
-        svgParent.style('padding-bottom', calcString);
+        const isIE = window.navigator.userAgent?.indexOf('MSIE ') > 0;
+        if (isIE) {
+            svgParent.style('padding-bottom', calcString);
+        }
     };
 
     // Set up onClick handler
