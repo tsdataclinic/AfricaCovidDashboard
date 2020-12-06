@@ -44,7 +44,10 @@ const StatsBar: React.FC<StatsBarProps> = ({
                                         : (data[column.value] as number)
                                 }
                                 precision={0}
-                                valueStyle={{ color: column.color }}
+                                valueStyle={{
+                                    color: column.color,
+                                    fontSize: '120%',
+                                }}
                             />
                         </StyledCard>
                     </Skeleton>
@@ -63,7 +66,7 @@ const Container = styled.div`
     justify-content: space-between;
 `;
 const StyledCard = styled(Card)<{ selected: boolean }>`
-    flex: 1 0 0px;
+    flex: 1 1 30%;
     margin: 10px;
     ${(props) =>
         props.selected &&
@@ -72,6 +75,9 @@ const StyledCard = styled(Card)<{ selected: boolean }>`
   `};
     &:hover {
         cursor: pointer;
+    }
+    > div {
+        padding: min(6%, 24px);
     }
 `;
 export default StatsBar;

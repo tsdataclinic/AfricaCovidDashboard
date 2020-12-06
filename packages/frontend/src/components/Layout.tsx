@@ -79,7 +79,7 @@ const StyledHeader = styled(Header)`
     padding: 0 16px;
     line-height: 48px;
     &.ant-layout-header {
-        height: 48px;
+        height: auto;
     }
 `;
 

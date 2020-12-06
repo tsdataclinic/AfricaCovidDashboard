@@ -122,7 +122,7 @@ const Home = () => {
                 selectedDate={selectedDate}
             />
             <Row gutter={[16, 16]}>
-                <Col md={24} lg={12}>
+                <Col xs={24} md={24} lg={12}>
                     <StatsBar
                         dataType={dataType}
                         category={category}
@@ -141,7 +141,7 @@ const Home = () => {
                         loading={isLoading}
                     />
                 </Col>
-                <Col md={24} lg={12}>
+                <Col xs={24} md={24} lg={12}>
                     <Trend
                         trendData={currentCountryTrends}
                         allDates={dates}

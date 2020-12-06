@@ -58,6 +58,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
 
     const drawChart = useCallback(() => {
         const svg = d3.select(sliderRef.current) as any;
+        const tickNumber = Math.min(10, Math.round((width - 130) / 60));
         svg.attr('width', width).attr('height', height);
         svg.selectAll('.ticks').remove();
         svg.selectAll('.handle').remove();
@@ -98,7 +99,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             .attr('class', 'ticks')
             .attr('transform', 'translate(0,' + 18 + ')')
             .selectAll('text')
-            .data(xAxis.ticks(10))
+            .data(xAxis.ticks(tickNumber))
             .enter()
             .append('text')
             .attr('x', xAxis)
