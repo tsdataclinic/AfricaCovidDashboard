@@ -3,15 +3,17 @@ import { CountryTrend } from '../../hooks/useCountryTrends';
 import { css } from 'styled-components';
 import * as colors from '../../colors';
 import { format } from 'd3';
+import { TFunction } from 'i18next';
 
 const formatNumber = (num: number) => (num ? format(',')(num) : '-');
 const formatDelta = (num: number) => (num ? format('+,')(num) : '-');
 function getTooltipContent(
+    t: TFunction,
     countryProperties: CountryProperties,
     trendData?: CountryTrend,
     isPer100K?: boolean
 ) {
-    let content = `<p>No data available</p>`;
+    let content = `<p>${t('No data available')}</p>`;
     if (trendData !== undefined) {
         const per100k = isPer100K
             ? `<li><span class="per100k"><sup>*</sup>per 100K pop.</span></li>`
@@ -19,12 +21,12 @@ function getTooltipContent(
         const asterisk = isPer100K ? `<sup>*</sup>` : '';
         content = `
       <ul class="tooltip-stats">
-        <li><span class="label">Population Estimate:&nbsp;</span>${formatNumber(
-            countryProperties.pop_est
-        )}</li>
+        <li><span class="label">${t(
+            'Population Estimate'
+        )}:&nbsp;</span>${formatNumber(countryProperties.pop_est)}</li>
         <li>
           <span class="label confirmed">${
-              trendData.isPrediction ? 'Predicted Cases' : 'Confirmed'
+              trendData.isPrediction ? t('Predicted Cases') : t('Confirmed')
           }${asterisk}:</span>
           ${formatNumber(
               trendData.confirmed_prediction
@@ -33,7 +35,9 @@ function getTooltipContent(
           )}&nbsp;<span class="delta">${formatDelta(trendData.new_case)}</span>
         </li>
         <li>
-          <span class="label recovered">Recovered${asterisk}:&nbsp;</span>
+          <span class="label recovered">${t(
+              'Recovered'
+          )}${asterisk}:&nbsp;</span>
           ${formatNumber(
               trendData.deaths
           )}&nbsp;<span class="delta">${formatDelta(
@@ -41,7 +45,7 @@ function getTooltipContent(
         )}</span>
         </li>
         <li>
-          <span class="label deaths">Deaths${asterisk}:&nbsp;</span>
+          <span class="label deaths">${t('Deaths')}${asterisk}:&nbsp;</span>
           ${formatNumber(
               trendData.recoveries
           )}&nbsp;<span class="delta">${formatDelta(

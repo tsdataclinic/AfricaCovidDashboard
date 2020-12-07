@@ -24,6 +24,7 @@ import { getCountryA3 } from './utils';
 import { Card, Switch } from 'antd';
 import CountryStatsContext from '../../contexts/CountryStatsContext';
 import { scaleTrendDatum } from '../../utils/trendUtils';
+import { useTranslation } from 'react-i18next';
 
 interface AfricaMapProps {
     category: Category;
@@ -58,6 +59,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     onCountrySelect,
     trendData,
 }) => {
+    const { t } = useTranslation();
     const width = 960;
     const height = 720;
     const svgNode = useRef<SVGSVGElement>(null);
@@ -222,6 +224,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     .attr('width', TOOLTIP_WIDTH)
                     .html((d: CountryProperties) =>
                         getTooltipContent(
+                            t,
                             d,
                             scaledTrendData?.[getCountryA3(d)],
                             isPer100k
@@ -234,7 +237,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         };
         svg.selectAll('.overlay-country-border').on('mouseenter', showTooltip);
         svg.selectAll('.overlay-country-border').on('mouseout', hideTooltip);
-    }, [scaledTrendData, isPer100k]);
+    }, [scaledTrendData, isPer100k, t]);
 
     const initializeMap = useCallback(() => {
         const svg = d3
@@ -336,11 +339,11 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         <Card>
             <ControlsContainer>
                 <Control>
-                    <span>Logarithmic:&nbsp;</span>
+                    <span>{t('Logarithmic')}:&nbsp;</span>
                     <Switch onChange={setLogScale} />
                 </Control>
                 <Control>
-                    <span>Per 100K:&nbsp;</span>
+                    <span>{t('Per 100K')}:&nbsp;</span>
                     <Switch
                         onChange={setIsPer100K}
                         disabled={isPer100KDisabled}

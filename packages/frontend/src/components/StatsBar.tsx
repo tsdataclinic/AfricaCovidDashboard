@@ -4,6 +4,7 @@ import { Category, DataType, StatsBarItem } from '../types';
 import styled from 'styled-components';
 import { getCategories } from '../helper';
 import { CountryTrend } from '../hooks/useCountryTrends';
+import { useTranslation } from 'react-i18next';
 
 interface StatsBarProps {
     dataType: DataType;
@@ -20,9 +21,10 @@ const StatsBar: React.FC<StatsBarProps> = ({
     data,
     loading,
 }) => {
+    const { t } = useTranslation();
     const items: StatsBarItem[] = getCategories(dataType, data?.isPrediction);
     if (data === undefined) {
-        return <StyledAlert message="There is no data" type="error" />;
+        return <StyledAlert message={t('There is no data')} type="error" />;
     }
     return (
         <Container>
@@ -37,7 +39,7 @@ const StatsBar: React.FC<StatsBarProps> = ({
                             hoverable
                         >
                             <Statistic
-                                title={column.label}
+                                title={t(column.label)}
                                 value={
                                     data[column.value] === undefined
                                         ? '--'

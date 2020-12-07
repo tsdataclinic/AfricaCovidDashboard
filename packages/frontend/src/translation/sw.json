@@ -5,5 +5,22 @@
     "About": "Kuhusu",
     "beginning": "Kuanzia",
     "one_month": "Mwezi 1",
-    "three_month": "Miezi 3"
+    "three_month": "Miezi 3",
+    "Cumulative": "Kuongezeka",
+    "Daily": "Kila siku",
+    "Region": "Mkoa",
+    "Confirmed": "Imethibitishwa",
+    "Recovered": "Imepona",
+    "Deaths": "Vifo",
+    "New Cases": "Kesi mpya",
+    "New Recoveries": "Mapato Mapya",
+    "New Deaths": "Vifo vipya",
+    "Confirmed Prediction": "Utabiri uliothibitishwa",
+    "Predicted Cases": "Kesi zilizotabiriwa",
+    "Prediction": "Utabiri",
+    "Logarithmic": "Logarithmic",
+    "Per 100K": "Kwa 100K",
+    "No data available": "Hakuna data inayopatikana",
+    "There is no data": "Hakuna data",
+    "Population Estimate": "Makadirio ya Idadi ya Watu"
 }

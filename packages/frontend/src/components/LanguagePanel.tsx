@@ -13,12 +13,14 @@ const LanguagePanel = () => {
             <Select
                 defaultValue="en"
                 style={{ width: 120 }}
-                onSelect={lng => changeLanguage(lng)}
+                onSelect={(lng) => changeLanguage(lng)}
                 bordered={false}
             >
                 <Option value="en">English</Option>
-                <Option value="sw">WASWAHILI</Option>
-                <Option value="am">አማርኛ</Option>
+                <Option value="fr">Français</Option>
+                <Option value="pt">Português</Option>
+                <Option value="ar">عربى</Option>
+                <Option value="sw">Kiswahili</Option>
             </Select>
         </div>
     );
