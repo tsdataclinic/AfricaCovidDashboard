@@ -11,7 +11,7 @@ import Trend from './Trend';
 import moment, { Moment } from 'moment';
 import DateSlider from './DateSlider';
 import { convertDateStrToDate } from '../helper';
-import QueryParamsContext from './QueryParamsContext';
+import QueryParamsContext from '../contexts/QueryParamsContext';
 import styled from 'styled-components';
 import { mapValues, pickBy, Dictionary, isNil, negate } from 'lodash';
 

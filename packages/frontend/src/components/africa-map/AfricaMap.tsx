@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
 import africaTopology from './africa.json';
@@ -7,12 +15,15 @@ import { GeometryCollection, Topology } from 'topojson-specification';
 import styled from 'styled-components';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
-import { values } from 'lodash';
+import { values, mapValues } from 'lodash';
 import * as colors from '../../colors';
 import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
 import getTooltipContent, { tooltipCSS } from './getTooltipContent';
 import { getCountryA3 } from './utils';
+import { Card, Switch } from 'antd';
+import CountryStatsContext from '../../contexts/CountryStatsContext';
+import { scaleTrendDatum } from '../../utils/trendUtils';
 
 interface AfricaMapProps {
     category: Category;
@@ -35,6 +46,11 @@ const topology = (africaTopology as unknown) as Topology<{
 const feature = topojson.feature(topology, topology.objects.collection);
 const africaMapFeatures: MapData[] = feature.features;
 
+const colorRanges = {
+    confirmed: [colors.LIGHT_GREY, colors.LIGHT_RED, colors.RED],
+    recoveries: [colors.LIGHT_GREY, colors.LIGHT_GREEN, colors.GREEN],
+    deaths: [colors.LIGHT_GREY, colors.GREY],
+};
 const AfricaMap: React.FC<AfricaMapProps> = ({
     category,
     dataType,
@@ -45,9 +61,57 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     const width = 960;
     const height = 720;
     const svgNode = useRef<SVGSVGElement>(null);
+    const [logScale, setLogScale] = useState(false);
+    const [isPer100k, setIsPer100K] = useState(false);
+
+    const { allCountryStats, isLoading: countryStatsLoading } = useContext(
+        CountryStatsContext
+    );
+
     const isPrediction = Object.keys(trendData || {}).find(
         (key) => trendData?.[key].isPrediction
     );
+
+    const scaledTrendData = useMemo(() => {
+        if (!trendData || !isPer100k || !allCountryStats) {
+            return trendData;
+        }
+        const scaled = mapValues(trendData, (datum, country_iso) => {
+            const population = allCountryStats[country_iso]?.population;
+            if (!population) {
+                return undefined;
+            }
+            return scaleTrendDatum(datum, (1 / population) * 100000);
+        });
+        // filter out null values
+        Object.keys(scaled).forEach(
+            (key) => scaled[key] === undefined && delete scaled[key]
+        );
+        return scaled as { [key: string]: CountryTrend };
+    }, [isPer100k, allCountryStats, trendData]);
+
+    const trendKey = useMemo(() => {
+        let trendKey: keyof CountryTrend = 'confirmed';
+        if (dataType === 'daily') {
+            if (category === 'confirmed') {
+                trendKey = 'new_case';
+            } else if (category === 'recoveries') {
+                trendKey = 'new_recoveries';
+            } else if (category === 'deaths') {
+                trendKey = 'new_deaths';
+            }
+        } else {
+            if (category === 'confirmed') {
+                trendKey = isPrediction ? 'confirmed_prediction' : 'confirmed';
+            } else if (category === 'recoveries') {
+                trendKey = 'recoveries';
+            } else if (category === 'deaths') {
+                trendKey = 'deaths';
+            }
+        }
+        return trendKey;
+    }, [category, dataType, isPrediction]);
+
     const handleCountryClick = useCallback(
         (country: string) => {
             if (!Boolean(country) || !trendData || !(country in trendData)) {
@@ -70,63 +134,26 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         });
 
         // Update colors
-        if (trendData !== undefined) {
-            let colorRange = [
-                colors.LIGHT_GREY,
-                colors.LIGHT_GREEN,
-                colors.GREEN,
-            ];
-            switch (category) {
-                case 'confirmed':
-                    colorRange = [
-                        colors.LIGHT_GREY,
-                        colors.LIGHT_RED,
-                        colors.RED,
-                    ];
-                    break;
-                case 'recoveries':
-                    colorRange = [
-                        colors.LIGHT_GREY,
-                        colors.LIGHT_GREEN,
-                        colors.GREEN,
-                    ];
-                    break;
-                case 'deaths':
-                    colorRange = [colors.LIGHT_GREY, colors.GREY];
-                    break;
-            }
-            let trendKey: keyof CountryTrend = 'confirmed';
-            if (dataType === 'daily') {
-                if (category === 'confirmed') {
-                    trendKey = 'new_case';
-                } else if (category === 'recoveries') {
-                    trendKey = 'new_recoveries';
-                } else if (category === 'deaths') {
-                    trendKey = 'new_deaths';
-                }
-            } else {
-                if (category === 'confirmed') {
-                    trendKey = isPrediction
-                        ? 'confirmed_prediction'
-                        : 'confirmed';
-                } else if (category === 'recoveries') {
-                    trendKey = 'recoveries';
-                } else if (category === 'deaths') {
-                    trendKey = 'deaths';
-                }
-            }
-            let extent = d3.extent(values(trendData), (d) =>
+        if (scaledTrendData !== undefined) {
+            let colorRange = colorRanges[category] || colorRanges['deaths'];
+
+            let extent = d3.extent(values(scaledTrendData), (d) =>
                 typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
 
             if (extent[0] === undefined) {
                 extent = [1, 1];
             }
-            const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
-            extent[1] = Math.pow(10, maxPowerOfTen);
-            extent[0] = 1;
-            const colorScale = d3
-                .scaleLog()
+
+            if (logScale) {
+                // Clean up the extent if we are using log scale.
+                const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
+                extent[1] = Math.pow(10, maxPowerOfTen);
+                extent[0] = 1;
+            }
+
+            const baseScale = logScale ? d3.scaleLog() : d3.scaleLinear();
+            const colorScale = baseScale
                 .domain(extent)
                 // @ts-ignore
                 .range(colorRange)
@@ -134,30 +161,35 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .interpolate(d3.interpolateHcl);
 
             // update the legend color
-            var legend = legendColor()
+            let legend = legendColor()
                 .labelFormat(d3.format(',.2r'))
                 // .useClass(true)
-                .cells(colorScale.ticks(Math.min(5, maxPowerOfTen)))
                 .labelOffset(3)
-                .shapePadding(2)
-                .scale(colorScale);
+                .shapePadding(2);
+
+            if (logScale) {
+                const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
+                legend = legend.cells(
+                    colorScale.ticks(Math.min(5, maxPowerOfTen))
+                );
+            }
 
             svg.select('.legend').remove();
 
             svg.select('.legend-container')
                 .append('g')
                 .attr('class', 'legend')
-                .call(legend);
+                .call(legend.scale(colorScale));
             countries
                 .transition()
                 .duration(1000)
                 .style('fill', (d: MapData) => {
                     const countryCode = getCountryA3(d.properties);
-                    if (!(countryCode in trendData)) {
+                    if (!(countryCode in scaledTrendData)) {
                         return colors.DARK_GREY;
                     }
                     const countryData: CountryTrend | undefined =
-                        trendData?.[countryCode];
+                        scaledTrendData?.[countryCode];
                     if (countryData?.[trendKey] !== undefined) {
                         return colorScale(
                             Math.max(1, countryData[trendKey] as number)
@@ -166,7 +198,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     return colors.LIGHT_GREY;
                 });
         }
-    }, [selectedCountry, category, trendData, dataType]);
+    }, [selectedCountry, category, scaledTrendData, trendKey, logScale]);
 
     const createTooltip = useCallback(() => {
         const svg = d3.select(svgNode.current);
@@ -189,7 +221,11 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     .attr('height', TOOLTIP_HEIGHT)
                     .attr('width', TOOLTIP_WIDTH)
                     .html((d: CountryProperties) =>
-                        getTooltipContent(d, trendData?.[getCountryA3(d)])
+                        getTooltipContent(
+                            d,
+                            scaledTrendData?.[getCountryA3(d)],
+                            isPer100k
+                        )
                     );
             }
         };
@@ -198,7 +234,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         };
         svg.selectAll('.overlay-country-border').on('mouseenter', showTooltip);
         svg.selectAll('.overlay-country-border').on('mouseout', hideTooltip);
-    }, [trendData]);
+    }, [scaledTrendData, isPer100k]);
 
     const initializeMap = useCallback(() => {
         const svg = d3
@@ -294,22 +330,38 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     useEffect(fillMap, [fillMap]);
     useEffect(createTooltip, [createTooltip]);
 
+    const isPer100KDisabled =
+        !selectedCountry || !allCountryStats || countryStatsLoading;
     return (
-        <MapContainer id="svg-parent" className="scaling-svg-container">
-            <svg id="africa-map" ref={svgNode} />
-        </MapContainer>
+        <Card>
+            <ControlsContainer>
+                <Control>
+                    <span>Logarithmic:&nbsp;</span>
+                    <Switch onChange={setLogScale} />
+                </Control>
+                <Control>
+                    <span>Per 100K:&nbsp;</span>
+                    <Switch
+                        onChange={setIsPer100K}
+                        disabled={isPer100KDisabled}
+                    />
+                </Control>
+            </ControlsContainer>
+            <MapContainer id="svg-parent" className="scaling-svg-container">
+                <svg id="africa-map" ref={svgNode} />
+            </MapContainer>
+        </Card>
     );
 };
 
 const MapContainer = styled.div`
     .background {
-        fill: #f5f5f5;
-        fill-opacity: 0.5;
+        fill-opacity: 0.0;
     }
     .continent { 
         .country-border {
             fill: none;
-            stroke: #000000;
+            stroke: ${colors.BLACK};
             stroke-width: 0.5px;
             pointer-events: all;
             stroke-linejoin: round;
@@ -326,7 +378,7 @@ const MapContainer = styled.div`
             cursor: pointer;
             pointer-events: all;
             &:hover {
-                stroke: ${colors.LIGHT_GREY};
+                stroke: ${colors.DARK_GREY};
                 stroke-width: 2px;
             }
         }
@@ -341,4 +393,13 @@ const MapContainer = styled.div`
         ${tooltipCSS}
     }
 `;
+
+const ControlsContainer = styled.div`
+    display: flex;
+`;
+
+const Control = styled.div`
+    margin-right: 10px;
+`;
+
 export default React.memo(AfricaMap);

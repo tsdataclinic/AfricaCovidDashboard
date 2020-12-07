@@ -195,6 +195,7 @@ export class TrendDatum {
 }
 
 export type CountryTrendDict = { [country: string]: TrendDatum[] };
+export type CountryStatsDict = { [country: string]: CountryStats[] };
 
 const datesAreOnSameDay = (first: Date, second: Date) =>
   first.getFullYear() === second.getFullYear() &&

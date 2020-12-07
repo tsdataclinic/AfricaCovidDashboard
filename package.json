@@ -5,7 +5,7 @@
     ],
     "scripts": {
         "build": "lerna run build:watch",
-        "start": "lerna run start --parallel --stream"
+        "start": "lerna run start"
     },
     "name": "AfricaCovid",
     "devDependencies": {

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { Skeleton } from 'antd';
 import styled from 'styled-components';
 import Timeseries from './Timeseries';
@@ -6,7 +6,8 @@ import { DataType, LookBackMonth } from '../types';
 import moment, { Moment } from 'moment';
 import { useTranslation } from 'react-i18next';
 import { CountryTrend } from '../hooks/useCountryTrends';
-import useCountryStats from '../hooks/useCountryStats';
+import CountryStatsContext from '../contexts/CountryStatsContext';
+import { scaleTrendDatum } from '../utils/trendUtils';
 
 interface TrendProps {
     trendData: CountryTrend[];
@@ -16,24 +17,15 @@ interface TrendProps {
     allDates: Date[];
 }
 
-const safeFormatInteger = (num: number | undefined): number =>
-    num ? Math.round(num) : 0;
-
-const Trend = ({
-    trendData,
-    selectedDate,
-    dataType,
-    country,
-    allDates,
-}: TrendProps) => {
+const Trend = ({ trendData, selectedDate, dataType, allDates }: TrendProps) => {
     const { t } = useTranslation();
     const [lookback, setLookBack] = useState<LookBackMonth>('beginning');
     const [isLog, setIsLog] = useState(false);
     const [per100K, setPer100K] = useState(false);
     const {
-        data: countryStatsData,
+        currentCountryStats: countryStatsData,
         isLoading: countryStatsLoading,
-    } = useCountryStats(country);
+    } = useContext(CountryStatsContext);
 
     const dates = useMemo(() => {
         let pastDates: Date[] = allDates;
@@ -64,7 +56,7 @@ const Trend = ({
     }, [allDates, lookback, selectedDate]);
 
     const timeseries = useMemo(() => {
-        const populartion = countryStatsData?.population;
+        const population = countryStatsData?.population;
         const trimData =
             dates.length === 0
                 ? []
@@ -79,31 +71,9 @@ const Trend = ({
                               'day'
                           )
                   );
-        if (populartion && per100K) {
-            const multiplier = (1 / populartion) * 100000;
-            return trimData.map((item) => ({
-                confirmed: safeFormatInteger(item.confirmed * multiplier),
-                date: item.date,
-                deaths: safeFormatInteger(item.deaths * multiplier),
-                new_case: safeFormatInteger(item.new_case * multiplier),
-                new_deaths: safeFormatInteger(item.new_deaths * multiplier),
-                new_recoveries: safeFormatInteger(
-                    item.new_recoveries * multiplier
-                ),
-                recoveries: safeFormatInteger(item.recoveries * multiplier),
-                days_since_first_case: safeFormatInteger(
-                    item.days_since_first_case
-                ),
-                confirmed_prediction: safeFormatInteger(
-                    (item.confirmed_prediction || 0) * multiplier
-                ),
-                confirmed_prediction_lower: safeFormatInteger(
-                    (item.confirmed_prediction_lower || 0) * multiplier
-                ),
-                confirmed_prediction_upper: safeFormatInteger(
-                    (item.confirmed_prediction_upper || 0) * multiplier
-                ),
-            }));
+        if (population && per100K) {
+            const multiplier = (1 / population) * 100000;
+            return trimData.map((item) => scaleTrendDatum(item, multiplier));
         }
         return trimData;
     }, [trendData, countryStatsData, per100K, dates]);
