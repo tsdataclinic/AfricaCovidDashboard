@@ -17,18 +17,18 @@ export class ModelController {
     return 'models are wrong';
   }
 
-  @Get('/:country')
-  @ApiParam({
-    name: 'country',
-    description: 'The country you want to get model data for',
-  })
-  @ApiOkResponse({
-    description: 'A json array of model data',
-  })
-  @ApiNotFoundResponse({
-    description: 'No country of that name found',
-  })
-  getModelForCountry(@Param() params): ModelDatum[] {
-    return this.modelService.getModelForCountry(params.country);
-  }
+  // @Get('/:country')
+  // @ApiParam({
+  //   name: 'country',
+  //   description: 'The country you want to get model data for',
+  // })
+  // @ApiOkResponse({
+  //   description: 'A json array of model data',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: 'No country of that name found',
+  // })
+  // getModelForCountry(@Param() params): ModelDatum[] {
+  //   return this.modelService.getModelForCountry(params.country);
+  // }
 }

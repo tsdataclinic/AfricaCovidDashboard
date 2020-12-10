@@ -104,43 +104,43 @@ export class TrendDatum {
     description: 'Cumulative number of deaths up to this day',
     minimum: 0,
   })
-  deaths: number;
+  deaths: number | null;
 
   @ApiProperty({
     description: 'Cumulative number of confirmed up to this day',
     minimum: 0,
   })
-  confirmed: number;
+  confirmed: number | null;
 
   @ApiProperty({
     description: 'Cumulative number of recoveries up to this day',
     minimum: 0,
   })
-  recoveries: number;
+  recoveries: number | null;
 
   @ApiProperty({
     description: 'New number of new deaths this day',
     minimum: 0,
   })
-  new_deaths: number;
+  new_deaths: number | null;
 
   @ApiProperty({
     description: 'New number of new cases this day',
     minimum: 0,
   })
-  new_case: number;
+  new_case: number | null;
 
   @ApiProperty({
     description: 'New number of new recoveries this day',
     minimum: 0,
   })
-  new_recoveries: number;
+  new_recoveries: number | null;
 
   @ApiProperty({
     description: 'Days since first case',
     minimum: 0,
   })
-  days_since_first_case: number;
+  days_since_first_case: number | null;
 
   @ApiProperty({
     description: 'is this data point a prediction or an observation',
