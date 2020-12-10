@@ -86,7 +86,9 @@ const Trend = ({ trendData, selectedDate, dataType, allDates }: TrendProps) => {
         <TrendWrapper>
             <Scale>
                 <Scale>
-                    <Label htmlFor="timeseries-logmode">Logarithmic</Label>
+                    <Label htmlFor="timeseries-logmode">
+                        {t('Logarithmic')}
+                    </Label>
                     <Input
                         id="timeseries-logmode"
                         type="checkbox"
@@ -95,7 +97,7 @@ const Trend = ({ trendData, selectedDate, dataType, allDates }: TrendProps) => {
                     />
                 </Scale>
                 <Scale>
-                    <Label htmlFor="timeseries-100k">Per 100K</Label>
+                    <Label htmlFor="timeseries-100k">{t('Per 100K')}</Label>
                     <Input
                         id="timeseries-100k"
                         type="checkbox"

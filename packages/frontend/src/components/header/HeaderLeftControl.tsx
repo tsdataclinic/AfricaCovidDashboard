@@ -5,7 +5,8 @@ import { SeachQueryKey, SearchQueryValue } from '../../hooks/useQueryParams';
 import { DataType } from '../../types';
 import { useLocation } from 'react-router-dom';
 import { ABOUT_PATH } from '../../Routes';
-import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
+import { CheckOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 const { Option } = Select;
 
 interface HeaderLeftControlProps {
@@ -17,6 +18,7 @@ const HeaderLeftControl = ({
     dataType,
     updateQuery,
 }: HeaderLeftControlProps) => {
+    const { t } = useTranslation();
     const { pathname } = useLocation();
     const isHome = pathname !== ABOUT_PATH;
     return (
@@ -30,10 +32,10 @@ const HeaderLeftControl = ({
                             updateQuery('dataType', dataType)
                         }
                     >
-                        <Option value="cumulative">Cumulative</Option>
-                        <Option value="daily">Daily</Option>
+                        <Option value="cumulative">{t('Cumulative')}</Option>
+                        <Option value="daily">{t('Daily')}</Option>
                     </Select>
-                    <Text>Region</Text>
+                    <Text>{t('Region')}</Text>
                     <Switch
                         checkedChildren={<CheckOutlined />}
                         defaultChecked

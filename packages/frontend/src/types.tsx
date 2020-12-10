@@ -15,7 +15,7 @@ export interface SearchQuery {
 }
 
 export interface StatsBarItem {
-    label: String;
+    label: string;
     value: keyof CountryTrend;
     category: Category;
     color: string;

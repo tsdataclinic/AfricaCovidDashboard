@@ -27,6 +27,7 @@ import { GREEN, GREY, RED, BLUE } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
 import { Statistic } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
@@ -49,6 +50,7 @@ const Timeseries = ({
     dataType,
     isLog,
 }: TimeseriesProps) => {
+    const { t } = useTranslation();
     const refs = useRef<(SVGSVGElement | null)[]>([]);
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const dimensions = useResizeObserver(wrapperRef) || { width: 0, height: 0 };
@@ -436,11 +438,16 @@ const Timeseries = ({
                             ? timeseriesMapper[highlightedDate.valueOf()]
                             : undefined
                     );
+
                     const isPrediction =
                         highlightedDate &&
                         timeseriesMapper[highlightedDate.valueOf()]
-                            ?.isPrediction &&
-                        category === 'confirmed';
+                            ?.isPrediction;
+                    const isPredictedCumulative =
+                        isPrediction &&
+                        category === 'confirmed' &&
+                        dataType === 'cumulative';
+
                     return (
                         <Wrapper
                             key={category}
@@ -453,11 +460,17 @@ const Timeseries = ({
                             {highlightedDate && (
                                 <div
                                     className={`stats is-${category} ${
-                                        isPrediction && 'predicted'
+                                        isPredictedCumulative && 'predicted'
                                     }`}
                                 >
                                     <h5 className="title">
-                                        {label} {isPrediction && 'Predicted'}
+                                        {t(
+                                            `${label}${
+                                                isPredictedCumulative
+                                                    ? ' Prediction'
+                                                    : ''
+                                            }`
+                                        )}
                                     </h5>
                                     <h5 className="title">
                                         {formatDateToStr(highlightedDate)}
@@ -465,19 +478,29 @@ const Timeseries = ({
                                     <div className="stats-bottom">
                                         <h2>
                                             <Statistic
-                                                value={highlight}
+                                                value={
+                                                    isPrediction &&
+                                                    !isPredictedCumulative
+                                                        ? '-'
+                                                        : highlight
+                                                }
                                                 precision={0}
                                                 valueStyle={{
                                                     color: getStatColor(
                                                         category,
-                                                        !!isPrediction
+                                                        !!isPredictedCumulative
                                                     ),
                                                 }}
                                             />
                                         </h2>
                                         <h6>
                                             <Statistic
-                                                value={delta}
+                                                value={
+                                                    isPrediction &&
+                                                    !isPredictedCumulative
+                                                        ? '-'
+                                                        : delta
+                                                }
                                                 prefix={
                                                     delta && delta > 0
                                                         ? '+'
@@ -487,7 +510,7 @@ const Timeseries = ({
                                                 valueStyle={{
                                                     color: getStatColor(
                                                         category,
-                                                        !!isPrediction
+                                                        !!isPredictedCumulative
                                                     ),
                                                     fontSize: 10,
                                                 }}

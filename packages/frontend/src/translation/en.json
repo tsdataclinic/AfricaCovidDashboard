@@ -5,5 +5,22 @@
     "About": "About",
     "beginning": "Beginning",
     "one_month": "1 Month",
-    "three_month": "3 Months"
+    "three_month": "3 Months",
+    "Cumulative": "Cumulative",
+    "Daily": "Daily",
+    "Region": "Region",
+    "Confirmed": "Confirmed",
+    "Recovered": "Recovered",
+    "Deaths": "Deaths",
+    "New Cases": "New Cases",
+    "New Recoveries": "New Recoveries",
+    "New Deaths": "New Deaths",
+    "Confirmed Prediction": "Confirmed Prediction",
+    "Predicted Cases": "Predicted Cases",
+    "Prediction": "Prediction",
+    "Logarithmic": "Logarithmic",
+    "Per 100K": "Per 100K",
+    "No data available": "No data available",
+    "There is no data": "There is no data",
+    "Population Estimate": "Population Estimate"
 }
