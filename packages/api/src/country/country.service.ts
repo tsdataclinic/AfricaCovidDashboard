@@ -103,7 +103,9 @@ export class CountryService {
 
   //** Returns a list of countries for which we have data*/
   getAvailableCountries() {
-    return this.countries ? this.countries : [];
+    return this.countries
+      ? this.countries.filter((c) => c.continent === 'Africa')
+      : [];
   }
 
   //** Get trend data for the specified country */
