@@ -75,10 +75,10 @@ export const tooltipCSS = css`
         width: 100%;
 
         .confirmed {
-            color: ${colors.RED};
+            color: ${colors.ORANGE};
         }
         .recovered {
-            color: ${colors.GREEN};
+            color: ${colors.BLUE};
         }
         .deaths {
             color: ${colors.GREY};

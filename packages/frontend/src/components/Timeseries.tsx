@@ -6,7 +6,7 @@ import {
     formatDateToStr,
     getCategories,
     getColor,
-    getStatistic,
+    getStatistic
 } from '../helper';
 import styled from 'styled-components';
 import { bisector } from 'd3-array';
@@ -20,14 +20,15 @@ import React, {
     useEffect,
     useMemo,
     useRef,
-    useState,
+    useState
 } from 'react';
 import { Category, DataType, StatsBarItem } from '../types';
-import { GREEN, GREY, RED, BLUE } from '../colors';
+import { GREY, RED, BLUE, ORANGE, LIGHT_ORANGE } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
 import { Statistic } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { transparentize } from 'polished';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
@@ -48,7 +49,7 @@ const Timeseries = ({
     timeseries,
     dates,
     dataType,
-    isLog,
+    isLog
 }: TimeseriesProps) => {
     const { t } = useTranslation();
     const refs = useRef<(SVGSVGElement | null)[]>([]);
@@ -60,12 +61,12 @@ const Timeseries = ({
     );
 
     const categories: StatsBarItem[] = useMemo(() => getCategories(dataType), [
-        dataType,
+        dataType
     ]);
 
     const timeseriesMapper = useMemo(() => {
         const mapper: TimeseriesMapper = {};
-        timeseries.forEach((item) => {
+        timeseries.forEach(item => {
             const key = moment(item.date).valueOf();
             mapper[key] = item;
         });
@@ -117,14 +118,14 @@ const Timeseries = ({
             g.attr('class', 'x-axis').call(
                 axisBottom(xScale)
                     .ticks(numTicksX)
-                    .tickFormat((date) => formatter(date as Date))
+                    .tickFormat(date => formatter(date as Date))
             );
 
         const yAxis = (g: any, yScale: AxisScale<number>) =>
             g.attr('class', 'y-axis').call(
                 axisRight(yScale)
                     .ticks(4)
-                    .tickFormat((num) => abbreviateNumber(num))
+                    .tickFormat(num => abbreviateNumber(num))
                     .tickPadding(4)
             );
 
@@ -141,7 +142,7 @@ const Timeseries = ({
                     .clamp(true)
                     .domain([
                         Math.max(1, minTrend),
-                        Math.max(10, yBufferTop * maxTrend),
+                        Math.max(10, yBufferTop * maxTrend)
                     ])
                     .nice()
                     .range([chartBottom, margin.top]);
@@ -161,7 +162,7 @@ const Timeseries = ({
             const xm = pointer(res)[0];
             const date = xScale.invert(xm);
             if (date && dates.length > 0) {
-                const bisectDate = bisector((date) => date).left;
+                const bisectDate = bisector(date => date).left;
                 const index = bisectDate(dates, date, 1);
                 const dateLeft = dates[index - 1];
                 const dateRight = dates[index];
@@ -182,9 +183,9 @@ const Timeseries = ({
 
         /* Begin drawing charts */
         const unpredictedDates = timeseries
-            .filter((t) => !t.isPrediction)
-            .map((t) => convertDateStrToDate(t.date));
-        const predictedTimeseries = timeseries.filter((t) => t.isPrediction);
+            .filter(t => !t.isPrediction)
+            .map(t => convertDateStrToDate(t.date));
+        const predictedTimeseries = timeseries.filter(t => t.isPrediction);
 
         refs.current.forEach((ref, i) => {
             const svg = select(ref) as any;
@@ -211,7 +212,10 @@ const Timeseries = ({
                 .selectAll('circle')
                 .data(unpredictedDates, (date: Date) => date);
 
-            circles.exit().style('fill-opacity', 0).remove();
+            circles
+                .exit()
+                .style('fill-opacity', 0)
+                .remove();
 
             circles
                 .enter()
@@ -250,8 +254,8 @@ const Timeseries = ({
                 }
                 const linePath = line()
                     .curve(curveMonotoneX)
-                    .x((date) => xScale(date as any))
-                    .y((date) =>
+                    .x(date => xScale(date as any))
+                    .y(date =>
                         yScale(
                             getStatistic(
                                 dataType,
@@ -302,15 +306,15 @@ const Timeseries = ({
                     .attr(
                         'd',
                         area()
-                            .x(function (d: any) {
+                            .x(function(d: any) {
                                 return xScale(convertDateStrToDate(d.date));
                             })
-                            .y0(function (d: any) {
+                            .y0(function(d: any) {
                                 return yScale(
                                     d.confirmed_prediction_upper + 2000
                                 );
                             })
-                            .y1(function (d: any) {
+                            .y1(function(d: any) {
                                 return yScale(
                                     d.confirmed_prediction_lower - 2000
                                 );
@@ -325,10 +329,10 @@ const Timeseries = ({
                     .attr(
                         'd',
                         line()
-                            .x(function (d: any) {
+                            .x(function(d: any) {
                                 return xScale(convertDateStrToDate(d.date));
                             })
-                            .y(function (d: any) {
+                            .y(function(d: any) {
                                 return yScale(d.confirmed_prediction);
                             })
                     );
@@ -378,12 +382,12 @@ const Timeseries = ({
         timeseriesMapper,
         dates,
         isLog,
-        categories,
+        categories
     ]);
 
     useEffect(() => {
         const barWidth = getBarWidth();
-        refs.current.forEach((ref) => {
+        refs.current.forEach(ref => {
             const svg = select(ref);
             svg.selectAll('circle').attr('r', (date: any) =>
                 date === highlightedDate ? barWidth : barWidth / 2
@@ -392,7 +396,7 @@ const Timeseries = ({
     }, [highlightedDate, getBarWidth]);
 
     const getStatisticDelta = useCallback(
-        (category) => {
+        category => {
             if (!highlightedDate) return;
             const currCount = getStatistic(
                 dataType,
@@ -402,7 +406,7 @@ const Timeseries = ({
                     : undefined
             );
             const prevDate =
-                dates[dates.findIndex((date) => date === highlightedDate) - 1];
+                dates[dates.findIndex(date => date === highlightedDate) - 1];
 
             const prevCount = getStatistic(
                 dataType,
@@ -419,7 +423,7 @@ const Timeseries = ({
 
         [0, 0, 0, 0, 0].map((element, index) => {
             styles.push({
-                animationDelay: `${index * 250}ms`,
+                animationDelay: `${index * 250}ms`
             });
             return null;
         });
@@ -459,9 +463,8 @@ const Timeseries = ({
                         >
                             {highlightedDate && (
                                 <div
-                                    className={`stats is-${category} ${
-                                        isPredictedCumulative && 'predicted'
-                                    }`}
+                                    className={`stats is-${category} ${isPredictedCumulative &&
+                                        'predicted'}`}
                                 >
                                     <h5 className="title">
                                         {t(
@@ -489,7 +492,7 @@ const Timeseries = ({
                                                     color: getStatColor(
                                                         category,
                                                         !!isPredictedCumulative
-                                                    ),
+                                                    )
                                                 }}
                                             />
                                         </h2>
@@ -512,7 +515,7 @@ const Timeseries = ({
                                                         category,
                                                         !!isPredictedCumulative
                                                     ),
-                                                    fontSize: 10,
+                                                    fontSize: 10
                                                 }}
                                             />
                                         </h6>
@@ -520,7 +523,7 @@ const Timeseries = ({
                                 </div>
                             )}
                             <svg
-                                ref={(element) => {
+                                ref={element => {
                                     refs.current[index] = element;
                                 }}
                                 preserveAspectRatio="xMidYMid meet"
@@ -542,19 +545,19 @@ export default Timeseries;
 const getStatColor = (category: Category, isPrediction: boolean) => {
     switch (category) {
         case 'confirmed':
-            return isPrediction ? BLUE : RED;
+            return isPrediction ? RED : ORANGE;
         case 'deaths':
             return GREY;
         case 'recoveries':
         default:
-            return GREEN;
+            return BLUE;
     }
 };
 
 const Wrapper = styled.div`
     position: relative;
     align-self: center;
-    background: rgba(255, 7, 58, 0.12);
+    background: ${transparentize(0.85, LIGHT_ORANGE)};
     border-radius: 5px;
     display: flex;
     position: relative;
@@ -578,10 +581,10 @@ const Wrapper = styled.div`
         path,
         .tick,
         line {
-            stroke: ${RED};
+            stroke: ${ORANGE};
         }
         path.confirmed-prediction {
-            stroke: ${BLUE};
+            stroke: ${RED};
         }
         path.confirmed-prediction-error {
             stroke: none;
@@ -592,23 +595,23 @@ const Wrapper = styled.div`
     }
 
     &.is-recoveries {
-        background: rgba(40, 167, 69, 0.12);
+        background: ${transparentize(0.85, BLUE)};
         h5.title,
         h2,
         h6 {
-            color: ${GREEN};
+            color: ${BLUE};
         }
         svg {
             path,
             .tick,
             line {
-                stroke: ${GREEN};
+                stroke: ${BLUE};
             }
         }
     }
 
     &.is-deaths {
-        background: rgba(108, 117, 125, 0.06);
+        background: ${transparentize(0.85, GREY)};
         h5.title,
         h2,
         h6 {
@@ -627,13 +630,13 @@ const Wrapper = styled.div`
         margin: 0;
         transition: all 0.15s ease-in-out;
         opacity: 0.6;
-        color: ${RED};
+        color: ${ORANGE};
         font-weight: 900;
         line-height: 10px;
     }
     h2,
     h6 {
-        color: ${RED};
+        color: ${ORANGE};
         font-weight: 400;
     }
 
@@ -645,7 +648,7 @@ const Wrapper = styled.div`
         h5.title,
         h2,
         h6 {
-            color: ${BLUE};
+            color: ${RED};
         }
     }
 `;
