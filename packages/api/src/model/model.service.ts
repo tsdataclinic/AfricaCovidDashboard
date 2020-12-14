@@ -20,32 +20,33 @@ export class ModelService {
     return new Promise((resolve, reject) => {
       let data: CountryTrendDict = {};
       const readStream = fs.createReadStream(
-        'data/modelprojections.csv',
+        'data/forecastlmenoregion.csv',
         'utf8',
       );
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
-        .on('data', row => {
+        .on('data', (row) => {
           // Get the ISO details of the country so we can link things up
           // using the iso3 number
-          const countryDetails = getCountryISO(row['Country_Region']);
+          const countryDetails = getCountryISO(row['Country']);
           if (countryDetails && row['prediction'] !== 'NA') {
             const datum = new TrendDatum();
             datum.isPrediction = true;
             datum.date = row['Date'];
-            datum.confirmed_prediction = row['prediction'];
-            datum.exposure = row['exposure'];
-            datum.confirmed_prediction_upper = row['upper'];
-            datum.confirmed_prediction_lower = row['lower'];
+            datum.confirmed_prediction = row['Est'];
+            datum.confirmed_prediction_upper = row['Upper'];
+            datum.confirmed_prediction_lower = row['Lower'];
             data[countryDetails.iso3] = data[countryDetails.iso3]
               ? [...data[countryDetails.iso3], datum]
               : [datum];
+          } else {
+            console.log('no prediction for ', row['Country_Region']);
           }
         })
         .on('end', () => {
           resolve(data);
         })
-        .on('error', err => {
+        .on('error', (err) => {
           reject(err);
         });
     });
@@ -53,5 +54,9 @@ export class ModelService {
 
   predictForCountry(countryISO: string): TrendDatum[] {
     return this.predictions[countryISO];
+  }
+
+  allPredictions() {
+    return this.predictions;
   }
 }

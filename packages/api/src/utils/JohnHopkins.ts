@@ -105,6 +105,8 @@ export async function getDataFromJHTS() {
     const countryISO = getCountryISO(country);
     if (countryISO) {
       all_results[countryISO.iso3] = sortedCountryResults;
+    } else {
+      console.log(`miss for country {}`, country);
     }
   });
 
