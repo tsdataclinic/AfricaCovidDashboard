@@ -4,10 +4,12 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import './i18n';
-
+import { DCThemeProvider } from '@dataclinic/dataclinic';
 ReactDOM.render(
     <React.StrictMode>
-        <App />
+        <DCThemeProvider>
+            <App />
+        </DCThemeProvider>
     </React.StrictMode>,
     document.getElementById('root')
 );
