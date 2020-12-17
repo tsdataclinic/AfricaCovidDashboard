@@ -5,7 +5,7 @@ import React, {
     useLayoutEffect,
     useMemo,
     useRef,
-    useState,
+    useState
 } from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
@@ -48,16 +48,17 @@ const feature = topojson.feature(topology, topology.objects.collection);
 const africaMapFeatures: MapData[] = feature.features;
 
 const colorRanges = {
-    confirmed: [colors.LIGHT_GREY, colors.LIGHT_RED, colors.RED],
-    recoveries: [colors.LIGHT_GREY, colors.LIGHT_GREEN, colors.GREEN],
-    deaths: [colors.LIGHT_GREY, colors.GREY],
+    confirmed: [colors.LIGHT_GREY, colors.LIGHT_ORANGE, colors.ORANGE],
+    confirmed_predicted: [colors.LIGHT_GREY, colors.LIGHT_RED, colors.RED],
+    recoveries: [colors.LIGHT_GREY, colors.LIGHT_BLUE, colors.BLUE],
+    deaths: [colors.LIGHT_GREY, colors.GREY]
 };
 const AfricaMap: React.FC<AfricaMapProps> = ({
     category,
     dataType,
     selectedCountry,
     onCountrySelect,
-    trendData,
+    trendData
 }) => {
     const { t } = useTranslation();
     const width = 960;
@@ -71,7 +72,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     );
 
     const isPrediction = Object.keys(trendData || {}).find(
-        (key) => trendData?.[key].isPrediction
+        key => trendData?.[key].isPrediction
     );
 
     const scaledTrendData = useMemo(() => {
@@ -87,7 +88,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         });
         // filter out null values
         Object.keys(scaled).forEach(
-            (key) => scaled[key] === undefined && delete scaled[key]
+            key => scaled[key] === undefined && delete scaled[key]
         );
         return scaled as { [key: string]: CountryTrend };
     }, [isPer100k, allCountryStats, trendData]);
@@ -137,9 +138,12 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
         // Update colors
         if (scaledTrendData !== undefined) {
-            let colorRange = colorRanges[category] || colorRanges['deaths'];
+            const category_key = isPrediction
+                ? 'confirmed_predicted'
+                : category;
+            let colorRange = colorRanges[category_key] || colorRanges['deaths'];
 
-            let extent = d3.extent(values(scaledTrendData), (d) =>
+            let extent = d3.extent(values(scaledTrendData), d =>
                 typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
 
@@ -272,7 +276,9 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .attr('d', path);
 
         // Create the tooltip
-        svg.append('g').attr('class', 'map-tooltip').append('rect');
+        svg.append('g')
+            .attr('class', 'map-tooltip')
+            .append('rect');
 
         /* Create a transparent country overlay. The overlay sits on top of the other elements and is used
         as the click and hover target. The lets us listen to mouse events without worrying about the
@@ -403,6 +409,7 @@ const ControlsContainer = styled.div`
 
 const Control = styled.div`
     margin-right: 10px;
+    font-size: 0.75rem;
 `;
 
 export default React.memo(AfricaMap);
