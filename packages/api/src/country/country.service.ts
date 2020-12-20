@@ -12,6 +12,7 @@ import { getDataFromJHTS } from '../utils/JohnHopkins';
 import * as fs from 'fs';
 import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
 import { ModelService } from '../model/model.service';
+import { runInThisContext } from 'vm';
 
 @Injectable()
 export class CountryService {
@@ -31,13 +32,6 @@ export class CountryService {
         this.countries = Object.keys(this.allCountryTrends).map(
           getCountryDetailsForISO,
         );
-        Object.keys(data).forEach((iso) => {
-          const prediction = this.modelService.predictForCountry(
-            iso,
-            data[iso],
-          );
-          this.allCountryTrends[iso] = [...data[iso], ...prediction];
-        });
       });
     }
   }
@@ -109,7 +103,9 @@ export class CountryService {
 
   //** Returns a list of countries for which we have data*/
   getAvailableCountries() {
-    return this.countries ? this.countries : [];
+    return this.countries
+      ? this.countries.filter((c) => c.continent === 'Africa')
+      : [];
   }
 
   //** Get trend data for the specified country */
@@ -123,7 +119,9 @@ export class CountryService {
       this.allCountryTrends &&
       Object.keys(this.allCountryTrends).includes(countryISO)
     ) {
-      return this.allCountryTrends[countryISO];
+      const trend = this.allCountryTrends[countryISO];
+      const prediction = this.modelService.predictForCountry(countryISO);
+      return [...trend, ...prediction];
     } else {
       throw new NotFoundException('Count not find country');
     }
@@ -146,7 +144,15 @@ export class CountryService {
 
   //** Returns the trends for all countries */
   getAllTrends(): CountryTrendDict {
-    return this.allCountryTrends;
+    let trendsPlusPredictions: CountryTrendDict = {};
+    const predictions = this.modelService.allPredictions();
+    Object.keys(this.allCountryTrends).forEach((country) => {
+      trendsPlusPredictions[country] = [
+        ...this.allCountryTrends[country],
+        ...(predictions[country] ? predictions[country] : []),
+      ];
+    });
+    return trendsPlusPredictions;
   }
 
   //** Returns stats for all countries */
@@ -168,6 +174,33 @@ export class CountryService {
 
   //** Returns the unique region list */
   getRegions(): string[] {
-    return Array.from(new Set(this.countries.map((c) => c.region)));
+    return Array.from(
+      new Set(
+        this.countries
+          .filter((c) => c.continent === 'Africa')
+          .map((c) => c.region),
+      ),
+    );
+  }
+
+  getRegionTrends(): CountryTrendDict {
+    const regions = this.getRegions();
+    let result: CountryTrendDict = {};
+    regions.forEach((region) => {
+      const regionISOS = this.countries
+        .filter((c) => c.region === region)
+        .map((c) => c.iso3);
+      const trends = regionISOS.map((iso) => this.allCountryTrends[iso]);
+      let region_trend = trends.reduce(
+        (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
+          trend.length == 0
+            ? countryTrend
+            : trend.map((t, i) => t.add(countryTrend[i])),
+        [],
+      );
+
+      result[region] = region_trend;
+    });
+    return result;
   }
 }

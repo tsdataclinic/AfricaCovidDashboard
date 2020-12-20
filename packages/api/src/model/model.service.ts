@@ -1,38 +1,62 @@
 import { Injectable } from '@nestjs/common';
-import { TrendDatum } from 'src/country/country_types';
+import { publicDecrypt } from 'crypto';
+import { CountryTrendDict, TrendDatum } from 'src/country/country_types';
 import { ModelDatum } from './model.types';
+import * as fs from 'fs';
+import CsvReadableStream from 'csv-reader';
+import { getCountryISO } from 'src/utils/countryISO';
 
 @Injectable()
 export class ModelService {
-  getModelForCountry(country: string): ModelDatum[] {
-    return [...Array(20)].map(a => ({
-      x: Math.random() * 10,
-      y: Math.random() * 20,
-      y_lower: (Math.random() - 1) * 2,
-      y_upper: Math.random() * 2,
-    }));
+  predictions: CountryTrendDict | null;
+  constructor() {
+    this.loadPredictions().then((data: CountryTrendDict) => {
+      this.predictions = data;
+      console.log('Setting predictions as ', Object.keys(data));
+    });
   }
 
-  predictForCountry(countryISO: string, trend: TrendDatum[], noDays = 30) {
-    const dates = trend.map(t => t.date);
-    const confirmed = trend.map(t => t.confirmed);
-    const lastDate = dates[dates.length - 1];
-    const lastConfirmed = confirmed[confirmed.length - 1];
-    const prediction: TrendDatum[] = [];
-    for (let i = 0; i < noDays; i++) {
-      const date = new Date();
-      date.setDate(lastDate.getDate() + i);
-      const td = new TrendDatum();
-      td.confirmed_prediction = i * 10 + lastConfirmed;
-      td.confirmed_prediction_upper =
-        td.confirmed_prediction + 22 + Math.random() * 5;
-      td.confirmed_prediction_lower =
-        td.confirmed_prediction - 23 - Math.random() * 10;
-      td.isPrediction = true;
-      td.date = date;
-      prediction.push(td);
-    }
+  loadPredictions() {
+    return new Promise((resolve, reject) => {
+      let data: CountryTrendDict = {};
+      const readStream = fs.createReadStream(
+        'data/forecastlmenoregion.csv',
+        'utf8',
+      );
+      readStream
+        .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
+        .on('data', (row) => {
+          // Get the ISO details of the country so we can link things up
+          // using the iso3 number
+          const countryDetails = getCountryISO(row['Country']);
+          if (countryDetails && row['prediction'] !== 'NA') {
+            const datum = new TrendDatum();
+            datum.isPrediction = true;
+            datum.date = row['Date'];
+            datum.confirmed_prediction = row['Est'];
+            datum.confirmed_prediction_upper = row['Upper'];
+            datum.confirmed_prediction_lower = row['Lower'];
+            data[countryDetails.iso3] = data[countryDetails.iso3]
+              ? [...data[countryDetails.iso3], datum]
+              : [datum];
+          } else {
+            console.log('no prediction for ', row['Country_Region']);
+          }
+        })
+        .on('end', () => {
+          resolve(data);
+        })
+        .on('error', (err) => {
+          reject(err);
+        });
+    });
+  }
 
-    return prediction;
+  predictForCountry(countryISO: string): TrendDatum[] {
+    return this.predictions[countryISO];
+  }
+
+  allPredictions() {
+    return this.predictions;
   }
 }
