@@ -6,6 +6,7 @@ import {
     useAfricaTrends,
     useAllCountryTrends,
 } from '../hooks/useCountryTrends';
+import { useAllRegionTrends } from '../hooks/useRegionTrends';
 import StatsBar from './StatsBar';
 import Trend from './Trend';
 import moment, { Moment } from 'moment';
@@ -14,11 +15,13 @@ import { convertDateStrToDate } from '../helper';
 import QueryParamsContext from '../contexts/QueryParamsContext';
 import styled from 'styled-components';
 import { mapValues, pickBy, Dictionary, isNil, negate } from 'lodash';
+import QueryControl from './QueryControl';
 
 const Home = () => {
     const {
         country,
-        updateCountry,
+        region,
+        isRegion,
         dataType,
         category,
         updateQuery,
@@ -30,6 +33,13 @@ const Home = () => {
         error: allTrendsError,
         isLoading: allTrendsLoading,
     } = useAllCountryTrends();
+
+    const {
+        data: allRegionTrends,
+        error: allRegionTrendsError,
+        isLoading: allRegionLoading,
+    } = useAllRegionTrends();
+
     const {
         data: africaTrends,
         error: africaTrendsError,
@@ -37,10 +47,25 @@ const Home = () => {
     } = useAfricaTrends();
 
     const currentCountryTrends = useMemo(() => {
-        if (!country) {
-            // If no country is selected lets show all the stats
+        if ((isRegion && !region) || (!isRegion && !country)) {
+            // If no country or region is selected lets show all the stats
             return africaTrends || [];
         }
+
+        // Region data
+        if (isRegion) {
+            if (
+                allRegionTrendsError ||
+                !allRegionTrends ||
+                !(region in allRegionTrends)
+            ) {
+                return [];
+            }
+
+            return allRegionTrends[region];
+        }
+
+        // Country data
         if (
             allTrendsError ||
             !allCountryTrends ||
@@ -49,7 +74,14 @@ const Home = () => {
             return [];
         }
         return allCountryTrends[country];
-    }, [allCountryTrends, allTrendsError, country]);
+    }, [
+        allCountryTrends,
+        allTrendsError,
+        country,
+        region,
+        allRegionTrends,
+        isRegion,
+    ]);
 
     const dates = useMemo(() => {
         return currentCountryTrends.map((item) =>
@@ -102,8 +134,13 @@ const Home = () => {
         [selectedDate, currentCountryTrends]
     );
 
-    const isLoading = country ? allTrendsLoading : africaTrendsLoading;
-    const error = country ? allTrendsError : africaTrendsError;
+    const isLoading =
+        allTrendsLoading || africaTrendsLoading || allRegionLoading;
+    const error = country
+        ? allTrendsError
+        : region
+        ? allRegionTrendsError
+        : africaTrendsError;
 
     if (error) {
         return (
@@ -121,6 +158,13 @@ const Home = () => {
                 onUpdate={onSelectDate}
                 selectedDate={selectedDate}
             />
+            <QueryControl
+                region={region}
+                country={country}
+                dataType={dataType}
+                isRegion={isRegion}
+                updateQuery={updateQuery}
+            />
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={24} lg={12}>
                     <StatsBar
@@ -134,7 +178,11 @@ const Home = () => {
                     />
                     <AfricaMap
                         selectedCountry={country}
-                        onCountrySelect={updateCountry}
+                        onCountrySelect={(country) => {
+                            if (country) {
+                                updateQuery('country', country);
+                            }
+                        }}
                         category={category}
                         dataType={dataType}
                         trendData={selectedStatsByCountry}

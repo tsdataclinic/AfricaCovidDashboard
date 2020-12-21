@@ -1,50 +1,66 @@
 import { useCallback, useMemo } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
-import { Category, CountryParam, DataType } from '../types';
+import { useHistory } from 'react-router-dom';
+import { Category, DataType } from '../types';
 import qs from 'query-string';
-import { COUNTRY_PATH } from '../Routes';
 import moment, { Moment } from 'moment';
+import { isNil } from 'lodash';
 
-export type SeachQueryKey = 'selectedDate' | 'dataType' | 'category';
-export type SearchQueryValue = Moment | DataType | Category | null;
+export type SeachQueryKey =
+    | 'selectedDate'
+    | 'dataType'
+    | 'category'
+    | 'country'
+    | 'region'
+    | 'isRegion';
+
+export type SearchQueryValue =
+    | Moment
+    | DataType
+    | Category
+    | string
+    | boolean
+    | null;
 
 const useQueryParams = () => {
-    const { country } = useParams<CountryParam>();
     const {
         push,
         location: { pathname, search },
     } = useHistory();
 
-    const updateCountry = useCallback(
-        (country: string | undefined) => {
-            if (country !== undefined) {
-                push(`${COUNTRY_PATH}/${country}${search}`);
-            } else {
-                push(`/${search}`);
-            }
-        },
-        [push, search]
-    );
-
     const updateQuery = useCallback(
         (key: SeachQueryKey, value: SearchQueryValue) => {
-            if (!value) {
+            if (isNil(value)) {
                 return;
             }
+
             const searchParams = qs.parse(search.replace('?', ''));
             const parseValue = moment.isMoment(value)
                 ? value.format('YYYY-MM-DD')
                 : value;
-            const newSearch = { ...searchParams, [key]: parseValue };
+            const regionParams =
+                key === 'region'
+                    ? { isRegion: true }
+                    : key === 'country'
+                    ? { isRegion: false }
+                    : {};
+            const newSearch = {
+                ...searchParams,
+                [key]: parseValue,
+                ...regionParams,
+            };
             push(`${pathname}?${qs.stringify(newSearch)}`);
         },
         [pathname, push, search]
     );
 
-    const { selectedDate, dataType, category } = useMemo(
-        () => qs.parse(search.replace('?', '')),
-        [search]
-    );
+    const {
+        selectedDate,
+        dataType,
+        category,
+        country,
+        region,
+        isRegion,
+    } = useMemo(() => qs.parse(search.replace('?', '')), [search]);
 
     const selectedMoment = useMemo(
         () =>
@@ -53,9 +69,11 @@ const useQueryParams = () => {
                 : undefined,
         [selectedDate]
     );
+
     return {
-        country,
-        updateCountry,
+        country: country as string,
+        region: region as string,
+        isRegion: isRegion === 'true',
         selectedDate: selectedMoment,
         updateQuery,
         dataType: (dataType || 'cumulative') as DataType,

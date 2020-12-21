@@ -1,9 +1,5 @@
 import { CountryTrend } from './hooks/useCountryTrends';
 
-export interface CountryParam {
-    country: string;
-}
-
 export type DataType = 'cumulative' | 'daily';
 export type Category = 'confirmed' | 'recoveries' | 'deaths';
 export type LookBackMonth = 'one_month' | 'three_month' | 'beginning';

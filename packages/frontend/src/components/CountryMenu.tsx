@@ -1,42 +1,66 @@
 import React from 'react';
 import { useAvailableCountries, Country } from '../hooks/useAvailableCountries';
+import { useAvailableRegions } from '../hooks/useAvailableRegions';
 import { Select } from 'antd';
+import { SeachQueryKey, SearchQueryValue } from '../hooks/useQueryParams';
 
 interface CountryMenuProps {
-    selectedCountry: string | undefined;
-    onCountrySelected: (country: string) => void;
+    isRegion: boolean;
+    selectedRegion?: string;
+    selectedCountry?: string;
+    updateQuery: (key: SeachQueryKey, value: SearchQueryValue) => void;
 }
 
 export function CountryMenu({
     selectedCountry,
-    onCountrySelected,
+    isRegion,
+    selectedRegion,
+    updateQuery,
 }: CountryMenuProps) {
     const { data: countries, isFetching, error } = useAvailableCountries();
-
-    const handleCountryChange = (country: string) => {
-        if (onCountrySelected) {
-            onCountrySelected(country);
+    const {
+        data: regions,
+        isFetching: isFetchingRegions,
+        error: regionError,
+    } = useAvailableRegions();
+    const handleChange = (selected: string) => {
+        if (isRegion) {
+            updateQuery('region', selected);
+            return;
         }
+        updateQuery('country', selected);
     };
-    if (isFetching) {
+
+    if ((!isRegion && isFetching) || (isRegion && isFetchingRegions)) {
         return <p>Loading...</p>;
-    } else if (error) {
+    } else if ((!isRegion && error) || (isRegion && regionError)) {
         return <p>Could not reach the server</p>;
     }
+
+    if (isRegion && !Array.isArray(regions)) {
+        return <p>Could not reach the server</p>;
+    }
+
     return (
         <Select
             showSearch
-            value={selectedCountry}
+            value={isRegion ? selectedRegion : selectedCountry}
             style={{ width: 130 }}
-            onSelect={handleCountryChange}
+            onSelect={handleChange}
             bordered={false}
-            placeholder="select a country"
+            placeholder={isRegion ? 'select a region' : 'select a country'}
         >
-            {countries.map((country: Country) => (
-                <Select.Option key={country.name} value={country.iso3}>
-                    {country.name}{' '}
-                </Select.Option>
-            ))}
+            {isRegion
+                ? regions?.map((region: string) => (
+                      <Select.Option key={region} value={region}>
+                          {region}
+                      </Select.Option>
+                  ))
+                : countries.map((country: Country) => (
+                      <Select.Option key={country.name} value={country.iso3}>
+                          {country.name}{' '}
+                      </Select.Option>
+                  ))}
         </Select>
     );
 }

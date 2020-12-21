@@ -7,16 +7,11 @@ interface RouteProps {
 }
 
 export const HOME_PATH = '/';
-export const COUNTRY_PATH = '/country';
 export const ABOUT_PATH = '/about';
 
 const routes: RouteProps[] = [
     {
         path: `${HOME_PATH}`,
-        component: Home,
-    },
-    {
-        path: `${COUNTRY_PATH}/:country`,
         component: Home,
     },
     {
