@@ -12,7 +12,6 @@ import { getDataFromJHTS } from '../utils/JohnHopkins';
 import * as fs from 'fs';
 import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
 import { ModelService } from '../model/model.service';
-import { runInThisContext } from 'vm';
 
 @Injectable()
 export class CountryService {
@@ -146,10 +145,31 @@ export class CountryService {
   getAllTrends(): CountryTrendDict {
     let trendsPlusPredictions: CountryTrendDict = {};
     const predictions = this.modelService.allPredictions();
-    Object.keys(this.allCountryTrends).forEach((country) => {
-      trendsPlusPredictions[country] = [
-        ...this.allCountryTrends[country],
-        ...(predictions[country] ? predictions[country] : []),
+    const onlyAfrica = this.countries.filter((c) => c.continent === 'Africa');
+
+    onlyAfrica.forEach((country) => {
+      let iso3 = country.iso3;
+      let trend = this.allCountryTrends[country.iso3];
+      let last_value = trend[trend.length - 1];
+      let last_cumulative_value = last_value.confirmed;
+      let countryPrediction = predictions[iso3] ? [...predictions[iso3]] : [];
+
+      //Update the cumulative predictions
+      for (let i = 0; i < countryPrediction.length; i++) {
+        let prediction = countryPrediction[i];
+        let upper = last_cumulative_value + prediction.daily_prediction_upper;
+        let lower = last_cumulative_value + prediction.daily_prediction_lower;
+
+        last_cumulative_value += prediction.daily_prediction;
+
+        countryPrediction[i].confirmed_prediction = last_cumulative_value;
+        countryPrediction[i].confirmed_prediction_lower = lower;
+        countryPrediction[i].confirmed_prediction_upper = upper;
+      }
+
+      trendsPlusPredictions[iso3] = [
+        ...this.allCountryTrends[iso3],
+        ...countryPrediction,
       ];
     });
     return trendsPlusPredictions;

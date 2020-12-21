@@ -33,9 +33,9 @@ export class ModelService {
             const datum = new TrendDatum();
             datum.isPrediction = true;
             datum.date = row['Date'];
-            datum.confirmed_prediction = row['Est'];
-            datum.confirmed_prediction_upper = row['Upper'];
-            datum.confirmed_prediction_lower = row['Lower'];
+            datum.daily_prediction = row['Est'];
+            datum.daily_prediction_upper = row['Upper'];
+            datum.daily_prediction_lower = row['Lower'];
             data[countryDetails.iso3] = data[countryDetails.iso3]
               ? [...data[countryDetails.iso3], datum]
               : [datum];
