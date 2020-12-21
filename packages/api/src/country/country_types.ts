@@ -171,6 +171,24 @@ export class TrendDatum {
   })
   confirmed_prediction_lower: number | null;
 
+  @ApiProperty({
+    description: 'Lower limit of predicted daily cases',
+    nullable: true,
+  })
+  daily_prediction_lower: number | null;
+
+  @ApiProperty({
+    description: 'Upper limit of predicted daily cases ',
+    nullable: true,
+  })
+  daily_prediction_upper: number | null;
+
+  @ApiProperty({
+    description: 'Daily predicted cases',
+    nullable: true,
+  })
+  daily_prediction: number | null;
+
   add(other: TrendDatum): TrendDatum {
     if (!datesAreOnSameDay(this.date, other.date)) {
       throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);
@@ -185,9 +203,11 @@ export class TrendDatum {
       this.confirmed_prediction += other.confirmed_prediction;
       // TODO: update prediction
       this.confirmed_prediction_upper =
-        this.confirmed_prediction + 22 + Math.random() * 5;
+        this.confirmed_prediction_upper + other.confirmed_prediction_upper;
       this.confirmed_prediction_lower =
-        this.confirmed_prediction - 23 - Math.random() * 10;
+        this.confirmed_prediction_lower + other.confirmed_prediction_lower;
+
+      this.daily_prediction += other.daily_prediction;
     }
 
     return this;
