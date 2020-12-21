@@ -6,7 +6,8 @@ import { Category, DataType } from '../types';
 
 interface QueryParamsContextProps {
     country: string;
-    updateCountry: (country?: string) => void;
+    region: string;
+    isRegion: boolean;
     selectedDate?: Moment;
     updateQuery: (key: SeachQueryKey, value: SearchQueryValue) => void;
     dataType: DataType;
@@ -15,7 +16,8 @@ interface QueryParamsContextProps {
 
 const QueryParamsContext = createContext<QueryParamsContextProps>({
     country: '',
-    updateCountry: noop,
+    region: '',
+    isRegion: false,
     selectedDate: undefined,
     updateQuery: noop,
     dataType: 'cumulative' as DataType,

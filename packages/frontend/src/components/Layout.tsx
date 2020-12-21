@@ -1,9 +1,8 @@
 import React, { useState, FunctionComponent } from 'react';
-import { Layout, Drawer, Row } from 'antd';
+import { Layout, Drawer } from 'antd';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
-import HeaderRightControl from './header/HeaderRightControl';
-import HeaderLeftControl from './header/HeaderLeftControl';
+import LayoutHeader from './Header';
 import useQueryParams from '../hooks/useQueryParams';
 import QueryParamsContext from '../contexts/QueryParamsContext';
 import { CountryStatsStore } from '../contexts/CountryStatsContext';
@@ -15,7 +14,8 @@ const AppLayout: FunctionComponent = ({ children }) => {
     const [showDrawer, setDrawer] = useState(false);
     const {
         country,
-        updateCountry,
+        region,
+        isRegion,
         dataType,
         category,
         updateQuery,
@@ -42,23 +42,14 @@ const AppLayout: FunctionComponent = ({ children }) => {
             </StyledDrawer>
             <Main>
                 <StyledHeader>
-                    <Row justify="space-between" align="middle">
-                        <HeaderLeftControl
-                            dataType={dataType}
-                            updateQuery={updateQuery}
-                        />
-                        <HeaderRightControl
-                            openDrawer={() => setDrawer(true)}
-                            country={country}
-                            updateCountry={updateCountry}
-                        />
-                    </Row>
+                    <LayoutHeader openDrawer={() => setDrawer(true)} />
                 </StyledHeader>
                 <Content>
                     <QueryParamsContext.Provider
                         value={{
                             country,
-                            updateCountry,
+                            region,
+                            isRegion,
                             dataType,
                             category,
                             updateQuery,

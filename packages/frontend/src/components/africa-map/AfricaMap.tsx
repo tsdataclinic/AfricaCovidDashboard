@@ -5,7 +5,7 @@ import React, {
     useLayoutEffect,
     useMemo,
     useRef,
-    useState
+    useState,
 } from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
@@ -20,7 +20,7 @@ import * as colors from '../../colors';
 import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
 import getTooltipContent, { tooltipCSS } from './getTooltipContent';
-import { getCountryA3 } from './utils';
+import { getCountryA3, getRegion } from './utils';
 import { Card, Switch } from 'antd';
 import CountryStatsContext from '../../contexts/CountryStatsContext';
 import { scaleTrendDatum } from '../../utils/trendUtils';
@@ -30,7 +30,10 @@ interface AfricaMapProps {
     category: Category;
     dataType: DataType;
     selectedCountry?: string;
-    onCountrySelect?: (country: string | undefined) => void;
+    selectedRegion?: string;
+    isRegion: boolean;
+    onRegionSelect?: (region: string) => void;
+    onCountrySelect?: (country: string) => void;
     trendData?: { [k in string]: CountryTrend }; // Data should be a map of country A3 to trend datum
     loading?: boolean;
 }
@@ -51,14 +54,17 @@ const colorRanges = {
     confirmed: [colors.LIGHT_GREY, colors.LIGHT_ORANGE, colors.ORANGE],
     confirmed_predicted: [colors.LIGHT_GREY, colors.LIGHT_RED, colors.RED],
     recoveries: [colors.LIGHT_GREY, colors.LIGHT_BLUE, colors.BLUE],
-    deaths: [colors.LIGHT_GREY, colors.GREY]
+    deaths: [colors.LIGHT_GREY, colors.GREY],
 };
 const AfricaMap: React.FC<AfricaMapProps> = ({
     category,
     dataType,
     selectedCountry,
+    selectedRegion,
+    isRegion,
     onCountrySelect,
-    trendData
+    trendData,
+    onRegionSelect,
 }) => {
     const { t } = useTranslation();
     const width = 960;
@@ -72,7 +78,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     );
 
     const isPrediction = Object.keys(trendData || {}).find(
-        key => trendData?.[key].isPrediction
+        (key) => trendData?.[key].isPrediction
     );
 
     const scaledTrendData = useMemo(() => {
@@ -88,7 +94,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         });
         // filter out null values
         Object.keys(scaled).forEach(
-            key => scaled[key] === undefined && delete scaled[key]
+            (key) => scaled[key] === undefined && delete scaled[key]
         );
         return scaled as { [key: string]: CountryTrend };
     }, [isPer100k, allCountryStats, trendData]);
@@ -123,17 +129,33 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             if (country !== selectedCountry) {
                 onCountrySelect?.(country);
             } else {
-                onCountrySelect?.(undefined);
+                onCountrySelect?.('');
             }
         },
         [onCountrySelect, selectedCountry, trendData]
+    );
+
+    const handleRegionClick = useCallback(
+        (region: string) => {
+            if (!Boolean(region)) {
+                return;
+            }
+            if (region !== selectedRegion) {
+                onRegionSelect?.(region);
+            } else {
+                onRegionSelect?.('');
+            }
+        },
+        [onRegionSelect, selectedRegion]
     );
 
     const fillMap = useCallback(() => {
         const svg = d3.select(svgNode.current);
         const countries = svg.selectAll('.country-border');
         countries.classed('selected-country', (d: MapData) => {
-            return getCountryA3(d.properties) === selectedCountry;
+            return isRegion
+                ? getRegion(d.properties) === selectedRegion
+                : getCountryA3(d.properties) === selectedCountry;
         });
 
         // Update colors
@@ -143,7 +165,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 : category;
             let colorRange = colorRanges[category_key] || colorRanges['deaths'];
 
-            let extent = d3.extent(values(scaledTrendData), d =>
+            let extent = d3.extent(values(scaledTrendData), (d) =>
                 typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
 
@@ -204,7 +226,15 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     return colors.LIGHT_GREY;
                 });
         }
-    }, [selectedCountry, category, scaledTrendData, trendKey, logScale]);
+    }, [
+        selectedCountry,
+        category,
+        scaledTrendData,
+        trendKey,
+        logScale,
+        isRegion,
+        selectedRegion,
+    ]);
 
     const createTooltip = useCallback(() => {
         const svg = d3.select(svgNode.current);
@@ -276,9 +306,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .attr('d', path);
 
         // Create the tooltip
-        svg.append('g')
-            .attr('class', 'map-tooltip')
-            .append('rect');
+        svg.append('g').attr('class', 'map-tooltip').append('rect');
 
         /* Create a transparent country overlay. The overlay sits on top of the other elements and is used
         as the click and hover target. The lets us listen to mouse events without worrying about the
@@ -329,12 +357,20 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         d3.select('.overlay')
             .selectAll('.overlay-country-border')
             .on('click', (e: any, d: any) => {
+                if (isRegion) {
+                    const region = getRegion(d.properties);
+                    if (region) {
+                        handleRegionClick(region);
+                    }
+                    return;
+                }
+
                 const country = getCountryA3(d.properties);
                 if (country) {
                     handleCountryClick(country);
                 }
             });
-    }, [handleCountryClick]);
+    }, [handleCountryClick, isRegion, handleRegionClick]);
     useLayoutEffect(() => initializeMap(), []);
     useEffect(fillMap, [fillMap]);
     useEffect(createTooltip, [createTooltip]);
