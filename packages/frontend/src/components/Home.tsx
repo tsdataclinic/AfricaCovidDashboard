@@ -178,15 +178,18 @@ const Home = () => {
                     />
                     <AfricaMap
                         selectedCountry={country}
-                        onCountrySelect={(country) => {
-                            if (country) {
-                                updateQuery('country', country);
-                            }
-                        }}
+                        onCountrySelect={(country) =>
+                            updateQuery('country', country)
+                        }
+                        onRegionSelect={(region) =>
+                            updateQuery('region', region)
+                        }
                         category={category}
                         dataType={dataType}
                         trendData={selectedStatsByCountry}
                         loading={isLoading}
+                        isRegion={isRegion}
+                        selectedRegion={region}
                     />
                 </Col>
                 <Col xs={24} md={24} lg={12}>

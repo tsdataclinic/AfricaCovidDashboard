@@ -9,3 +9,11 @@ export const getCountryA3 = (properties: CountryProperties): string => {
     }
     return '';
 };
+
+export const getRegion = (properties: CountryProperties): string => {
+    const region = properties.subregion;
+    if (region === 'Middle Africa') {
+        return 'Central Africa';
+    }
+    return region;
+};
