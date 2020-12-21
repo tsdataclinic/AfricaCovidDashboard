@@ -18,25 +18,46 @@ const About = () => {
                     appSubHeading={'Monitor the state of Covid in Africa'}
                 >
                     <Body style={{ textAlign: 'left' }}>
-                        Cupcake ipsum dolor sit amet marshmallow cake tiramisu
-                        topping. Pie sweet gummies chocolate chocolate candy
-                        canes icing. Cake lemon drops I love oat cake sesame
-                        snaps I love. Lollipop soufflé macaroon icing I love
-                        danish gummi bears. Apple pie bonbon ice cream marzipan
-                        jelly-o sweet jujubes. Dessert gummies croissant.
+                        Over the past year we have been bombarded with data
+                        visualizations, dashboards and charts all detailing the
+                        spread of COVID around the world. While some of these
+                        dashboards are excellent sources of information, few of
+                        them take into account regional variations in the
+                        factors associated with transmission.
                     </Body>
                     <Body>
-                        Tart brownie chupa chups tiramisu bonbon. Sweet gummies
-                        donut pie caramels candy canes apple pie toffee.
-                        Gingerbread brownie cupcake sweet. Candy sweet gummies
-                        caramels halvah marzipan jujubes candy. Caramels biscuit
-                        biscuit I love marshmallow brownie ice cream carrot
-                        cake. Cake halvah tiramisu fruitcake tart candy canes
-                        pastry cotton candy brownie. Marzipan fruitcake muffin
-                        cake chupa chups pie donut cookie. Chupa chups jelly
-                        gummi bears cake tootsie roll tootsie roll chocolate
-                        brownie. Toffee I love cotton candy pie lemon drops
-                        liquorice danish pie.
+                        Inspired by the work of the{' '}
+                        <a
+                            href="https://sites.bu.edu/covid-19-in-africa/"
+                            target="_blank"
+                        >
+                            COVID-19 in Africa Data Science Initiative
+                        </a>
+                        , Data Clinic produced a COVID dashboard focused
+                        specifically on{' '}
+                        <a
+                            href="https://github.com/tmh741/AFCOVIDDashboard"
+                            target="_blank"
+                        >
+                            data and forecasts
+                        </a>{' '}
+                        for African countries, with the hope that it could help
+                        decision-makers better understand the state of the
+                        pandemic on the continent.
+                    </Body>
+                    <Body>
+                        The dashboard, written using a React-based frontend and
+                        a NestJS API, displays infection, recovery and death
+                        statistics for each African country along with forecasts
+                        based on{' '}
+                        <a
+                            href="https://github.com/tmh741/AFCOVIDDashboard"
+                            target="_blank"
+                        >
+                            the model
+                        </a>{' '}
+                        produced by the COVID-19 in Africa Data Science
+                        Initiative.
                     </Body>
                 </ProjectInfoSection>
                 <DataClinicSection />
