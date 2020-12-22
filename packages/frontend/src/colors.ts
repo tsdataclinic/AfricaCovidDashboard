@@ -5,7 +5,7 @@ export const GREY = '#7a7a7a';
 export const DARK_GREY = '#414141';
 export const BLACK = '#000000';
 
-export const LIGHT_PURPLE = '#613b6b';
+export const LIGHT_PURPLE = '#9772a7';
 export const PURPLE = '#4c1f56';
 export const LIGHT_BLUE = '#68a7e3';
 export const BLUE = '#3C91E6';

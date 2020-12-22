@@ -81,7 +81,7 @@ export const tooltipCSS = css`
             color: ${colors.BLUE};
         }
         .deaths {
-            color: ${colors.GREY};
+            color: ${colors.LIGHT_PURPLE};
         }
         h3,
         p {

@@ -6,7 +6,7 @@ import {
     formatDateToStr,
     getCategories,
     getColor,
-    getStatistic
+    getStatistic,
 } from '../helper';
 import styled from 'styled-components';
 import { bisector } from 'd3-array';
@@ -14,16 +14,16 @@ import { axisBottom, axisRight, AxisScale } from 'd3-axis';
 import { scaleLinear, scaleLog, scaleTime } from 'd3-scale';
 import { timeFormat } from 'd3-time-format';
 import { pointer, select } from 'd3-selection';
-import { curveMonotoneX, line, area } from 'd3-shape';
+import { area, curveMonotoneX, line } from 'd3-shape';
 import React, {
     useCallback,
     useEffect,
     useMemo,
     useRef,
-    useState
+    useState,
 } from 'react';
 import { Category, DataType, StatsBarItem } from '../types';
-import { GREY, RED, BLUE, ORANGE, LIGHT_ORANGE } from '../colors';
+import { BLUE, LIGHT_ORANGE, ORANGE, PURPLE, RED } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
 import { Statistic } from 'antd';
@@ -49,7 +49,7 @@ const Timeseries = ({
     timeseries,
     dates,
     dataType,
-    isLog
+    isLog,
 }: TimeseriesProps) => {
     const { t } = useTranslation();
     const refs = useRef<(SVGSVGElement | null)[]>([]);
@@ -61,12 +61,12 @@ const Timeseries = ({
     );
 
     const categories: StatsBarItem[] = useMemo(() => getCategories(dataType), [
-        dataType
+        dataType,
     ]);
 
     const timeseriesMapper = useMemo(() => {
         const mapper: TimeseriesMapper = {};
-        timeseries.forEach(item => {
+        timeseries.forEach((item) => {
             const key = moment(item.date).valueOf();
             mapper[key] = item;
         });
@@ -118,14 +118,14 @@ const Timeseries = ({
             g.attr('class', 'x-axis').call(
                 axisBottom(xScale)
                     .ticks(numTicksX)
-                    .tickFormat(date => formatter(date as Date))
+                    .tickFormat((date) => formatter(date as Date))
             );
 
         const yAxis = (g: any, yScale: AxisScale<number>) =>
             g.attr('class', 'y-axis').call(
                 axisRight(yScale)
                     .ticks(4)
-                    .tickFormat(num => abbreviateNumber(num))
+                    .tickFormat((num) => abbreviateNumber(num))
                     .tickPadding(4)
             );
 
@@ -142,7 +142,7 @@ const Timeseries = ({
                     .clamp(true)
                     .domain([
                         Math.max(1, minTrend),
-                        Math.max(10, yBufferTop * maxTrend)
+                        Math.max(10, yBufferTop * maxTrend),
                     ])
                     .nice()
                     .range([chartBottom, margin.top]);
@@ -162,7 +162,7 @@ const Timeseries = ({
             const xm = pointer(res)[0];
             const date = xScale.invert(xm);
             if (date && dates.length > 0) {
-                const bisectDate = bisector(date => date).left;
+                const bisectDate = bisector((date) => date).left;
                 const index = bisectDate(dates, date, 1);
                 const dateLeft = dates[index - 1];
                 const dateRight = dates[index];
@@ -183,9 +183,9 @@ const Timeseries = ({
 
         /* Begin drawing charts */
         const unpredictedDates = timeseries
-            .filter(t => !t.isPrediction)
-            .map(t => convertDateStrToDate(t.date));
-        const predictedTimeseries = timeseries.filter(t => t.isPrediction);
+            .filter((t) => !t.isPrediction)
+            .map((t) => convertDateStrToDate(t.date));
+        const predictedTimeseries = timeseries.filter((t) => t.isPrediction);
 
         refs.current.forEach((ref, i) => {
             const svg = select(ref) as any;
@@ -212,10 +212,7 @@ const Timeseries = ({
                 .selectAll('circle')
                 .data(unpredictedDates, (date: Date) => date);
 
-            circles
-                .exit()
-                .style('fill-opacity', 0)
-                .remove();
+            circles.exit().style('fill-opacity', 0).remove();
 
             circles
                 .enter()
@@ -254,8 +251,8 @@ const Timeseries = ({
                 }
                 const linePath = line()
                     .curve(curveMonotoneX)
-                    .x(date => xScale(date as any))
-                    .y(date =>
+                    .x((date) => xScale(date as any))
+                    .y((date) =>
                         yScale(
                             getStatistic(
                                 dataType,
@@ -306,15 +303,15 @@ const Timeseries = ({
                     .attr(
                         'd',
                         area()
-                            .x(function(d: any) {
+                            .x(function (d: any) {
                                 return xScale(convertDateStrToDate(d.date));
                             })
-                            .y0(function(d: any) {
+                            .y0(function (d: any) {
                                 return yScale(
                                     d.confirmed_prediction_upper + 2000
                                 );
                             })
-                            .y1(function(d: any) {
+                            .y1(function (d: any) {
                                 return yScale(
                                     d.confirmed_prediction_lower - 2000
                                 );
@@ -329,10 +326,10 @@ const Timeseries = ({
                     .attr(
                         'd',
                         line()
-                            .x(function(d: any) {
+                            .x(function (d: any) {
                                 return xScale(convertDateStrToDate(d.date));
                             })
-                            .y(function(d: any) {
+                            .y(function (d: any) {
                                 return yScale(d.confirmed_prediction);
                             })
                     );
@@ -382,12 +379,12 @@ const Timeseries = ({
         timeseriesMapper,
         dates,
         isLog,
-        categories
+        categories,
     ]);
 
     useEffect(() => {
         const barWidth = getBarWidth();
-        refs.current.forEach(ref => {
+        refs.current.forEach((ref) => {
             const svg = select(ref);
             svg.selectAll('circle').attr('r', (date: any) =>
                 date === highlightedDate ? barWidth : barWidth / 2
@@ -396,7 +393,7 @@ const Timeseries = ({
     }, [highlightedDate, getBarWidth]);
 
     const getStatisticDelta = useCallback(
-        category => {
+        (category) => {
             if (!highlightedDate) return;
             const currCount = getStatistic(
                 dataType,
@@ -406,7 +403,7 @@ const Timeseries = ({
                     : undefined
             );
             const prevDate =
-                dates[dates.findIndex(date => date === highlightedDate) - 1];
+                dates[dates.findIndex((date) => date === highlightedDate) - 1];
 
             const prevCount = getStatistic(
                 dataType,
@@ -423,7 +420,7 @@ const Timeseries = ({
 
         [0, 0, 0, 0, 0].map((element, index) => {
             styles.push({
-                animationDelay: `${index * 250}ms`
+                animationDelay: `${index * 250}ms`,
             });
             return null;
         });
@@ -463,8 +460,9 @@ const Timeseries = ({
                         >
                             {highlightedDate && (
                                 <div
-                                    className={`stats is-${category} ${isPredictedCumulative &&
-                                        'predicted'}`}
+                                    className={`stats is-${category} ${
+                                        isPredictedCumulative && 'predicted'
+                                    }`}
                                 >
                                     <h5 className="title">
                                         {t(
@@ -492,7 +490,7 @@ const Timeseries = ({
                                                     color: getStatColor(
                                                         category,
                                                         !!isPredictedCumulative
-                                                    )
+                                                    ),
                                                 }}
                                             />
                                         </h2>
@@ -515,7 +513,7 @@ const Timeseries = ({
                                                         category,
                                                         !!isPredictedCumulative
                                                     ),
-                                                    fontSize: 10
+                                                    fontSize: 10,
                                                 }}
                                             />
                                         </h6>
@@ -523,7 +521,7 @@ const Timeseries = ({
                                 </div>
                             )}
                             <svg
-                                ref={element => {
+                                ref={(element) => {
                                     refs.current[index] = element;
                                 }}
                                 preserveAspectRatio="xMidYMid meet"
@@ -547,7 +545,7 @@ const getStatColor = (category: Category, isPrediction: boolean) => {
         case 'confirmed':
             return isPrediction ? RED : ORANGE;
         case 'deaths':
-            return GREY;
+            return PURPLE;
         case 'recoveries':
         default:
             return BLUE;
@@ -611,17 +609,17 @@ const Wrapper = styled.div`
     }
 
     &.is-deaths {
-        background: ${transparentize(0.85, GREY)};
+        background: ${transparentize(0.85, PURPLE)};
         h5.title,
         h2,
         h6 {
-            color: ${GREY};
+            color: ${PURPLE};
         }
         svg {
             path,
             .tick,
             line {
-                stroke: ${GREY};
+                stroke: ${PURPLE};
             }
         }
     }

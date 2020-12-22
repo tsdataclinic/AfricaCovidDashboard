@@ -1,10 +1,10 @@
 import { Category, DataType, StatsBarItem } from './types';
 import moment from 'moment';
-import { BLUE, GREEN, GREY, ORANGE, RED } from './colors';
+import { BLUE, GREEN, GREY, ORANGE, PURPLE, RED } from './colors';
 import { CountryTrend } from './hooks/useCountryTrends';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 1
+    maximumFractionDigits: 1,
 });
 
 export const abbreviateNumber = (num: number) => {
@@ -53,7 +53,7 @@ export const getColor = (category: Category) => {
         case 'recoveries':
             return BLUE;
         case 'deaths':
-            return GREY;
+            return PURPLE;
     }
 };
 
@@ -71,44 +71,44 @@ export const getCategories = (
                         label: 'Confirmed Prediction',
                         value: 'confirmed_prediction',
                         category: 'confirmed',
-                        color: RED
+                        color: RED,
                     }
                   : {
                         label: 'Confirmed',
                         value: 'confirmed',
                         category: 'confirmed',
-                        color: ORANGE
+                        color: ORANGE,
                     },
               {
                   label: 'Recovered',
                   value: 'recoveries',
                   category: 'recoveries',
-                  color: BLUE
+                  color: BLUE,
               },
               {
                   label: 'Deaths',
                   value: 'deaths',
                   category: 'deaths',
-                  color: GREY
-              }
+                  color: PURPLE,
+              },
           ]
         : [
               {
                   label: 'New Cases',
                   value: 'new_case',
                   category: 'confirmed',
-                  color: RED
+                  color: RED,
               },
               {
                   label: 'New Recoveries',
                   value: 'new_recoveries',
                   category: 'recoveries',
-                  color: GREEN
+                  color: GREEN,
               },
               {
                   label: 'New Deaths',
                   value: 'new_deaths',
                   category: 'deaths',
-                  color: GREY
-              }
+                  color: GREY,
+              },
           ];

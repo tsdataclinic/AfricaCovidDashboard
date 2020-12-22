@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useMemo } from 'react';
 import AfricaMap from './africa-map/AfricaMap';
-import { Alert, Col, Row } from 'antd';
+import { Alert, Card, Col, Row } from 'antd';
 import {
     CountryTrend,
     useAfricaTrends,
@@ -16,6 +16,8 @@ import QueryParamsContext from '../contexts/QueryParamsContext';
 import styled from 'styled-components';
 import { mapValues, pickBy, Dictionary, isNil, negate } from 'lodash';
 import QueryControl from './QueryControl';
+
+const LAYOUT_GUTTER: [number, number] = [16, 16];
 
 const Home = () => {
     const {
@@ -152,21 +154,27 @@ const Home = () => {
     }
 
     return (
-        <div>
-            <DateSlider
-                dates={dates}
-                onUpdate={onSelectDate}
-                selectedDate={selectedDate}
-            />
-            <QueryControl
-                region={region}
-                country={country}
-                dataType={dataType}
-                isRegion={isRegion}
-                updateQuery={updateQuery}
-            />
-            <Row gutter={[16, 16]}>
-                <Col xs={24} md={24} lg={12}>
+        <HomeWrapper>
+            <Row gutter={LAYOUT_GUTTER}>
+                <Col span={24}>
+                    <Card>
+                        <DateSlider
+                            dates={dates}
+                            onUpdate={onSelectDate}
+                            selectedDate={selectedDate}
+                        />
+                        <QueryControl
+                            region={region}
+                            country={country}
+                            dataType={dataType}
+                            isRegion={isRegion}
+                            updateQuery={updateQuery}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+            <Row gutter={LAYOUT_GUTTER}>
+                <Col xs={24} xl={12}>
                     <StatsBar
                         dataType={dataType}
                         category={category}
@@ -192,7 +200,7 @@ const Home = () => {
                         selectedRegion={region}
                     />
                 </Col>
-                <Col xs={24} md={24} lg={12}>
+                <Col xs={24} xl={12}>
                     <Trend
                         trendData={currentCountryTrends}
                         allDates={dates}
@@ -202,9 +210,13 @@ const Home = () => {
                     />
                 </Col>
             </Row>
-        </div>
+        </HomeWrapper>
     );
 };
+
+const HomeWrapper = styled.div`
+    padding: 16px;
+`;
 
 const StyledAlert = styled(Alert)`
     margin: 0 20px;
