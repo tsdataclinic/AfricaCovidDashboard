@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { Skeleton } from 'antd';
+import { Skeleton, Card, Switch } from 'antd';
 import styled from 'styled-components';
 import Timeseries from './Timeseries';
 import { DataType, LookBackMonth } from '../types';
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import CountryStatsContext from '../contexts/CountryStatsContext';
 import { scaleTrendDatum } from '../utils/trendUtils';
+import { GREY } from '../colors';
 
 interface TrendProps {
     trendData: CountryTrend[];
@@ -78,64 +79,58 @@ const Trend = ({ trendData, selectedDate, dataType, allDates }: TrendProps) => {
         return trimData;
     }, [trendData, countryStatsData, per100K, dates]);
 
-    if (countryStatsLoading) {
-        return <Skeleton active />;
-    }
-
     return (
-        <TrendWrapper>
-            <Scale>
+        <Card>
+            <Skeleton active loading={countryStatsLoading}>
                 <Scale>
-                    <Label htmlFor="timeseries-logmode">
-                        {t('Logarithmic')}
-                    </Label>
-                    <Input
-                        id="timeseries-logmode"
-                        type="checkbox"
-                        checked={isLog}
-                        onChange={() => setIsLog(!isLog)}
-                    />
+                    <Scale>
+                        <Label>
+                            {t('Logarithmic')}:&nbsp;
+                            <Switch
+                                size="small"
+                                checked={isLog}
+                                onChange={() => setIsLog(!isLog)}
+                            />
+                        </Label>
+                    </Scale>
+                    <Scale>
+                        <Label>
+                            {t('Per 100K')}:&nbsp;
+                            <Switch
+                                size="small"
+                                checked={per100K}
+                                onChange={() => setPer100K(!per100K)}
+                            />
+                        </Label>
+                    </Scale>
                 </Scale>
-                <Scale>
-                    <Label htmlFor="timeseries-100k">{t('Per 100K')}</Label>
-                    <Input
-                        id="timeseries-100k"
-                        type="checkbox"
-                        checked={per100K}
-                        onChange={() => setPer100K(!per100K)}
-                    />
-                </Scale>
-            </Scale>
 
-            <Timeseries
-                timeseries={timeseries}
-                dataType={dataType}
-                dates={dates}
-                isLog={isLog}
-            />
-            <Pill>
-                {['beginning', 'three_month', 'one_month'].map((option) => (
-                    <Button
-                        key={option}
-                        type="button"
-                        className={`${
-                            lookback === option ? 'selected' : undefined
-                        }`}
-                        onClick={() => setLookBack(option as LookBackMonth)}
-                    >
-                        {t(option)}
-                    </Button>
-                ))}
-            </Pill>
-        </TrendWrapper>
+                <Timeseries
+                    timeseries={timeseries}
+                    dataType={dataType}
+                    dates={dates}
+                    isLog={isLog}
+                />
+                <Pill>
+                    {['beginning', 'three_month', 'one_month'].map((option) => (
+                        <Button
+                            key={option}
+                            type="button"
+                            className={`${
+                                lookback === option ? 'selected' : undefined
+                            }`}
+                            onClick={() => setLookBack(option as LookBackMonth)}
+                        >
+                            {t(option)}
+                        </Button>
+                    ))}
+                </Pill>
+            </Skeleton>
+        </Card>
     );
 };
 
 export default Trend;
-
-const TrendWrapper = styled.div`
-    padding: 20px;
-`;
 
 const Pill = styled.div`
     display: flex;
@@ -171,46 +166,13 @@ const Scale = styled.div`
     display: flex;
     flex-direction: row;
     margin-right: 1rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: 6px;
 `;
 
 const Label = styled.label`
-    color: rgba(108, 117, 125, 0.6);
+    color: ${GREY};
     font-size: 0.75rem;
     font-weight: 900;
     margin-right: 0.25rem;
     z-index: 99;
-`;
-
-const Input = styled.input`
-    appearance: none;
-    background-color: #fff;
-    border: 2px solid #d9dadc;
-    border-radius: 10px;
-    cursor: pointer;
-    height: 14px;
-    margin: 0;
-    outline: none;
-    position: relative;
-    transition: all 0.3s ease-in-out;
-    width: 24px;
-    &:after,
-    &:checked {
-        background-color: rgba(108, 117, 125, 0.6);
-        transition: all 0.3s ease-in-out;
-    }
-    &:after {
-        border-radius: 50%;
-        content: '';
-        height: 10px;
-        left: 0;
-        position: absolute;
-        top: 0;
-        width: 10px;
-    }
-    &:checked:after {
-        background-color: #f8f9fa;
-        left: 10px;
-        transition: all 0.3s ease-in-out;
-    }
 `;

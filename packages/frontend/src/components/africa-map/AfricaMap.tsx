@@ -15,7 +15,7 @@ import { GeometryCollection, Topology } from 'topojson-specification';
 import styled from 'styled-components';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
-import { values, mapValues } from 'lodash';
+import { mapValues, values } from 'lodash';
 import * as colors from '../../colors';
 import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
@@ -54,7 +54,7 @@ const colorRanges = {
     confirmed: [colors.LIGHT_GREY, colors.LIGHT_ORANGE, colors.ORANGE],
     confirmed_predicted: [colors.LIGHT_GREY, colors.LIGHT_RED, colors.RED],
     recoveries: [colors.LIGHT_GREY, colors.LIGHT_BLUE, colors.BLUE],
-    deaths: [colors.LIGHT_GREY, colors.GREY],
+    deaths: [colors.LIGHT_GREY, colors.LIGHT_PURPLE, colors.PURPLE],
 };
 const AfricaMap: React.FC<AfricaMapProps> = ({
     category,
@@ -157,6 +157,9 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 ? getRegion(d.properties) === selectedRegion
                 : getCountryA3(d.properties) === selectedCountry;
         });
+
+        // Add a loading class if data is undefined
+        countries.classed('loading', () => scaledTrendData === undefined);
 
         // Update colors
         if (scaledTrendData !== undefined) {
@@ -381,15 +384,20 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         <Card>
             <ControlsContainer>
                 <Control>
-                    <span>{t('Logarithmic')}:&nbsp;</span>
-                    <Switch onChange={setLogScale} />
+                    <label>
+                        {t('Logarithmic')}:&nbsp;
+                        <Switch size="small" onChange={setLogScale} />
+                    </label>
                 </Control>
                 <Control>
-                    <span>{t('Per 100K')}:&nbsp;</span>
-                    <Switch
-                        onChange={setIsPer100K}
-                        disabled={isPer100KDisabled}
-                    />
+                    <label>
+                        {t('Per 100K')}:&nbsp;
+                        <Switch
+                            size="small"
+                            onChange={setIsPer100K}
+                            disabled={isPer100KDisabled}
+                        />
+                    </label>
                 </Control>
             </ControlsContainer>
             <MapContainer id="svg-parent" className="scaling-svg-container">
@@ -413,6 +421,9 @@ const MapContainer = styled.div`
             stroke-linecap: round;
             &.selected-country {
                 stroke-width: 3px;
+            }
+            &.loading {
+                fill: ${colors.LIGHT_GREY};
             }
         }
     }
@@ -446,6 +457,8 @@ const ControlsContainer = styled.div`
 const Control = styled.div`
     margin-right: 10px;
     font-size: 0.75rem;
+    color: ${colors.GREY};
+    font-weight: 900;
 `;
 
 export default React.memo(AfricaMap);
