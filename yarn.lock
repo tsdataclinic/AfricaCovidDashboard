@@ -7416,6 +7416,11 @@ dezalgo@^1.0.0:
     asap "^2.0.0"
     wrappy "1"
 
+diacritics@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/diacritics/-/diacritics-1.3.0.tgz#3efa87323ebb863e6696cebb0082d48ff3d6f7a1"
+  integrity sha1-PvqHMj67hj5mls67AILUj/PW96E=
+
 dicer@0.2.5:
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/dicer/-/dicer-0.2.5.tgz#5996c086bb33218c812c090bddc09cd12facb70f"
@@ -9538,6 +9543,13 @@ husky@>=4:
     please-upgrade-node "^3.2.0"
     slash "^3.0.0"
     which-pm-runs "^1.0.0"
+
+i18n-iso-countries@^6.4.0:
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/i18n-iso-countries/-/i18n-iso-countries-6.4.0.tgz#777582a5b7abb7505196b2e90c0b10ddf3789ac4"
+  integrity sha512-OTDUJq0OqCP+rXnWksTbMDsTE3ZGj92h8GCqIxxZM0eNtdkLVgd5c27q6C6uaZQHy0H/Vskyyx9ieMBBJCMdPw==
+  dependencies:
+    diacritics "1.3.0"
 
 i18next-browser-languagedetector@^6.0.1:
   version "6.0.1"

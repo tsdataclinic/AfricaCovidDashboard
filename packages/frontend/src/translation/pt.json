@@ -22,5 +22,15 @@
     "Per 100K": "Por 100K",
     "No data available": "Sem dados disponíveis",
     "There is no data": "Não há dados",
-    "Population Estimate": "Estimativa de População"
+    "Population Estimate": "Estimativa de População",
+    "Could not reach the server": "Não foi possível acessar o servidor",
+    "Loading...": "Carregando...",
+    "select a region": "selecione uma região",
+    "select a country": "selecione um pais",
+    "Eastern Africa": "África oriental",
+    "Indian Ocean": "oceano Índico",
+    "Western Africa": "África ocidental",
+    "Southern Africa": "África do Sul",
+    "Northern Africa": "África do norte",
+    "Central Africa": "África Central"
 }

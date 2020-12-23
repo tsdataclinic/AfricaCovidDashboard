@@ -22,5 +22,15 @@
     "Per 100K": "Kwa 100K",
     "No data available": "Hakuna data inayopatikana",
     "There is no data": "Hakuna data",
-    "Population Estimate": "Makadirio ya Idadi ya Watu"
+    "Population Estimate": "Makadirio ya Idadi ya Watu",
+    "Could not reach the server": "Haikuweza kufikia seva",
+    "Loading...": "Inapakia ...",
+    "select a region": "chagua mkoa",
+    "select a country": "chagua nchi",
+    "Eastern Africa": "Afrika Mashariki",
+    "Indian Ocean": "Bahari ya Hindi",
+    "Western Africa": "Afrika Magharibi",
+    "Southern Africa": "Kusini mwa Afrika",
+    "Northern Africa": "Afrika Kaskazini",
+    "Central Africa": "Afrika ya Kati"
 }

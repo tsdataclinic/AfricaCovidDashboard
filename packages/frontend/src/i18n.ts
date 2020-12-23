@@ -7,6 +7,11 @@ import translationAR from './translation/ar.json'; // ARABIC
 import translationSW from './translation/sw.json'; // SWAHILI
 
 import LanguageDetector from 'i18next-browser-languagedetector';
+import countries from 'i18n-iso-countries';
+countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/pt.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/ar.json'));
 
 const resources = {
     en: {

@@ -11,7 +11,7 @@ const LanguagePanel = () => {
     return (
         <div>
             <Select
-                defaultValue="en"
+                defaultValue={i18n.language}
                 style={{ width: 120 }}
                 onSelect={(lng) => changeLanguage(lng)}
                 bordered={false}

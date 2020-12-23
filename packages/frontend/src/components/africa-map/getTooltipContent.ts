@@ -4,6 +4,7 @@ import { css } from 'styled-components';
 import * as colors from '../../colors';
 import { format } from 'd3';
 import { TFunction } from 'i18next';
+import { getCountryName } from '../../utils/i18nUtils';
 
 const formatNumber = (num: number) => (num ? format(',')(num) : '-');
 const formatDelta = (num: number) => (num ? format('+,')(num) : '-');
@@ -60,7 +61,7 @@ function getTooltipContent(
     return `
 <div class="tooltip-content">
   <h3>
-    ${countryProperties.name_long}
+  ${getCountryName(countryProperties.iso_a3)}
   </h3>
   ${content}
 </div>

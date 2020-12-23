@@ -22,5 +22,15 @@
     "Per 100K": "لكل 100 ألف",
     "No data available": "لا تتوافر بيانات",
     "There is no data": "ليس هنالك معلومات",
-    "Population Estimate": "تقدير السكان"
+    "Population Estimate": "تقدير السكان",
+    "Could not reach the server": "تعذر الوصول إلى الخادم",
+    "Loading...": "جار التحميل...",
+    "select a region": "حدد منطقة",
+    "select a country": "اختر دولة",
+    "Eastern Africa": "شرق افريقيا",
+    "Indian Ocean": "المحيط الهندي",
+    "Western Africa": "غرب افريقيا",
+    "Southern Africa": "جنوب افريقيا",
+    "Northern Africa": "شمال أفريقيا",
+    "Central Africa": "افريقيا الوسطى"
 }
