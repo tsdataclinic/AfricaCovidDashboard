@@ -1,4 +1,4 @@
-## Arfica COVID Dashboard
+## Africa COVID Dashboard
 [![Netlify Status](https://api.netlify.com/api/v1/badges/25700efb-ac20-4b91-8ce6-f9d4dcadc810/deploy-status)](https://app.netlify.com/sites/ts-africa-covid/deploys)
 
 ### Repo structure 
