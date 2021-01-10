@@ -235,6 +235,13 @@ const Timeseries = ({
                 )
                 .attr('cx', (date: Date) => xScale(date));
 
+            // Listen events
+            svg.selectAll('*').attr('pointer-events', 'none');
+            svg.on('mousemove', mousemove)
+                .on('touchmove', mousemove)
+                .on('mouseout', mouseout)
+                .on('touchend', mouseout);
+
             // Remove prediction
             svg.selectAll('.confirmed-prediction').remove();
             svg.selectAll('.confirmed-prediction-error').remove();
@@ -280,16 +287,7 @@ const Timeseries = ({
                                         .transition(t)
                                         .attr('stroke-dashoffset', 0)
                                 ),
-                        // TODO: fix the animations
                         (update: any) => update.attr('stroke-dasharray', null)
-                        // .transition(t)
-                        // .attrTween('d', function (
-                        //     date: [number, number][]
-                        // ) {
-                        //     const previous = select('.trend').attr('d');
-                        //     const current = linePath(date) || '';
-                        //     return interpolatePath(previous, current);
-                        // })
                     );
 
                 if (!predictedTimeseries.length || category !== 'confirmed') {
@@ -364,12 +362,6 @@ const Timeseries = ({
                         )
                     );
             }
-
-            svg.selectAll('*').attr('pointer-events', 'none');
-            svg.on('mousemove', mousemove)
-                .on('touchmove', mousemove)
-                .on('mouseout', mouseout)
-                .on('touchend', mouseout);
         });
     }, [
         dataType,
