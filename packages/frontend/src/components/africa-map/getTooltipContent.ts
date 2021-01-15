@@ -5,6 +5,7 @@ import * as colors from '../../colors';
 import { format } from 'd3';
 import { TFunction } from 'i18next';
 import { getCountryName } from '../../utils/i18nUtils';
+import { getCountryA3 } from './utils';
 
 const formatNumber = (num: number) => (num ? format(',')(num) : '-');
 const formatDelta = (num: number) => (num ? format('+,')(num) : '-');
@@ -17,7 +18,7 @@ function getTooltipContent(
     let content = `<p>${t('No data available')}</p>`;
     if (trendData !== undefined) {
         const per100k = isPer100K
-            ? `<li><span class="per100k"><sup>*</sup>per 100K pop.</span></li>`
+            ? `<li><span class="per100k"> <sup>*</sup>per 100K pop.</span></li>`
             : '';
         const asterisk = isPer100K ? `<sup>*</sup>` : '';
         content = `
@@ -61,7 +62,7 @@ function getTooltipContent(
     return `
 <div class="tooltip-content">
   <h3>
-  ${getCountryName(countryProperties.iso_a3)}
+  ${getCountryName(getCountryA3(countryProperties))}
   </h3>
   ${content}
 </div>
