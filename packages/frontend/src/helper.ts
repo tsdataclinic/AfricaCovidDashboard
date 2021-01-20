@@ -97,13 +97,13 @@ export const getCategories = (
                   label: 'New Cases',
                   value: 'new_case',
                   category: 'confirmed',
-                  color: RED,
+                  color: ORANGE,
               },
               {
                   label: 'New Recoveries',
                   value: 'new_recoveries',
                   category: 'recoveries',
-                  color: GREEN,
+                  color: BLUE,
               },
               {
                   label: 'New Deaths',

@@ -41,7 +41,7 @@ interface AfricaMapProps {
 type MapData = Feature<Geometry, CountryProperties>;
 
 const MAP_TARGET = '#africa-map';
-const TOOLTIP_HEIGHT = 250;
+const TOOLTIP_HEIGHT = 280;
 const TOOLTIP_WIDTH = 200;
 
 const topology = (africaTopology as unknown) as Topology<{
@@ -181,6 +181,11 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
                 extent[1] = Math.pow(10, maxPowerOfTen);
                 extent[0] = 1;
+            } else {
+                // Clean up extent if we use linear scale. Just round the nearest power of ten
+                const powerOfTen = Math.ceil(Math.log10(extent[1]));
+                extent[1] = Math.pow(10, powerOfTen);
+                extent[0] = 0;
             }
 
             const baseScale = logScale ? d3.scaleLog() : d3.scaleLinear();
@@ -217,7 +222,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .style('fill', (d: MapData) => {
                     const countryCode = getCountryA3(d.properties);
                     if (!(countryCode in scaledTrendData)) {
-                        return colors.DARK_GREY;
+                        return colors.WHITE;
                     }
                     const countryData: CountryTrend | undefined =
                         scaledTrendData?.[countryCode];
@@ -378,8 +383,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     useEffect(fillMap, [fillMap]);
     useEffect(createTooltip, [createTooltip]);
 
-    const isPer100KDisabled =
-        !selectedCountry || !allCountryStats || countryStatsLoading;
+    const isPer100KDisabled = !allCountryStats || countryStatsLoading;
     return (
         <Card>
             <ControlsContainer>
