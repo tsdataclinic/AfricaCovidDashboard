@@ -51,6 +51,14 @@ export function CountryMenu({
             style={{ width: 130 }}
             onSelect={handleChange}
             bordered={false}
+            // Search by ios3 and the country name
+            filterOption={(inputValue: string, option?: any) =>
+                option.value.toLowerCase().indexOf(inputValue.toLowerCase()) >=
+                    0 ||
+                option.children
+                    .toLowerCase()
+                    .indexOf(inputValue.toLowerCase()) >= 0
+            }
             placeholder={
                 isRegion ? t('select a region') : t('select a country')
             }

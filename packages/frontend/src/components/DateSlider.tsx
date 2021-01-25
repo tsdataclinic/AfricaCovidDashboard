@@ -138,13 +138,15 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
     }, [xAxis, currentValue, selectedDate, onUpdate, update]);
 
     useEffect(() => {
+        if (dates.length === 0) {
+            return;
+        }
         // init the start date to be the latest one
         const lastDate = moment(dates[dates.length - 1]);
-
         if (currentValue === undefined && xAxis(lastDate) >= 0) {
             setCurrentValue(xAxis(lastDate));
         }
-    }, [selectedDate, currentValue, xAxis, dates]);
+    }, [currentValue, xAxis, dates]);
 
     useEffect(() => {
         return () => clearInterval(timer.current);
@@ -239,7 +241,7 @@ const Wrapper = styled.div`
         pointer-events: stroke;
         stroke-width: 50px;
         stroke: transparent;
-        cursor: crosshair;
+        cursor: pointer;
     }
 
     .handle {
