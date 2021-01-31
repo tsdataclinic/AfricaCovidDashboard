@@ -57,7 +57,6 @@ export const getColor = (category: Category) => {
     }
 };
 
-export const formatDateToStr = (date: Date) => moment(date).format('MMM DD');
 export const convertDateStrToDate = (str: string) => moment(str).toDate();
 
 export const getCategories = (

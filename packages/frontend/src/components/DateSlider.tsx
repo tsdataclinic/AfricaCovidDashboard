@@ -11,12 +11,11 @@ import styled from 'styled-components';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import moment from 'moment';
+import { formatDay, formatMonth } from '../utils/trendUtils';
 
 const PLAY_SPEED = 100;
 // Chart margins
 const margin = { top: 15, right: 30, bottom: 25, left: 25 };
-const formatter = d3.timeFormat('%m-%d');
-var formatDate = d3.timeFormat('%m/%d/%y');
 const height = 100;
 
 interface DateSliderProps {
@@ -51,14 +50,14 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
         (h: Date) => {
             // update position and text of label according to slider scale
             d3.select('.handle').attr('cx', xAxis(h));
-            d3.select('.label').attr('x', xAxis(h)).text(formatDate(h));
+            d3.select('.label').attr('x', xAxis(h)).text(formatDay(h));
         },
         [xAxis]
     );
 
     const drawChart = useCallback(() => {
         const svg = d3.select(sliderRef.current) as any;
-        const tickNumber = Math.min(10, Math.round((width - 130) / 60));
+        const tickNumber = Math.min(10, Math.round((width - 130) / 70));
         svg.attr('width', width).attr('height', height);
         svg.selectAll('.ticks').remove();
         svg.selectAll('.handle').remove();
@@ -106,7 +105,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             .attr('y', 10)
             .attr('text-anchor', 'middle')
             .text(function (d: any) {
-                return formatter(d);
+                return formatMonth(d);
             });
 
         slider
@@ -118,7 +117,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             .append('text')
             .attr('class', 'label')
             .attr('text-anchor', 'middle')
-            .text(formatDate(startDate))
+            .text(formatDay(startDate))
             .attr('transform', 'translate(0,' + -25 + ')');
     }, [xAxis, startDate, onUpdate, width]);
 
