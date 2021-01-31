@@ -15,3 +15,4 @@ export const LIGHT_RED = '#D65E5C';
 export const RED = '#a22c29ff';
 export const LIGHT_GREEN = '#9fcb42';
 export const GREEN = '#7FB800';
+export const DARK_BLUE = '#002140';

@@ -12,6 +12,7 @@ import { useResizeObserver } from '../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import moment from 'moment';
 
+const PLAY_SPEED = 100;
 // Chart margins
 const margin = { top: 15, right: 30, bottom: 25, left: 25 };
 const formatter = d3.timeFormat('%m-%d');
@@ -177,7 +178,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             setIsMoving(moving);
             clearInterval(timer.current);
             if (moving) {
-                timer.current = setInterval(step, 300);
+                timer.current = setInterval(step, PLAY_SPEED);
             }
         },
         [targetValue, dates, xAxis]

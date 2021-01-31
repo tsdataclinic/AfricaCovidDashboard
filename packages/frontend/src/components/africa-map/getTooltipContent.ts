@@ -8,7 +8,7 @@ import { getCountryName } from '../../utils/i18nUtils';
 import { getCountryA3 } from './utils';
 
 const formatNumber = (num: number) => (num ? format(',')(num) : '-');
-const formatDelta = (num: number) => (num ? format('+,')(num) : '-');
+
 function getTooltipContent(
     t: TFunction,
     countryProperties: CountryProperties,
@@ -34,35 +34,30 @@ function getTooltipContent(
               trendData.confirmed_prediction
                   ? trendData.confirmed_prediction
                   : trendData.confirmed
-          )}&nbsp;<span class="delta">${formatDelta(trendData.new_case)}</span>
+          )}&nbsp;
         </li>
         <li>
           <span class="label recovered">${t(
               'Recovered'
           )}${asterisk}:&nbsp;</span>
-          ${formatNumber(
-              trendData.deaths
-          )}&nbsp;<span class="delta">${formatDelta(
-            trendData.new_recoveries
-        )}</span>
+          ${formatNumber(trendData.deaths)}&nbsp;
         </li>
         <li>
           <span class="label deaths">${t('Deaths')}${asterisk}:&nbsp;</span>
-          ${formatNumber(
-              trendData.recoveries
-          )}&nbsp;<span class="delta">${formatDelta(
-            trendData.new_deaths
-        )}</span>
+          ${formatNumber(trendData.recoveries)}&nbsp
         </li>
         ${per100k}
       </ul>
     `;
     }
 
+    const countryName =
+        getCountryName(getCountryA3(countryProperties)) ||
+        countryProperties.name;
     return `
 <div class="tooltip-content">
   <h3>
-  ${getCountryName(getCountryA3(countryProperties))}
+  ${countryName}
   </h3>
   ${content}
 </div>
@@ -107,9 +102,6 @@ export const tooltipCSS = css`
                 .label {
                     font-weight: bold;
                     display: block;
-                }
-                .delta {
-                    font-size: smaller;
                 }
             }
         }
