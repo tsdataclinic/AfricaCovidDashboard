@@ -86,9 +86,10 @@ const Home = () => {
     ]);
 
     const dates = useMemo(() => {
-        return currentCountryTrends.map((item) =>
+        const cdates = currentCountryTrends.map((item) =>
             convertDateStrToDate(item.date)
         );
+        return cdates;
     }, [currentCountryTrends]);
 
     const onSelectDate = useCallback(

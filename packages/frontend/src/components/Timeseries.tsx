@@ -256,43 +256,11 @@ const Timeseries = ({
                 if (!dates.length) {
                     return;
                 }
-                const linePath = line()
-                    .curve(curveMonotoneX)
-                    .x((date) => xScale(date as any))
-                    .y((date) =>
-                        yScale(
-                            getStatistic(
-                                dataType,
-                                category,
-                                timeseriesMapper[(date as any).valueOf()]
-                            )
-                        )
-                    );
-
-                svg.selectAll('.trend')
-                    .remove()
-                    .data([unpredictedDates])
-                    .join(
-                        (enter: any) =>
-                            enter
-                                .append('path')
-                                .attr('class', 'trend')
-                                .attr('fill', 'none')
-                                .attr('stroke', color + '50')
-                                .attr('stroke-width', 1)
-                                .attr('d', linePath)
-                                .call((enter: any) =>
-                                    enter
-                                        .attr('stroke-dashoffset', 1)
-                                        .transition(t)
-                                        .attr('stroke-dashoffset', 0)
-                                ),
-                        (update: any) => update.attr('stroke-dasharray', null)
-                    );
 
                 if (!predictedTimeseries.length || category !== 'confirmed') {
                     return;
                 }
+
                 svg.append('path')
                     .datum(predictedTimeseries)
                     .attr('class', 'confirmed-prediction-error')
@@ -305,14 +273,10 @@ const Timeseries = ({
                                 return xScale(convertDateStrToDate(d.date));
                             })
                             .y0(function (d: any) {
-                                return yScale(
-                                    d.confirmed_prediction_upper + 2000
-                                );
+                                return yScale(d.confirmed_prediction_upper);
                             })
                             .y1(function (d: any) {
-                                return yScale(
-                                    d.confirmed_prediction_lower - 2000
-                                );
+                                return yScale(d.confirmed_prediction_lower);
                             })
                     );
                 svg.append('path')

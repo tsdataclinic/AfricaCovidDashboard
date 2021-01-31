@@ -1,6 +1,6 @@
 import { Category, DataType, StatsBarItem } from './types';
 import moment from 'moment';
-import { BLUE, GREEN, GREY, ORANGE, PURPLE, RED } from './colors';
+import { BLUE, GREY, ORANGE, PURPLE, RED } from './colors';
 import { CountryTrend } from './hooks/useCountryTrends';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
