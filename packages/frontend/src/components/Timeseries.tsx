@@ -3,7 +3,6 @@ import { useResizeObserver } from '../hooks/useResizeObserver';
 import {
     abbreviateNumber,
     convertDateStrToDate,
-    formatDateToStr,
     getCategories,
     getColor,
     getStatistic,
@@ -12,9 +11,8 @@ import styled from 'styled-components';
 import { bisector } from 'd3-array';
 import { axisBottom, axisRight, AxisScale } from 'd3-axis';
 import { scaleLinear, scaleLog, scaleTime } from 'd3-scale';
-import { timeFormat } from 'd3-time-format';
 import { pointer, select } from 'd3-selection';
-import { area, curveMonotoneX, line } from 'd3-shape';
+import { area, line } from 'd3-shape';
 import React, {
     useCallback,
     useEffect,
@@ -29,10 +27,10 @@ import moment from 'moment';
 import { Statistic } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { transparentize } from 'polished';
+import { formatDay } from '../utils/trendUtils';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
-const formatter = timeFormat('%m-%d');
 
 interface TimeseriesProps {
     timeseries: CountryTrend[];
@@ -112,13 +110,13 @@ const Timeseries = ({
             .range([margin.left, chartRight]);
 
         // Number of x-axis ticks
-        const numTicksX = width < 480 ? 4 : 7;
+        const numTicksX = width < 480 ? 4 : 5;
 
         const xAxis = (g: any) =>
             g.attr('class', 'x-axis').call(
                 axisBottom(xScale)
                     .ticks(numTicksX)
-                    .tickFormat((date) => formatter(date as Date))
+                    .tickFormat((date) => formatDay(date as Date))
             );
 
         const yAxis = (g: any, yScale: AxisScale<number>) =>
@@ -256,43 +254,11 @@ const Timeseries = ({
                 if (!dates.length) {
                     return;
                 }
-                const linePath = line()
-                    .curve(curveMonotoneX)
-                    .x((date) => xScale(date as any))
-                    .y((date) =>
-                        yScale(
-                            getStatistic(
-                                dataType,
-                                category,
-                                timeseriesMapper[(date as any).valueOf()]
-                            )
-                        )
-                    );
-
-                svg.selectAll('.trend')
-                    .remove()
-                    .data([unpredictedDates])
-                    .join(
-                        (enter: any) =>
-                            enter
-                                .append('path')
-                                .attr('class', 'trend')
-                                .attr('fill', 'none')
-                                .attr('stroke', color + '50')
-                                .attr('stroke-width', 1)
-                                .attr('d', linePath)
-                                .call((enter: any) =>
-                                    enter
-                                        .attr('stroke-dashoffset', 1)
-                                        .transition(t)
-                                        .attr('stroke-dashoffset', 0)
-                                ),
-                        (update: any) => update.attr('stroke-dasharray', null)
-                    );
 
                 if (!predictedTimeseries.length || category !== 'confirmed') {
                     return;
                 }
+
                 svg.append('path')
                     .datum(predictedTimeseries)
                     .attr('class', 'confirmed-prediction-error')
@@ -305,14 +271,10 @@ const Timeseries = ({
                                 return xScale(convertDateStrToDate(d.date));
                             })
                             .y0(function (d: any) {
-                                return yScale(
-                                    d.confirmed_prediction_upper + 2000
-                                );
+                                return yScale(d.confirmed_prediction_upper);
                             })
                             .y1(function (d: any) {
-                                return yScale(
-                                    d.confirmed_prediction_lower - 2000
-                                );
+                                return yScale(d.confirmed_prediction_lower);
                             })
                     );
                 svg.append('path')
@@ -466,7 +428,7 @@ const Timeseries = ({
                                         )}
                                     </h5>
                                     <h5 className="title">
-                                        {formatDateToStr(highlightedDate)}
+                                        {formatDay(highlightedDate)}
                                     </h5>
                                     <div className="stats-bottom">
                                         <h2>

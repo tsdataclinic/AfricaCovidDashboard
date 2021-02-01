@@ -1,4 +1,5 @@
 import { CountryTrend } from '../hooks/useCountryTrends';
+import moment from 'moment';
 
 const safeFormatInteger = (num: number | undefined): number =>
     num ? Math.round(num) : 0;
@@ -31,3 +32,6 @@ export const scaleTrendDatum = (
         ),
     };
 };
+
+export const formatMonth = (d: Date) => moment(d).format('MMM YYYY');
+export const formatDay = (d: Date) => moment(d).format('DD MMM YYYY');

@@ -1,4 +1,5 @@
 import i18n from 'i18next';
+import moment from 'moment';
 import { initReactI18next } from 'react-i18next';
 import translationEN from './translation/en.json'; // ENGLISH
 import translationFR from './translation/fr.json'; // FRENCH
@@ -30,6 +31,10 @@ const resources = {
         translation: translationSW,
     },
 };
+
+i18n.on('languageChanged', function (lng) {
+    moment.locale(lng);
+});
 
 i18n.use(LanguageDetector)
     .use(initReactI18next)

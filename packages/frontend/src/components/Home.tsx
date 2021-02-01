@@ -9,12 +9,12 @@ import {
 import { useAllRegionTrends } from '../hooks/useRegionTrends';
 import StatsBar from './StatsBar';
 import Trend from './Trend';
-import moment, { Moment } from 'moment';
+import { Moment } from 'moment';
 import DateSlider from './DateSlider';
 import { convertDateStrToDate } from '../helper';
 import QueryParamsContext from '../contexts/QueryParamsContext';
 import styled from 'styled-components';
-import { mapValues, pickBy, Dictionary, isNil, negate } from 'lodash';
+import { Dictionary } from 'lodash';
 import QueryControl from './QueryControl';
 
 const LAYOUT_GUTTER: [number, number] = [16, 16];
@@ -85,11 +85,11 @@ const Home = () => {
         isRegion,
     ]);
 
-    const dates = useMemo(() => {
-        return currentCountryTrends.map((item) =>
-            convertDateStrToDate(item.date)
-        );
-    }, [currentCountryTrends]);
+    const dates = useMemo(
+        () =>
+            currentCountryTrends.map((item) => convertDateStrToDate(item.date)),
+        [currentCountryTrends]
+    );
 
     const onSelectDate = useCallback(
         (value: Moment) => {
@@ -98,35 +98,24 @@ const Home = () => {
         [updateQuery]
     );
 
-    const trendsByDateByCountry = useMemo(() => {
-        if (!allCountryTrends) {
-            return undefined;
-        }
-        return mapValues(allCountryTrends, (trends) =>
-            trends.reduce(
-                (a: { [k in string]: CountryTrend }, b: CountryTrend) => {
-                    a[moment(b.date).format('YYYY-MM-DD')] = b;
-                    return a;
-                },
-                {}
-            )
-        );
-    }, [allCountryTrends]);
-
     const selectedStatsByCountry:
         | Dictionary<CountryTrend>
         | undefined = useMemo(() => {
-        if (!trendsByDateByCountry) {
+        if (!allCountryTrends || !selectedDate) {
             return undefined;
         }
-        const withSelectedDate = mapValues(
-            trendsByDateByCountry,
-            (trendsByDate) =>
-                trendsByDate[(selectedDate || moment()).format('YYYY-MM-DD')]
-        );
-        // Filter out entries with empty values
-        return pickBy(withSelectedDate, negate(isNil));
-    }, [trendsByDateByCountry, selectedDate]);
+
+        const dictionary: Dictionary<CountryTrend> = {};
+        Object.keys(allCountryTrends).forEach((country) => {
+            const trend = allCountryTrends[country].find((t) =>
+                selectedDate.isSame(t.date)
+            );
+            if (trend) {
+                dictionary[country] = trend;
+            }
+        });
+        return dictionary;
+    }, [currentCountryTrends, selectedDate]);
 
     const selectedStats = useMemo(
         () =>

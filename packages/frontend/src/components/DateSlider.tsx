@@ -11,11 +11,11 @@ import styled from 'styled-components';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import moment from 'moment';
+import { formatDay, formatMonth } from '../utils/trendUtils';
 
+const PLAY_SPEED = 100;
 // Chart margins
 const margin = { top: 15, right: 30, bottom: 25, left: 25 };
-const formatter = d3.timeFormat('%m-%d');
-var formatDate = d3.timeFormat('%m/%d/%y');
 const height = 100;
 
 interface DateSliderProps {
@@ -26,7 +26,6 @@ interface DateSliderProps {
 
 const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
     const [isMoving, setIsMoving] = useState(false);
-    const [currentValue, setCurrentValue] = useState<number>();
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const dimensions = useResizeObserver(wrapperRef) || { width: 0, height: 0 };
     const sliderRef = useRef<SVGSVGElement | null>();
@@ -51,14 +50,14 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
         (h: Date) => {
             // update position and text of label according to slider scale
             d3.select('.handle').attr('cx', xAxis(h));
-            d3.select('.label').attr('x', xAxis(h)).text(formatDate(h));
+            d3.select('.label').attr('x', xAxis(h)).text(formatDay(h));
         },
         [xAxis]
     );
 
     const drawChart = useCallback(() => {
         const svg = d3.select(sliderRef.current) as any;
-        const tickNumber = Math.min(10, Math.round((width - 130) / 60));
+        const tickNumber = Math.min(10, Math.round((width - 130) / 70));
         svg.attr('width', width).attr('height', height);
         svg.selectAll('.ticks').remove();
         svg.selectAll('.handle').remove();
@@ -89,8 +88,8 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
                         slider.interrupt();
                     })
                     .on('start drag', function (event: any) {
-                        setCurrentValue(event.x);
-                        update(xAxis.invert(currentValue ? currentValue : 0));
+                        const date = xAxis.invert(event.x ? event.x : 0);
+                        onUpdate(moment(date));
                     })
             );
 
@@ -106,7 +105,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             .attr('y', 10)
             .attr('text-anchor', 'middle')
             .text(function (d: any) {
-                return formatter(d);
+                return formatMonth(d);
             });
 
         slider
@@ -118,35 +117,44 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             .append('text')
             .attr('class', 'label')
             .attr('text-anchor', 'middle')
-            .text(formatDate(startDate))
+            .text(formatDay(startDate))
             .attr('transform', 'translate(0,' + -25 + ')');
-    }, [xAxis, startDate, update, currentValue, width]);
+    }, [xAxis, startDate, onUpdate, width]);
 
     useEffect(() => {
         drawChart();
     }, [drawChart]);
 
     useEffect(() => {
-        const newDate = xAxis.invert(currentValue ? currentValue : 0);
-        update(newDate);
-        const initSelectedDate = !selectedDate && currentValue !== undefined;
-        const updateSelectedDate =
-            selectedDate && !selectedDate.isSame(newDate, 'day');
-        if (updateSelectedDate || initSelectedDate) {
-            onUpdate(moment(newDate));
-        }
-    }, [xAxis, currentValue, selectedDate, onUpdate, update]);
-
-    useEffect(() => {
-        if (dates.length === 0) {
+        if (!selectedDate) {
             return;
         }
-        // init the start date to be the latest one
-        const lastDate = moment(dates[dates.length - 1]);
-        if (currentValue === undefined && xAxis(lastDate) >= 0) {
-            setCurrentValue(xAxis(lastDate));
+        update(selectedDate.toDate());
+    }, [update, selectedDate]);
+
+    useEffect(() => {
+        if (dates.length === 0 || !dates[0]) {
+            return;
         }
-    }, [currentValue, xAxis, dates]);
+
+        const lastDate = moment(dates[dates.length - 1]);
+        if (selectedDate === undefined) {
+            // init the start date to be the latest one
+            if (xAxis(lastDate) >= 0) {
+                onUpdate(lastDate);
+            }
+            return;
+        }
+
+        if (selectedDate.isAfter(lastDate, 'day')) {
+            onUpdate(lastDate);
+            return;
+        }
+
+        if (selectedDate.isBefore(dates[0], 'day')) {
+            onUpdate(moment(dates[0]));
+        }
+    }, [xAxis, dates, onUpdate, selectedDate]);
 
     useEffect(() => {
         return () => clearInterval(timer.current);
@@ -155,32 +163,30 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
     const handleClick = useCallback(
         (moving: boolean) => {
             const step = () => {
-                setCurrentValue((prev) => {
-                    const newValue =
-                        (prev ? prev : 0) + targetValue / dates.length;
-                    const isSameDay = moment(xAxis.invert(prev || 0)).isSame(
-                        xAxis.invert(newValue),
-                        'day'
-                    );
-                    if (isSameDay || newValue > targetValue) {
-                        // Stop play when reach end
-                        setIsMoving(false);
-                        if (timer.current) {
-                            clearInterval(timer.current);
-                        }
-                        return 0;
+                if (!selectedDate || !dates || !dates[0]) {
+                    return;
+                }
+                const lastDate = dates[dates.length - 1];
+                const nextDate = selectedDate.add(1, 'day');
+                if (nextDate.isAfter(lastDate)) {
+                    // Stop play when reach end
+                    setIsMoving(false);
+                    if (timer.current) {
+                        clearInterval(timer.current);
                     }
-                    return newValue;
-                });
+                    onUpdate(moment(dates[0]));
+                } else {
+                    onUpdate(nextDate);
+                }
             };
 
             setIsMoving(moving);
             clearInterval(timer.current);
             if (moving) {
-                timer.current = setInterval(step, 300);
+                timer.current = setInterval(step, PLAY_SPEED);
             }
         },
-        [targetValue, dates, xAxis]
+        [dates, onUpdate, selectedDate]
     );
 
     return (

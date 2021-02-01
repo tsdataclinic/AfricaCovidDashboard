@@ -15,7 +15,7 @@ import { GeometryCollection, Topology } from 'topojson-specification';
 import styled from 'styled-components';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
-import { mapValues, values } from 'lodash';
+import { mapValues, values, isEmpty } from 'lodash';
 import * as colors from '../../colors';
 import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
@@ -221,8 +221,13 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .duration(1000)
                 .style('fill', (d: MapData) => {
                     const countryCode = getCountryA3(d.properties);
-                    if (!(countryCode in scaledTrendData)) {
+                    // Loading
+                    if (isEmpty(scaledTrendData)) {
                         return colors.WHITE;
+                    }
+
+                    if (!(countryCode in scaledTrendData)) {
+                        return colors.DARK_BLUE;
                     }
                     const countryData: CountryTrend | undefined =
                         scaledTrendData?.[countryCode];
