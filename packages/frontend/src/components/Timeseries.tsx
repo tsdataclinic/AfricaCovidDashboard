@@ -430,48 +430,46 @@ const Timeseries = ({
                                     <h5 className="title">
                                         {formatDay(highlightedDate)}
                                     </h5>
-                                    <div className="stats-bottom">
-                                        <h2>
-                                            <Statistic
-                                                value={
-                                                    isPrediction &&
-                                                    !isPredictedCumulative
-                                                        ? '-'
-                                                        : highlight
-                                                }
-                                                precision={0}
-                                                valueStyle={{
-                                                    color: getStatColor(
-                                                        category,
-                                                        !!isPredictedCumulative
-                                                    ),
-                                                }}
-                                            />
-                                        </h2>
-                                        <h6>
-                                            <Statistic
-                                                value={
-                                                    isPrediction &&
-                                                    !isPredictedCumulative
-                                                        ? '-'
-                                                        : delta
-                                                }
-                                                prefix={
-                                                    delta && delta > 0
-                                                        ? '+'
-                                                        : ''
-                                                }
-                                                precision={0}
-                                                valueStyle={{
-                                                    color: getStatColor(
-                                                        category,
-                                                        !!isPredictedCumulative
-                                                    ),
-                                                    fontSize: 10,
-                                                }}
-                                            />
-                                        </h6>
-                                    </div>
+
+                                    <HighlightNumber>
+                                        <Statistic
+                                            value={
+                                                isPrediction &&
+                                                !isPredictedCumulative
+                                                    ? '-'
+                                                    : highlight
+                                            }
+                                            precision={0}
+                                            valueStyle={{
+                                                color: getStatColor(
+                                                    category,
+                                                    !!isPredictedCumulative
+                                                ),
+                                            }}
+                                        />
+                                    </HighlightNumber>
+                                    <Delta>
+                                        <Statistic
+                                            value={
+                                                isPrediction &&
+                                                !isPredictedCumulative
+                                                    ? '-'
+                                                    : delta
+                                            }
+                                            prefix={
+                                                delta && delta > 0 ? '+' : ''
+                                            }
+                                            precision={0}
+                                            valueStyle={{
+                                                color: getStatColor(
+                                                    category,
+                                                    !!isPredictedCumulative
+                                                ),
+                                                fontSize: 10,
+                                            }}
+                                        />
+                                        {delta ? (delta > 0 ? '↗' : '↘') : ''}
+                                    </Delta>
                                 </div>
                             )}
                             <svg
@@ -526,6 +524,7 @@ const Wrapper = styled.div`
         pointer-events: none;
         position: absolute;
         top: 0.5rem;
+        text-align: start;
     }
 
     svg {
@@ -592,10 +591,6 @@ const Wrapper = styled.div`
         font-weight: 400;
     }
 
-    .stats-bottom {
-        display: flex;
-        align-items: center;
-    }
     .predicted {
         h5.title,
         h2,
@@ -603,4 +598,12 @@ const Wrapper = styled.div`
             color: ${RED};
         }
     }
+`;
+
+const HighlightNumber = styled.h2`
+    margin-bottom: 0;
+`;
+
+const Delta = styled.h6`
+    display: flex;
 `;
