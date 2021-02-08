@@ -5,6 +5,8 @@ import {
   CountryTrendDict,
   Country,
   CountryStatsDict,
+  RegionStats,
+  RegionStatsDict,
 } from './country_types';
 import CsvReadableStream from 'csv-reader';
 import { getDataFromJHTS } from '../utils/JohnHopkins';
@@ -78,7 +80,13 @@ export class CountryService {
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: false }))
         .on('data', (row, index) => {
-          if (lineNo > 3) result[row[1]] = row[row.length - 3];
+          if (lineNo > 3) {
+            let pop = row[row.length - 3];
+            if (typeof pop == 'string') {
+              pop = parseInt(pop);
+            }
+            result[row[1]] = pop;
+          }
           lineNo += 1;
         })
         .on('end', () => {
@@ -181,6 +189,24 @@ export class CountryService {
       (acc, stat) => ((acc[stat.iso3] = stat), acc),
       {},
     );
+  }
+
+  //** Get region stats */
+  getRegionStats(): RegionStatsDict {
+    const regions = this.getRegions();
+    let result: RegionStatsDict = {};
+    regions.forEach((region) => {
+      const regionStats = this.countries
+        .filter((c) => c.region === region)
+        .map((c) => this.allCountryStats.find((s) => s.iso3 == c.iso3))
+        .filter((c) => c && c.population);
+      const population = regionStats.reduce(
+        (acc, stats) => acc + stats.population,
+        0,
+      );
+      result[region] = new RegionStats(region, population);
+    });
+    return result;
   }
 
   //** Returns a Country Stats for the requested country*/

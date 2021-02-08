@@ -24,6 +24,27 @@ export class Country {
   iso3: string;
 }
 
+export class RegionStats {
+  @ApiProperty({
+    description: 'Stats for each region',
+    examples: ['CentralAfrica'],
+    example: 'CentralAfrica',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'Population of the region',
+    examples: [10000, 20000],
+    example: 1000,
+  })
+  population: number;
+
+  constructor(name: string, population: number) {
+    this.name = name;
+    this.population = population;
+  }
+}
+
 export class CountryStats {
   @ApiProperty({
     description: 'The name of the country',
@@ -216,6 +237,7 @@ export class TrendDatum {
 
 export type CountryTrendDict = { [country: string]: TrendDatum[] };
 export type CountryStatsDict = { [country: string]: CountryStats[] };
+export type RegionStatsDict = { [region: string]: RegionStats };
 
 const datesAreOnSameDay = (first: Date, second: Date) =>
   first.getFullYear() === second.getFullYear() &&
