@@ -135,7 +135,9 @@ export class CountryService {
     return africaTrends.reduce(
       (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
         trend.length == 0
-          ? [...countryTrend]
+          ? countryTrend.map((ct) =>
+              Object.assign(Object.create(Object.getPrototypeOf(ct)), ct),
+            )
           : trend.map((t, i) => t.add(countryTrend[i])),
       [],
     );
@@ -214,7 +216,9 @@ export class CountryService {
       let region_trend = trends.reduce(
         (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
           trend.length == 0
-            ? [...countryTrend]
+            ? countryTrend.map((ct) =>
+                Object.assign(Object.create(Object.getPrototypeOf(ct)), ct),
+              )
             : trend.map((t, i) => t.add(countryTrend[i])),
         [],
       );
