@@ -43,6 +43,15 @@ export class CountryController {
   regionTrends() {
     return this.countryService.getRegionTrends();
   }
+
+  @Get('/region/stats')
+  @ApiOkResponse({
+    description: 'Stats for all regions',
+  })
+  regionStats() {
+    return this.countryService.getRegionStats();
+  }
+
   @Get('/africa/trends')
   @ApiQuery({
     name: 'startDate',
