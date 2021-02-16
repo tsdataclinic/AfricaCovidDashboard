@@ -1,46 +1,60 @@
 import React from 'react';
-import { HeatMapOutlined, GithubOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useLocation, Link } from 'react-router-dom';
 import { ABOUT_PATH, HOME_PATH } from '../Routes';
+import { DARK_BLUE } from '../colors';
+import LanguagePanel from './LanguagePanel';
+import Logo from './Logo';
 
-interface MenuProps {
-    navCollapsed: boolean;
-}
-
-const AppMenu = ({ navCollapsed }: MenuProps) => {
+const AppMenu = () => {
     const { t } = useTranslation();
     const { pathname } = useLocation();
 
     return (
         <>
-            <Logo>
-                {navCollapsed ? t('Africa') : t('Africa COVID Dashboard')}
-            </Logo>
-            <Menu
-                theme="dark"
-                mode="inline"
-                defaultSelectedKeys={[getMenuSelectedKey(pathname)]}
-                defaultOpenKeys={['exploration']}
-            >
-                <Menu.Item key="exploration" icon={<HeatMapOutlined />}>
-                    <Link to={HOME_PATH}>{t('Exploration')}</Link>
-                </Menu.Item>
-                <Menu.Item key="about" icon={<GithubOutlined />}>
-                    <Link to={ABOUT_PATH}>{t('About')}</Link>
-                </Menu.Item>
-            </Menu>
+            <Logo />
+            <Flex>
+                <Menu
+                    mode="inline"
+                    defaultSelectedKeys={[getMenuSelectedKey(pathname)]}
+                >
+                    <Option
+                        key="dashboard"
+                        icon={<i className="fas fa-chart-line"></i>}
+                    >
+                        <Link to={HOME_PATH}>{t('Dashboard')}</Link>
+                    </Option>
+                    <Option
+                        key="about"
+                        icon={<i className="fas fa-info-circle"></i>}
+                    >
+                        <Link to={ABOUT_PATH}>{t('About')}</Link>
+                    </Option>
+                </Menu>
+                <LanguagePanel />
+            </Flex>
         </>
     );
 };
 
 export default AppMenu;
 
-const Logo = styled.div`
-    color: white;
-    padding: 20px;
+const Option = styled(Menu.Item)`
+    color: ${DARK_BLUE};
+    display: flex;
+    align-items: center;
+    i {
+        margin-right: 5px;
+    }
+`;
+
+const Flex = styled.div`
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px);
+    justify-content: space-between;
 `;
 
 const getMenuSelectedKey = (pathname: string) => {
@@ -48,6 +62,6 @@ const getMenuSelectedKey = (pathname: string) => {
         case ABOUT_PATH:
             return 'about';
         default:
-            return 'exploration';
+            return 'dashboard';
     }
 };

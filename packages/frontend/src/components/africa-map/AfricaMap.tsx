@@ -5,7 +5,6 @@ import React, {
     useLayoutEffect,
     useMemo,
     useRef,
-    useState,
 } from 'react';
 import * as d3 from 'd3';
 import { legendColor } from 'd3-svg-legend';
@@ -21,7 +20,7 @@ import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
 import getTooltipContent, { tooltipCSS } from './getTooltipContent';
 import { getCountryA3, getRegion } from './utils';
-import { Card, Switch } from 'antd';
+import { Card } from 'antd';
 import CountryStatsContext from '../../contexts/CountryStatsContext';
 import { scaleTrendDatum } from '../../utils/trendUtils';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +35,8 @@ interface AfricaMapProps {
     onCountrySelect?: (country: string) => void;
     trendData?: { [k in string]: CountryTrend }; // Data should be a map of country A3 to trend datum
     loading?: boolean;
+    isLog: boolean;
+    per100k: boolean;
 }
 
 type MapData = Feature<Geometry, CountryProperties>;
@@ -65,24 +66,22 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     onCountrySelect,
     trendData,
     onRegionSelect,
+    isLog,
+    per100k,
 }) => {
     const { t } = useTranslation();
     const width = 960;
     const height = 720;
     const svgNode = useRef<SVGSVGElement>(null);
-    const [logScale, setLogScale] = useState(false);
-    const [isPer100k, setIsPer100K] = useState(false);
 
-    const { allCountryStats, isLoading: countryStatsLoading } = useContext(
-        CountryStatsContext
-    );
+    const { allCountryStats } = useContext(CountryStatsContext);
 
     const isPrediction = Object.keys(trendData || {}).find(
         (key) => trendData?.[key].isPrediction
     );
 
     const scaledTrendData = useMemo(() => {
-        if (!trendData || !isPer100k || !allCountryStats) {
+        if (!trendData || !allCountryStats) {
             return trendData;
         }
         const scaled = mapValues(trendData, (datum, country_iso) => {
@@ -97,7 +96,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             (key) => scaled[key] === undefined && delete scaled[key]
         );
         return scaled as { [key: string]: CountryTrend };
-    }, [isPer100k, allCountryStats, trendData]);
+    }, [allCountryStats, trendData]);
 
     const trendKey = useMemo(() => {
         let trendKey: keyof CountryTrend = 'confirmed';
@@ -176,7 +175,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 extent = [1, 1];
             }
 
-            if (logScale) {
+            if (isLog) {
                 // Clean up the extent if we are using log scale.
                 const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
                 extent[1] = Math.pow(10, maxPowerOfTen);
@@ -188,7 +187,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 extent[0] = 0;
             }
 
-            const baseScale = logScale ? d3.scaleLog() : d3.scaleLinear();
+            const baseScale = isLog ? d3.scaleLog() : d3.scaleLinear();
             const colorScale = baseScale
                 .domain(extent)
                 // @ts-ignore
@@ -203,7 +202,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .labelOffset(3)
                 .shapePadding(2);
 
-            if (logScale) {
+            if (isLog) {
                 const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
                 legend = legend.cells(
                     colorScale.ticks(Math.min(5, maxPowerOfTen))
@@ -244,9 +243,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         category,
         scaledTrendData,
         trendKey,
-        logScale,
+        isLog,
         isRegion,
         selectedRegion,
+        isPrediction,
     ]);
 
     const createTooltip = useCallback(() => {
@@ -274,7 +274,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                             t,
                             d,
                             scaledTrendData?.[getCountryA3(d)],
-                            isPer100k
+                            per100k
                         )
                     );
             }
@@ -284,7 +284,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         };
         svg.selectAll('.overlay-country-border').on('mouseenter', showTooltip);
         svg.selectAll('.overlay-country-border').on('mouseout', hideTooltip);
-    }, [scaledTrendData, isPer100k, t]);
+    }, [scaledTrendData, per100k, t]);
 
     const initializeMap = useCallback(() => {
         const svg = d3
@@ -388,27 +388,8 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     useEffect(fillMap, [fillMap]);
     useEffect(createTooltip, [createTooltip]);
 
-    const isPer100KDisabled = !allCountryStats || countryStatsLoading;
     return (
         <Card>
-            <ControlsContainer>
-                <Control>
-                    <label>
-                        {t('Logarithmic')}:&nbsp;
-                        <Switch size="small" onChange={setLogScale} />
-                    </label>
-                </Control>
-                <Control>
-                    <label>
-                        {t('Per 100K')}:&nbsp;
-                        <Switch
-                            size="small"
-                            onChange={setIsPer100K}
-                            disabled={isPer100KDisabled}
-                        />
-                    </label>
-                </Control>
-            </ControlsContainer>
             <MapContainer id="svg-parent" className="scaling-svg-container">
                 <svg id="africa-map" ref={svgNode} />
             </MapContainer>
@@ -457,17 +438,6 @@ const MapContainer = styled.div`
         }
         ${tooltipCSS}
     }
-`;
-
-const ControlsContainer = styled.div`
-    display: flex;
-`;
-
-const Control = styled.div`
-    margin-right: 10px;
-    font-size: 0.75rem;
-    color: ${colors.GREY};
-    font-weight: 900;
 `;
 
 export default React.memo(AfricaMap);
