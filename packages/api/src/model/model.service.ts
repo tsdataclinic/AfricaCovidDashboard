@@ -20,7 +20,7 @@ export class ModelService {
     return new Promise((resolve, reject) => {
       let data: CountryTrendDict = {};
       const readStream = fs.createReadStream(
-        'data/forecastlmenoregion.csv',
+        'data/forecastestimates.csv',
         'utf8',
       );
       readStream
