@@ -2,15 +2,17 @@ import React, { useState, FunctionComponent } from 'react';
 import { Layout, Drawer } from 'antd';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
-import LayoutHeader from './Header';
+import SmallScreenHeader from './controls/SmallScreenHeader';
 import useQueryParams from '../hooks/useQueryParams';
 import QueryParamsContext from '../contexts/QueryParamsContext';
 import { CountryStatsStore } from '../contexts/CountryStatsContext';
+import { WHITE } from '../colors';
 
-const { Header, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
+
+const NAV_SHADOW = '0px 2px 8px rgba(0,0,0,0.15';
 
 const AppLayout: FunctionComponent = ({ children }) => {
-    const [navCollapsed, setNavCollapsed] = useState(false);
     const [showDrawer, setDrawer] = useState(false);
     const {
         country,
@@ -20,16 +22,17 @@ const AppLayout: FunctionComponent = ({ children }) => {
         category,
         updateQuery,
         selectedDate,
+        isLog,
+        per100K,
     } = useQueryParams();
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider
-                collapsible
-                collapsed={navCollapsed}
-                onCollapse={() => setNavCollapsed(!navCollapsed)}
                 className="hide-small"
+                theme="light"
+                style={{ boxShadow: NAV_SHADOW }}
             >
-                <AppMenu navCollapsed={navCollapsed} />
+                <AppMenu />
             </Sider>
             <StyledDrawer
                 closable={false}
@@ -37,13 +40,12 @@ const AppLayout: FunctionComponent = ({ children }) => {
                 onClose={() => setDrawer(false)}
                 visible={showDrawer}
                 className="hide-large"
+                bodyStyle={{ backgroundColor: WHITE }}
             >
-                <AppMenu navCollapsed={false} />
+                <AppMenu />
             </StyledDrawer>
             <Main>
-                <StyledHeader>
-                    <LayoutHeader openDrawer={() => setDrawer(true)} />
-                </StyledHeader>
+                <SmallScreenHeader openDrawer={() => setDrawer(true)} />
                 <Content>
                     <QueryParamsContext.Provider
                         value={{
@@ -54,6 +56,8 @@ const AppLayout: FunctionComponent = ({ children }) => {
                             category,
                             updateQuery,
                             selectedDate,
+                            isLog,
+                            per100K,
                         }}
                     >
                         <CountryStatsStore>{children}</CountryStatsStore>
@@ -66,17 +70,9 @@ const AppLayout: FunctionComponent = ({ children }) => {
 
 export default AppLayout;
 
-const StyledHeader = styled(Header)`
-    background: white;
-    padding: 0 16px;
-    line-height: 48px;
-    &.ant-layout-header {
-        height: auto;
-    }
-`;
-
 const Main = styled(Content)`
     height: 100vh;
+    background: #f0f2f5;
 `;
 
 const StyledDrawer = styled(Drawer)`

@@ -8,17 +8,17 @@ import React, {
 import { Button } from 'antd';
 import { PauseCircleFilled, PlayCircleFilled } from '@ant-design/icons';
 import styled from 'styled-components';
-import { useResizeObserver } from '../hooks/useResizeObserver';
+import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import moment from 'moment';
-import { formatDay, formatMonth } from '../utils/trendUtils';
+import { formatDay, formatMonth } from '../../utils/trendUtils';
 
 const PLAY_SPEED = 100;
 // Chart margins
-const margin = { top: 15, right: 30, bottom: 25, left: 25 };
-const height = 100;
+const margin = { top: 5, right: 5, bottom: 5, left: 25 };
+const height = 60;
 
-interface DateSliderProps {
+export interface DateSliderProps {
     onUpdate: (value: moment.Moment) => void;
     selectedDate?: moment.Moment;
     dates: Date[];
@@ -35,7 +35,6 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
     const { width } = dimensions || wrapperRef.current?.getBoundingClientRect();
 
     const targetValue = width - margin.right;
-
     const xAxis = useMemo(
         () =>
             d3
@@ -96,7 +95,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
         slider
             .insert('g', '.track-overlay')
             .attr('class', 'ticks')
-            .attr('transform', 'translate(0,' + 18 + ')')
+            .attr('transform', 'translate(0,' + 10 + ')')
             .selectAll('text')
             .data(xAxis.ticks(tickNumber))
             .enter()
@@ -118,7 +117,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             .attr('class', 'label')
             .attr('text-anchor', 'middle')
             .text(formatDay(startDate))
-            .attr('transform', 'translate(0,' + -25 + ')');
+            .attr('transform', 'translate(0,' + -15 + ')');
     }, [xAxis, startDate, onUpdate, width]);
 
     useEffect(() => {
@@ -217,7 +216,7 @@ export default DateSlider;
 const ControlButton = styled(Button)`
     position: absolute;
     right: 10px;
-    top: 30px;
+    top: 15px;
 `;
 
 const Wrapper = styled.div`
@@ -255,5 +254,9 @@ const Wrapper = styled.div`
         stroke: #000;
         stroke-opacity: 0.5;
         stroke-width: 1.25px;
+    }
+
+    .label {
+        font-size: 12px;
     }
 `;

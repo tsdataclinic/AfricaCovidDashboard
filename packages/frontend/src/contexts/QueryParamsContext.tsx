@@ -8,6 +8,8 @@ interface QueryParamsContextProps {
     country: string;
     region: string;
     isRegion: boolean;
+    isLog: boolean;
+    per100K: boolean;
     selectedDate?: Moment;
     updateQuery: (key: SeachQueryKey, value: SearchQueryValue) => void;
     dataType: DataType;
@@ -18,6 +20,8 @@ const QueryParamsContext = createContext<QueryParamsContextProps>({
     country: '',
     region: '',
     isRegion: false,
+    isLog: false,
+    per100K: false,
     selectedDate: undefined,
     updateQuery: noop,
     dataType: 'cumulative' as DataType,

@@ -11,7 +11,9 @@ export type SeachQueryKey =
     | 'category'
     | 'country'
     | 'region'
-    | 'isRegion';
+    | 'isRegion'
+    | 'isLog'
+    | 'per100K';
 
 export type SearchQueryValue =
     | Moment
@@ -60,6 +62,8 @@ const useQueryParams = () => {
         country,
         region,
         isRegion,
+        isLog,
+        per100K,
     } = useMemo(() => qs.parse(search.replace('?', '')), [search]);
 
     const selectedMoment = useMemo(
@@ -74,6 +78,8 @@ const useQueryParams = () => {
         country: country as string,
         region: region as string,
         isRegion: isRegion === 'true',
+        isLog: isLog === 'true',
+        per100K: per100K === 'true',
         selectedDate: selectedMoment,
         updateQuery,
         dataType: (dataType || 'cumulative') as DataType,
