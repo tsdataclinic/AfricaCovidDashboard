@@ -1,14 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Row, Col } from 'antd';
-import CountryMenu from './CountryMenu';
+import CountryMenu, { CountryMenuProps } from './CountryMenu';
 import DataSettings from './DataSettings';
 import { WHITE } from '../../colors';
 
-const TopControl = () => (
+const TopControl = ({ selectedToggle, handleToggle }: CountryMenuProps) => (
     <TopControlWrapper justify="space-between" align="middle">
         <Col xs={24} md={12}>
-            <CountryMenu />
+            <CountryMenu
+                handleToggle={handleToggle}
+                selectedToggle={selectedToggle}
+            />
         </Col>
         <Col xs={24} md={12} className="hide-small">
             <Row justify="end">
