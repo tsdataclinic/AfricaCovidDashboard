@@ -19,3 +19,4 @@ export const DARK_BLUE = '#002766';
 export const HINT_GREY = '434343';
 
 export const GREEK_BLUE = '#F0F5FF';
+export const HIGHLIGHT_BLUE = '#0050b3';

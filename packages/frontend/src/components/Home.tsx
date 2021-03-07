@@ -7,7 +7,7 @@ import {
     useAllCountryTrends,
 } from '../hooks/useCountryTrends';
 import { useAllRegionTrends } from '../hooks/useRegionTrends';
-import StatsBar from './StatsBar';
+import StatsBar from './stats-bar/StatsBar';
 import Trend from './Trend';
 import { Moment } from 'moment';
 import { convertDateStrToDate } from '../helper';
