@@ -6,15 +6,18 @@ import { format } from 'd3';
 import { TFunction } from 'i18next';
 import { getCountryName } from '../../utils/i18nUtils';
 import { getCountryA3 } from './utils';
+import { StatsMap } from '../../contexts/StatsContext';
 
 const formatNumber = (num: number) => (num ? format(',')(num) : '-');
 
 function getTooltipContent(
     t: TFunction,
     countryProperties: CountryProperties,
+    statsMap?: StatsMap,
     trendData?: CountryTrend,
     isPer100K?: boolean
 ) {
+    const regionPop = statsMap?.[countryProperties.subregion]?.population;
     let content = `<p>${t('No data available')}</p>`;
     if (trendData !== undefined) {
         const per100k = isPer100K
@@ -26,6 +29,13 @@ function getTooltipContent(
         <li><span class="label">${t(
             'Population Estimate'
         )}:&nbsp;</span>${formatNumber(countryProperties.pop_est)}</li>
+        <li>
+        <li><span class="label">${t('Region')}:&nbsp;</span>${
+            countryProperties.subregion
+        }</li>
+        <li><span class="label">${t('Region Population')}:&nbsp;</span>${
+            regionPop ? formatNumber(regionPop) : 'NA'
+        }</li>
         <li>
           <span class="label confirmed">${
               trendData.isPrediction ? t('Predicted Cases') : t('Confirmed')

@@ -21,7 +21,7 @@ import { Feature, Geometry } from 'geojson';
 import getTooltipContent, { tooltipCSS } from './getTooltipContent';
 import { getCountryA3, getRegion } from './utils';
 import { Card } from 'antd';
-import CountryStatsContext from '../../contexts/CountryStatsContext';
+import StatsContext from '../../contexts/StatsContext';
 import { scaleTrendDatum } from '../../utils/trendUtils';
 import { useTranslation } from 'react-i18next';
 
@@ -42,7 +42,7 @@ interface AfricaMapProps {
 type MapData = Feature<Geometry, CountryProperties>;
 
 const MAP_TARGET = '#africa-map';
-const TOOLTIP_HEIGHT = 280;
+const TOOLTIP_HEIGHT = 350;
 const TOOLTIP_WIDTH = 200;
 
 const topology = (africaTopology as unknown) as Topology<{
@@ -74,18 +74,18 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     const height = 720;
     const svgNode = useRef<SVGSVGElement>(null);
 
-    const { allCountryStats } = useContext(CountryStatsContext);
+    const { allStats } = useContext(StatsContext);
 
     const isPrediction = Object.keys(trendData || {}).find(
         (key) => trendData?.[key].isPrediction
     );
 
     const scaledTrendData = useMemo(() => {
-        if (!trendData || !allCountryStats) {
+        if (!trendData || !allStats) {
             return trendData;
         }
         const scaled = mapValues(trendData, (datum, country_iso) => {
-            const population = allCountryStats[country_iso]?.population;
+            const population = allStats[country_iso]?.population;
             if (!population) {
                 return undefined;
             }
@@ -96,7 +96,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             (key) => scaled[key] === undefined && delete scaled[key]
         );
         return scaled as { [key: string]: CountryTrend };
-    }, [allCountryStats, trendData]);
+    }, [allStats, trendData]);
 
     const trendKey = useMemo(() => {
         let trendKey: keyof CountryTrend = 'confirmed';
@@ -273,6 +273,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                         getTooltipContent(
                             t,
                             d,
+                            allStats,
                             scaledTrendData?.[getCountryA3(d)],
                             per100k
                         )
@@ -284,7 +285,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         };
         svg.selectAll('.overlay-country-border').on('mouseenter', showTooltip);
         svg.selectAll('.overlay-country-border').on('mouseout', hideTooltip);
-    }, [scaledTrendData, per100k, t]);
+    }, [scaledTrendData, per100k, t, allStats]);
 
     const initializeMap = useCallback(() => {
         const svg = d3

@@ -5,7 +5,7 @@ import AppMenu from './AppMenu';
 import SmallScreenHeader from './controls/SmallScreenHeader';
 import useQueryParams from '../hooks/useQueryParams';
 import QueryParamsContext from '../contexts/QueryParamsContext';
-import { CountryStatsStore } from '../contexts/CountryStatsContext';
+import { CountryStatsStore } from '../contexts/StatsContext';
 import { WHITE } from '../colors';
 
 const { Sider, Content } = Layout;

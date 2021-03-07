@@ -4,7 +4,6 @@ import { Category, StatsBarItem } from '../../types';
 import styled from 'styled-components';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { useTranslation } from 'react-i18next';
-import * as colors from '../../colors';
 import { buttonize } from '../../utils/buttonize';
 
 export interface SmallStatsBarProps {

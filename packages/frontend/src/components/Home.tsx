@@ -13,8 +13,9 @@ import { Moment } from 'moment';
 import { convertDateStrToDate } from '../helper';
 import QueryParamsContext from '../contexts/QueryParamsContext';
 import styled from 'styled-components';
-import { Dictionary } from 'lodash';
+import { Dictionary, uniq } from 'lodash';
 import Controls from './controls/Controls';
+import useTrendsScale from '../hooks/useTrendsScale';
 
 const LAYOUT_GUTTER: [number, number] = [16, 16];
 
@@ -49,7 +50,7 @@ const Home = () => {
         isLoading: africaTrendsLoading,
     } = useAfricaTrends();
 
-    const currentCountryTrends = useMemo(() => {
+    const currentTrends = useMemo(() => {
         if ((isRegion && !region) || (!isRegion && !country)) {
             // If no country or region is selected lets show all the stats
             return africaTrends || [];
@@ -90,8 +91,12 @@ const Home = () => {
 
     const dates = useMemo(
         () =>
-            currentCountryTrends.map((item) => convertDateStrToDate(item.date)),
-        [currentCountryTrends]
+            uniq(
+                currentTrends
+                    .map((item) => convertDateStrToDate(item.date))
+                    .sort((a, b) => a.valueOf() - b.valueOf())
+            ),
+        [currentTrends]
     );
 
     const onSelectDate = useCallback(
@@ -120,12 +125,14 @@ const Home = () => {
         return dictionary;
     }, [selectedDate, allCountryTrends]);
 
+    const { timeseries, dates: filterDates, statsLoading } = useTrendsScale(
+        currentTrends,
+        dates
+    );
+
     const selectedStats = useMemo(
-        () =>
-            currentCountryTrends.find((item) =>
-                selectedDate?.isSame(item.date, 'day')
-            ),
-        [selectedDate, currentCountryTrends]
+        () => timeseries.find((item) => selectedDate?.isSame(item.date, 'day')),
+        [selectedDate, timeseries]
     );
 
     const isLoading =
@@ -184,13 +191,11 @@ const Home = () => {
                     </Col>
                     <Col xs={24} xl={12}>
                         <Trend
-                            trendData={currentCountryTrends}
-                            allDates={dates}
-                            selectedDate={selectedDate}
-                            dataType={dataType}
-                            country={country}
+                            trendData={timeseries}
+                            dates={filterDates}
                             isLog={isLog}
-                            per100K={per100K}
+                            dataType={dataType}
+                            statsLoading={statsLoading}
                         />
                     </Col>
                 </Row>

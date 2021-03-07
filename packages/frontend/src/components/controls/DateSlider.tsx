@@ -5,13 +5,13 @@ import React, {
     useCallback,
     useMemo,
 } from 'react';
-import { Button } from 'antd';
 import { PauseCircleFilled, PlayCircleFilled } from '@ant-design/icons';
 import styled from 'styled-components';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import moment from 'moment';
 import { formatDay, formatMonth } from '../../utils/trendUtils';
+import { WHITE } from '../../colors';
 
 const PLAY_SPEED = 100;
 // Chart margins
@@ -31,6 +31,7 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
     const sliderRef = useRef<SVGSVGElement | null>();
     const timer = useRef<number>();
     const startDate = dates[0] || new Date();
+
     const endDate = dates[dates.length - 1] || new Date();
     const { width } = dimensions || wrapperRef.current?.getBoundingClientRect();
 
@@ -61,12 +62,13 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
         svg.selectAll('.ticks').remove();
         svg.selectAll('.handle').remove();
         svg.selectAll('.label').remove();
+        svg.selectAll('.circle-ticks').remove();
 
         const slider = svg
             .select('.slider')
             .attr(
                 'transform',
-                'translate(' + margin.left * 2 + ',' + height / 2 + ')'
+                'translate(' + margin.left + ',' + height / 2 + ')'
             );
 
         svg.select('.track')
@@ -108,17 +110,32 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
             });
 
         slider
+
+            .insert('g', '.track-overlay')
+            .attr('class', 'circle-ticks')
+            .selectAll('circle')
+            .data(xAxis.ticks(tickNumber))
+            .enter()
+            .append('circle')
+            .attr('cx', xAxis)
+            .attr('cy', 0)
+            .attr('r', 6)
+            .attr('fill', WHITE)
+            .attr('stroke', '#ADC6FF');
+
+        slider
             .insert('circle', '.track-overlay')
             .attr('class', 'handle')
-            .attr('r', 9);
+            .attr('r', 6);
 
         slider
             .append('text')
             .attr('class', 'label')
             .attr('text-anchor', 'middle')
+            .attr('fill', '#0050B3')
             .text(formatDay(startDate))
             .attr('transform', 'translate(0,' + -15 + ')');
-    }, [xAxis, startDate, onUpdate, width]);
+    }, [xAxis, startDate, width]);
 
     useEffect(() => {
         drawChart();
@@ -201,22 +218,28 @@ const DateSlider = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
                     <line className="track-overlay" />
                 </g>
             </svg>
-            <ControlButton
-                type="primary"
-                shape="circle"
-                icon={isMoving ? <PauseCircleFilled /> : <PlayCircleFilled />}
-                onClick={() => handleClick(!isMoving)}
-            />
+            <ControlButton>
+                {isMoving ? (
+                    <PauseCircleFilled onClick={() => handleClick(false)} />
+                ) : (
+                    <PlayCircleFilled onClick={() => handleClick(true)} />
+                )}
+            </ControlButton>
         </Wrapper>
     );
 };
 
 export default DateSlider;
 
-const ControlButton = styled(Button)`
+const ControlButton = styled.div`
     position: absolute;
     right: 10px;
-    top: 15px;
+    top: 5px;
+    color: #096dd9;
+    font-size: 30px;
+    :hover {
+        opacity: 0.8;
+    }
 `;
 
 const Wrapper = styled.div`
@@ -238,7 +261,7 @@ const Wrapper = styled.div`
     }
 
     .track-inset {
-        stroke: #dcdcdc;
+        stroke: #adc6ff;
         stroke-width: 8px;
     }
 
@@ -251,9 +274,8 @@ const Wrapper = styled.div`
 
     .handle {
         fill: #fff;
-        stroke: #000;
-        stroke-opacity: 0.5;
-        stroke-width: 1.25px;
+        stroke: #096dd9;
+        stroke-width: 5px;
     }
 
     .label {
