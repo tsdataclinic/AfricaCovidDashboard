@@ -68,4 +68,8 @@ const EndDateSelect = styled(DatePicker)`
     padding: 2px 10px;
     margin-left: 5px;
     height: 26px;
+    width: 200px;
+    @media (min-width: 768px) {
+        width: 130px;
+    }
 `;
