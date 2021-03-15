@@ -10,7 +10,12 @@ const getLocalToggle = () => localStorage.getItem(SMALL_TOGGLE_KEY) === 'true';
 const updateLocalToggle = (value: string) =>
     localStorage.setItem(SMALL_TOGGLE_KEY, value);
 
-const Controls = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
+const Controls = ({
+    dates,
+    selectedDate,
+    onUpdate,
+    lastNonPredictedDate,
+}: DateSliderProps) => {
     const [showSmallToggle, setShowSmallToggle] = useState(getLocalToggle());
     const handleToggle = useCallback(() => {
         updateLocalToggle(showSmallToggle ? 'false' : 'true');
@@ -34,6 +39,7 @@ const Controls = ({ dates, selectedDate, onUpdate }: DateSliderProps) => {
                         dates={dates}
                         selectedDate={selectedDate}
                         onUpdate={onUpdate}
+                        lastNonPredictedDate={lastNonPredictedDate}
                     />
                 </DateSliderWrapper>
             </BottomControl>

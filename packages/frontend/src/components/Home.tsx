@@ -9,7 +9,7 @@ import {
 import { useAllRegionTrends } from '../hooks/useRegionTrends';
 import StatsBar from './stats-bar/StatsBar';
 import Trend from './Trend';
-import { Moment } from 'moment';
+import moment, { Moment } from 'moment';
 import { convertDateStrToDate } from '../helper';
 import QueryParamsContext from '../contexts/QueryParamsContext';
 import styled from 'styled-components';
@@ -99,6 +99,19 @@ const Home = () => {
         [currentTrends]
     );
 
+    const lastNonPredictedDate: Moment | undefined = useMemo(() => {
+        if (!currentTrends || !currentTrends[0]) {
+            return undefined;
+        }
+        let lastDate = moment(currentTrends[0].date);
+        currentTrends.forEach((item) => {
+            if (lastDate.isBefore(item.date) && !item.confirmed_prediction) {
+                lastDate = moment(item.date);
+            }
+        });
+        return lastDate;
+    }, [currentTrends]);
+
     const onSelectDate = useCallback(
         (value: Moment) => {
             updateQuery('selectedDate', value);
@@ -158,6 +171,7 @@ const Home = () => {
                 dates={dates}
                 selectedDate={selectedDate}
                 onUpdate={onSelectDate}
+                lastNonPredictedDate={lastNonPredictedDate}
             />
             <HomeWrapper>
                 <Row gutter={LAYOUT_GUTTER}>
