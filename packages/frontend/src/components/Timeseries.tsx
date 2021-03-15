@@ -402,7 +402,8 @@ const Timeseries = ({
                         isPrediction &&
                         category === 'confirmed' &&
                         dataType === 'cumulative';
-
+                    const unPredictable =
+                        isPrediction && category !== 'confirmed';
                     return (
                         <Wrapper
                             key={category}
@@ -428,7 +429,11 @@ const Timeseries = ({
                                         )}
                                     </h5>
                                     <h5 className="title">
-                                        {formatDay(highlightedDate)}
+                                        {unPredictable
+                                            ? '--'
+                                            : formatDay(highlightedDate)}
+                                        {unPredictable &&
+                                            ` (Forecast metrics are not available for "${label}")`}
                                     </h5>
 
                                     <HighlightNumber>
