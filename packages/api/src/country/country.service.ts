@@ -14,6 +14,7 @@ import { getDataFromJHTS } from '../utils/JohnHopkins';
 import * as fs from 'fs';
 import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
 import { ModelService } from '../model/model.service';
+import { count } from 'console';
 
 @Injectable()
 export class CountryService {
@@ -143,7 +144,7 @@ export class CountryService {
     return africaTrends.reduce(
       (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
         trend.length == 0
-          ? [...countryTrend]
+          ? countryTrend
           : trend.map((t, i) => t.add(countryTrend[i])),
       [],
     );
@@ -240,7 +241,7 @@ export class CountryService {
       let region_trend = trends.reduce(
         (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
           trend.length == 0
-            ? [...countryTrend]
+            ? countryTrend
             : trend.map((t, i) => t.add(countryTrend[i])),
         [],
       );

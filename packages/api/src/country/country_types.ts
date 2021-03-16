@@ -214,24 +214,30 @@ export class TrendDatum {
     if (!datesAreOnSameDay(this.date, other.date)) {
       throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);
     }
-    this.deaths += other.deaths;
-    this.confirmed += other.confirmed;
-    this.recoveries += other.recoveries;
-    this.new_deaths += other.new_deaths;
-    this.new_case += other.new_case;
-    this.new_recoveries += other.new_recoveries;
+    let newObs = new TrendDatum();
+    newObs.deaths = this.deaths + other.deaths;
+    newObs.confirmed = this.confirmed + other.confirmed;
+    newObs.recoveries = this.recoveries + other.recoveries;
+    newObs.new_deaths = this.new_deaths + other.new_deaths;
+    newObs.new_case = this.new_case + other.new_case;
+    newObs.new_recoveries = this.new_recoveries + other.new_recoveries;
+
+    newObs.date = this.date;
+    newObs.days_since_first_case = this.days_since_first_case;
     if (this.isPrediction) {
-      this.confirmed_prediction += other.confirmed_prediction;
+      newObs.confirmed_prediction =
+        this.confirmed_prediction + other.confirmed_prediction;
       // TODO: update prediction
-      this.confirmed_prediction_upper =
+      newObs.confirmed_prediction_upper =
         this.confirmed_prediction_upper + other.confirmed_prediction_upper;
-      this.confirmed_prediction_lower =
+      newObs.confirmed_prediction_lower =
         this.confirmed_prediction_lower + other.confirmed_prediction_lower;
 
-      this.daily_prediction += other.daily_prediction;
+      newObs.daily_prediction += this.daily_prediction + other.daily_prediction;
+      newObs.isPrediction = true;
     }
 
-    return this;
+    return newObs;
   }
 }
 
