@@ -1,4 +1,9 @@
-import { D3_TRANSITION_DURATION } from '../constants';
+import {
+    D3_TRANSITION_DURATION,
+    LINE_TOOLTIP_WIDTH,
+    LINE_TOOLTIP_HEIGHT,
+    LINE_TOOLTIP_PADDING,
+} from '../constants';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import {
     abbreviateNumber,
@@ -10,24 +15,25 @@ import {
 import styled from 'styled-components';
 import { bisector } from 'd3-array';
 import { axisBottom, axisRight, AxisScale } from 'd3-axis';
-import { scaleLinear, scaleLog, scaleTime } from 'd3-scale';
+import { scaleLinear, scaleLog, scaleTime, ScaleLinear } from 'd3-scale';
 import { pointer, select } from 'd3-selection';
 import { area, line } from 'd3-shape';
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
-import { Category, DataType, StatsBarItem } from '../types';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import {
+    Category,
+    DataType,
+    StatsBarItem,
+    TimeseriesMapper,
+    CountryTrendWithDelta,
+} from '../types';
 import { BLUE, LIGHT_ORANGE, ORANGE, PURPLE, RED } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { Statistic } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { transparentize } from 'polished';
-import { formatDay } from '../utils/trendUtils';
+import capitalize from 'lodash/capitalize';
+import { formatDay, formatNumber } from '../utils/trendUtils';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
@@ -37,10 +43,7 @@ interface TimeseriesProps {
     dates: Date[];
     dataType: DataType;
     isLog: boolean;
-}
-
-interface TimeseriesMapper {
-    [key: number]: CountryTrend;
+    selectedDate?: Moment;
 }
 
 const Timeseries = ({
@@ -48,15 +51,13 @@ const Timeseries = ({
     dates,
     dataType,
     isLog,
+    selectedDate,
 }: TimeseriesProps) => {
     const { t } = useTranslation();
     const refs = useRef<(SVGSVGElement | null)[]>([]);
+    const yScaleRef = useRef<ScaleLinear<number, number>[]>([]);
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const dimensions = useResizeObserver(wrapperRef) || { width: 0, height: 0 };
-
-    const [highlightedDate, setHighlightedDate] = useState(
-        dates[dates.length - 1]
-    );
 
     const categories: StatsBarItem[] = useMemo(() => getCategories(dataType), [
         dataType,
@@ -64,16 +65,38 @@ const Timeseries = ({
 
     const timeseriesMapper = useMemo(() => {
         const mapper: TimeseriesMapper = {};
+        if (!timeseries || timeseries.length === 0) {
+            return mapper;
+        }
+        let prev = timeseries[0];
         timeseries.forEach((item) => {
-            const key = moment(item.date).valueOf();
+            const key = moment(item.date).startOf('day').valueOf();
             mapper[key] = item;
+            mapper[key].delta_confirmed =
+                mapper[key].confirmed - prev.confirmed;
+            mapper[key].delta_death = mapper[key].deaths - prev.deaths;
+            mapper[key].delta_recoveries =
+                mapper[key].recoveries - prev.recoveries;
+            mapper[key].delta_confirmed_prediction =
+                (mapper[key].confirmed_prediction || 0) -
+                (prev.confirmed_prediction || 0);
+            mapper[key].delta_new_case = mapper[key].new_case - prev.new_case;
+            mapper[key].delta_new_death =
+                mapper[key].new_deaths - prev.new_deaths;
+            mapper[key].delta_new_recoveries =
+                mapper[key].new_recoveries - prev.new_recoveries;
+            prev = item;
         });
         return mapper;
     }, [timeseries]);
 
-    useEffect(() => {
-        setHighlightedDate(dates[dates.length - 1]);
-    }, [dates]);
+    const stats = useMemo(
+        () =>
+            selectedDate
+                ? timeseriesMapper[selectedDate.startOf('day').valueOf()]
+                : undefined,
+        [timeseriesMapper, selectedDate]
+    );
 
     const getBarWidth = useCallback(() => {
         const T = dates.length;
@@ -87,9 +110,24 @@ const Timeseries = ({
         return Math.min(4, axisWidth / (1.25 * T));
     }, [dates.length, dimensions]);
 
+    const xScale = useMemo(() => {
+        // Dimensions
+        const { width } =
+            dimensions || wrapperRef.current?.getBoundingClientRect();
+        // Chart extremes
+        const chartRight = width - margin.right;
+        return scaleTime()
+            .clamp(true)
+            .domain(
+                dates && dates.length > 0
+                    ? [dates[0], dates[dates.length - 1]]
+                    : []
+            )
+            .range([margin.left, chartRight]);
+    }, [dates, dimensions]);
+
     useEffect(() => {
-        const T = dates.length;
-        if (T === 0 || timeseries.length === 0) {
+        if (dates.length === 0 || timeseries.length === 0) {
             return;
         }
         // Dimensions
@@ -103,11 +141,6 @@ const Timeseries = ({
         // Buffer space along y-axis
         const yBufferTop = 1.2;
         const yBufferBottom = 1.1;
-
-        const xScale = scaleTime()
-            .clamp(true)
-            .domain(T ? [dates[0], dates[T - 1]] : [])
-            .range([margin.left, chartRight]);
 
         // Number of x-axis ticks
         const numTicksX = width < 480 ? 4 : 5;
@@ -156,34 +189,12 @@ const Timeseries = ({
                 .range([chartBottom, margin.top]);
         };
 
-        function mousemove(res: any) {
-            const xm = pointer(res)[0];
-            const date = xScale.invert(xm);
-            if (date && dates.length > 0) {
-                const bisectDate = bisector((date) => date).left;
-                const index = bisectDate(dates, date, 1);
-                const dateLeft = dates[index - 1];
-                const dateRight = dates[index];
-                if (dateLeft && dateRight) {
-                    setHighlightedDate(
-                        date.valueOf() - dateLeft.valueOf() <
-                            dateRight.valueOf() - date.valueOf()
-                            ? dateLeft
-                            : dateRight
-                    );
-                }
-            }
-        }
-
-        function mouseout() {
-            setHighlightedDate(dates[T - 1]);
-        }
-
         /* Begin drawing charts */
         const unpredictedDates = timeseries
             .filter((t) => !t.isPrediction)
             .map((t) => convertDateStrToDate(t.date));
         const predictedTimeseries = timeseries.filter((t) => t.isPrediction);
+        const unPredictedTimeseries = timeseries.filter((t) => !t.isPrediction);
 
         refs.current.forEach((ref, i) => {
             const svg = select(ref) as any;
@@ -191,6 +202,7 @@ const Timeseries = ({
 
             const category = categories[i].category;
             const yScale = generateYScale(category);
+            yScaleRef.current[i] = yScale;
             const color = getColor(category);
 
             /* X axis */
@@ -205,40 +217,161 @@ const Timeseries = ({
                 .transition(t)
                 .call(yAxis, yScale);
 
-            /* Path dots */
-            const circles = svg
-                .selectAll('circle')
-                .data(unpredictedDates, (date: Date) => date);
-
-            circles.exit().style('fill-opacity', 0).remove();
-
-            circles
-                .enter()
-                .append('circle')
-                .attr('fill', color)
-                .attr('stroke', color)
-                .attr('cy', chartBottom)
-                .attr('cx', (date: Date) => xScale(date))
-                .attr('r', barWidth / 2)
-                .merge(circles)
-                .transition(t)
-                .attr('cy', (date: Date) =>
-                    yScale(
-                        getStatistic(
-                            dataType,
-                            category,
-                            timeseriesMapper[date.valueOf()]
-                        )
-                    )
+            /* Path */
+            svg.selectAll('.trend').remove();
+            svg.select('.data')
+                .append('path')
+                .datum(
+                    category === 'confirmed'
+                        ? timeseries
+                        : unPredictedTimeseries
                 )
-                .attr('cx', (date: Date) => xScale(date));
+                .attr('fill', 'none')
+                .attr('class', 'trend')
+                .attr('stroke', color)
+                .attr('stroke-width', 1.5)
+                .attr(
+                    'd',
+                    line()
+                        .x(function (d: any) {
+                            return xScale(convertDateStrToDate(d.date));
+                        })
+                        .y(function (d: any) {
+                            return yScale(getStatistic(dataType, category, d));
+                        })
+                );
 
             // Listen events
-            svg.selectAll('*').attr('pointer-events', 'none');
-            svg.on('mousemove', mousemove)
+
+            const focus = svg
+                .append('g')
+                .attr('class', 'focus')
+                .style('display', 'none');
+
+            focus
+                .append('circle')
+                .attr('r', 5)
+                .attr('class', 'hover-circle')
+                .attr('fill', color);
+
+            const tooltip = focus.append('g').attr('class', 'focus-tooltip');
+            tooltip
+                .append('rect')
+                .attr('class', 'tooltip')
+                .attr('width', LINE_TOOLTIP_WIDTH)
+                .attr('height', LINE_TOOLTIP_HEIGHT)
+                .attr('x', 10)
+                .attr('y', -22)
+                .attr('rx', 4)
+                .attr('ry', 4);
+
+            tooltip
+                .append('text')
+                .attr('class', 'tooltip-date')
+                .attr('x', LINE_TOOLTIP_PADDING)
+                .attr('y', -2);
+
+            tooltip
+                .append('text')
+                .attr('class', 'tooltip-delta')
+                .attr('x', LINE_TOOLTIP_PADDING)
+                .attr('y', 36)
+                .text('1 Day Change: --');
+
+            tooltip
+                .append('text')
+                .attr('class', 'tooltip-value')
+                .attr('x', LINE_TOOLTIP_PADDING)
+                .attr('y', 18);
+
+            svg.append('rect')
+                .attr('class', 'overlay')
+                .attr('width', width)
+                .attr('height', height)
                 .on('touchmove', mousemove)
+                .on('mouseover', function () {
+                    focus.style('display', null);
+                })
                 .on('mouseout', mouseout)
-                .on('touchend', mouseout);
+                .on('touchend', mouseout)
+                .on('mousemove', mousemove);
+
+            function mouseout() {
+                focus.style('display', 'none');
+            }
+
+            function mousemove(res: any) {
+                const xm = pointer(res)[0];
+                const date = xScale.invert(xm);
+                if (date && dates.length > 0) {
+                    const bisectDate = bisector((date) => date).left;
+                    const index = bisectDate(dates, date, 1);
+                    const dataLeft = timeseries[index - 1];
+                    const dataRight = timeseries[index];
+                    const dateLeft = dates[index - 1];
+                    const dateRight = dates[index];
+                    if (dateLeft && dateRight) {
+                        const isLeft =
+                            date.valueOf() - dateLeft.valueOf() <
+                            dateRight.valueOf() - date.valueOf();
+                        const hoverDate = isLeft ? dateLeft : dateRight;
+                        const hoverValue = isLeft ? dataLeft : dataRight;
+                        const data = getStatistic(
+                            dataType,
+                            category,
+                            hoverValue
+                        );
+
+                        const deltaText = getDeltaText(
+                            dataType,
+                            category,
+                            hoverValue
+                        );
+
+                        // Dimensions
+                        const { width, height } =
+                            dimensions ||
+                            wrapperRef.current?.getBoundingClientRect();
+
+                        const ajustX =
+                            xScale(hoverDate) + LINE_TOOLTIP_WIDTH > width;
+                        const ajustY =
+                            yScale(data) + LINE_TOOLTIP_HEIGHT > height;
+
+                        focus.attr(
+                            'transform',
+                            `translate(${xScale(hoverDate)}, ${yScale(data)} )`
+                        );
+                        // Avoid tooltip being cutoff
+
+                        const translateX = ajustX
+                            ? -LINE_TOOLTIP_WIDTH - 20
+                            : 0;
+                        const translateY = ajustY
+                            ? -LINE_TOOLTIP_HEIGHT + 20
+                            : 0;
+                        focus
+                            .select('.focus-tooltip')
+                            .attr(
+                                'transform',
+                                `translate(${translateX}, ${translateY})`
+                            );
+
+                        const predictedText = hoverValue.isPrediction
+                            ? ' Predicted'
+                            : '';
+                        focus
+                            .select('.tooltip-date')
+                            .text(
+                                `${capitalize(
+                                    category
+                                )} ${predictedText}: ${formatDay(hoverDate)}`
+                            );
+                        focus.select('.tooltip-value').text(formatNumber(data));
+                        focus.select('.tooltip-delta').text(deltaText);
+                    }
+                }
+            }
 
             // Remove prediction
             svg.selectAll('.confirmed-prediction').remove();
@@ -282,6 +415,7 @@ const Timeseries = ({
                     .attr('fill', 'none')
                     .attr('class', 'confirmed-prediction')
                     .attr('stroke', 'steelblue')
+                    .attr('stroke-dasharray', 1)
                     .attr('stroke-width', 1.5)
                     .attr(
                         'd',
@@ -295,9 +429,9 @@ const Timeseries = ({
                     );
             } else {
                 /* DAILY TRENDS */
-                svg.selectAll('.trend').remove();
 
-                svg.selectAll('.stem')
+                svg.select('.data')
+                    .selectAll('.stem')
                     .data(unpredictedDates, (date: Date) => date)
                     .join((enter: any) =>
                         enter
@@ -334,40 +468,25 @@ const Timeseries = ({
         dates,
         isLog,
         categories,
+        xScale,
     ]);
 
     useEffect(() => {
-        const barWidth = getBarWidth();
-        refs.current.forEach((ref) => {
+        if (!selectedDate) {
+            return;
+        }
+        refs.current.forEach((ref, i) => {
+            const highlight = getStatistic(
+                dataType,
+                categories[i].category,
+                stats
+            );
             const svg = select(ref);
-            svg.selectAll('circle').attr('r', (date: any) =>
-                date === highlightedDate ? barWidth : barWidth / 2
-            );
+            svg.selectAll('.selected-date')
+                .attr('x', () => xScale?.(selectedDate.toDate()))
+                .attr('y', () => yScaleRef.current[i]?.(highlight));
         });
-    }, [highlightedDate, getBarWidth]);
-
-    const getStatisticDelta = useCallback(
-        (category) => {
-            if (!highlightedDate) return;
-            const currCount = getStatistic(
-                dataType,
-                category,
-                highlightedDate
-                    ? timeseriesMapper[highlightedDate.valueOf()]
-                    : undefined
-            );
-            const prevDate =
-                dates[dates.findIndex((date) => date === highlightedDate) - 1];
-
-            const prevCount = getStatistic(
-                dataType,
-                category,
-                prevDate ? timeseriesMapper[prevDate.valueOf()] : undefined
-            );
-            return currCount - prevCount;
-        },
-        [dates, highlightedDate, dataType, timeseriesMapper]
-    );
+    }, [selectedDate, dataType, categories, stats, xScale, isLog]);
 
     const trail = useMemo(() => {
         const styles: any[] = [];
@@ -385,19 +504,8 @@ const Timeseries = ({
         <>
             <div className="Timeseries">
                 {categories.map(({ category, label }, index) => {
-                    const delta = getStatisticDelta(category);
-                    const highlight = getStatistic(
-                        dataType,
-                        category,
-                        highlightedDate
-                            ? timeseriesMapper[highlightedDate.valueOf()]
-                            : undefined
-                    );
-
-                    const isPrediction =
-                        highlightedDate &&
-                        timeseriesMapper[highlightedDate.valueOf()]
-                            ?.isPrediction;
+                    const highlight = getStatistic(dataType, category, stats);
+                    const isPrediction = stats?.isPrediction;
                     const isPredictedCumulative =
                         isPrediction &&
                         category === 'confirmed' &&
@@ -413,27 +521,34 @@ const Timeseries = ({
                             ref={wrapperRef}
                             style={trail[index]}
                         >
-                            {highlightedDate && (
+                            {selectedDate && (
                                 <div
                                     className={`stats is-${category} ${
                                         isPredictedCumulative && 'predicted'
                                     }`}
                                 >
                                     <h5 className="title">
-                                        {t(
-                                            `${label}${
-                                                isPredictedCumulative
-                                                    ? ' Prediction'
-                                                    : ''
-                                            }`
-                                        )}
-                                    </h5>
-                                    <h5 className="title">
-                                        {unPredictable
-                                            ? '--'
-                                            : formatDay(highlightedDate)}
-                                        {unPredictable &&
-                                            ` (Forecast metrics are not available for "${label}")`}
+                                        <div className="symbol" />
+                                        <Text>
+                                            {t(
+                                                `${label}${
+                                                    isPredictedCumulative
+                                                        ? ' Prediction'
+                                                        : ''
+                                                }`
+                                            )}
+                                            :
+                                        </Text>
+
+                                        <div>
+                                            {unPredictable
+                                                ? '--'
+                                                : selectedDate.format(
+                                                      'MMM DD YYYY'
+                                                  )}
+                                            {unPredictable &&
+                                                ` (Forecast metrics are not available for "${label}")`}
+                                        </div>
                                     </h5>
 
                                     <HighlightNumber>
@@ -454,26 +569,11 @@ const Timeseries = ({
                                         />
                                     </HighlightNumber>
                                     <Delta>
-                                        <Statistic
-                                            value={
-                                                isPrediction &&
-                                                !isPredictedCumulative
-                                                    ? '-'
-                                                    : delta
-                                            }
-                                            prefix={
-                                                delta && delta > 0 ? '+' : ''
-                                            }
-                                            precision={0}
-                                            valueStyle={{
-                                                color: getStatColor(
-                                                    category,
-                                                    !!isPredictedCumulative
-                                                ),
-                                                fontSize: 10,
-                                            }}
-                                        />
-                                        {delta ? (delta > 0 ? '↗' : '↘') : ''}
+                                        {getDeltaText(
+                                            dataType,
+                                            category,
+                                            stats
+                                        )}
                                     </Delta>
                                 </div>
                             )}
@@ -486,6 +586,15 @@ const Timeseries = ({
                                 <g className="x-axis" />
                                 <g className="x-axis2" />
                                 <g className="y-axis" />
+                                <g className="data" />
+                                <rect
+                                    className="selected-date rotate"
+                                    width={6}
+                                    height={6}
+                                    strokeWidth="1px"
+                                    fill="white"
+                                    stroke="red"
+                                />
                             </svg>
                         </Wrapper>
                     );
@@ -496,6 +605,18 @@ const Timeseries = ({
 };
 
 export default Timeseries;
+
+const getDeltaText = (
+    type: DataType,
+    category: Category,
+    data?: CountryTrendWithDelta
+) => {
+    const delta = getStatistic(type, category, data, true);
+    const caseText = Math.abs(delta) > 1 ? 'Cases' : 'Case';
+    const prefix = delta && delta > 0 ? '+' : '';
+    const postfix = delta ? (delta > 0 ? '↗' : '↘') : '';
+    return `1 Day Change: ${prefix}${delta} ${caseText} ${postfix}`;
+};
 
 const getStatColor = (category: Category, isPrediction: boolean) => {
     switch (category) {
@@ -533,7 +654,9 @@ const Wrapper = styled.div`
     }
 
     svg {
+        z-index: 1;
         width: 100%;
+        .selected-date,
         path,
         .tick,
         line {
@@ -557,7 +680,11 @@ const Wrapper = styled.div`
         h6 {
             color: ${BLUE};
         }
+        .symbol {
+            border: 1px solid ${BLUE};
+        }
         svg {
+            .selected-date,
             path,
             .tick,
             line {
@@ -573,7 +700,11 @@ const Wrapper = styled.div`
         h6 {
             color: ${PURPLE};
         }
+        .symbol {
+            border: 1px solid ${PURPLE};
+        }
         svg {
+            .selected-date,
             path,
             .tick,
             line {
@@ -597,11 +728,52 @@ const Wrapper = styled.div`
     }
 
     .predicted {
+        .selected-date,
         h5.title,
         h2,
         h6 {
             color: ${RED};
         }
+        .symbol {
+            border: 1px solid ${RED};
+        }
+    }
+
+    .rotate {
+        transform-box: fill-box;
+        transform-origin: center;
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .overlay {
+        fill: none;
+        pointer-events: all;
+    }
+
+    .focus text {
+        font-size: 10px;
+        fill: white;
+        opacity: 1;
+    }
+
+    .tooltip {
+        fill: black;
+    }
+
+    .focus .tooltip-value {
+        font-weight: bold;
+        font-size: 16px;
+    }
+    h5.title {
+        display: flex;
+        align-items: center;
+    }
+    .symbol {
+        border: 1px solid ${ORANGE};
+        width: 6px;
+        height: 6px;
+        display: inline-block;
+        transform: translate(-40%, 0%) rotate(45deg);
     }
 `;
 
@@ -610,5 +782,9 @@ const HighlightNumber = styled.h2`
 `;
 
 const Delta = styled.h6`
-    display: flex;
+    font-size: 10px;
+`;
+
+const Text = styled.span`
+    margin-right: 5px;
 `;

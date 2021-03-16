@@ -13,6 +13,9 @@ export interface CountryTrend {
     confirmed_prediction?: number;
     confirmed_prediction_lower?: number;
     confirmed_prediction_upper?: number;
+    daily_prediction?: number;
+    daily_prediction_lower?: number;
+    daily_prediction_upper?: number;
 }
 
 export type CountryTrends = { [k in string]: CountryTrend[] };

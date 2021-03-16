@@ -1,7 +1,11 @@
-import { Category, DataType, StatsBarItem } from './types';
+import {
+    Category,
+    CountryTrendWithDelta,
+    DataType,
+    StatsBarItem,
+} from './types';
 import moment from 'moment';
 import { BLUE, GREY, ORANGE, PURPLE, RED } from './colors';
-import { CountryTrend } from './hooks/useCountryTrends';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
@@ -20,7 +24,8 @@ export const abbreviateNumber = (num: number) => {
 export const getStatistic = (
     type: DataType,
     category: Category,
-    data?: CountryTrend
+    data?: CountryTrendWithDelta,
+    isDelta?: boolean
 ) => {
     if (!data) {
         return 0;
@@ -29,16 +34,23 @@ export const getStatistic = (
     switch (category) {
         case 'confirmed':
             return type === 'daily'
-                ? safeGet(data.new_case)
-                : safeGet(data.confirmed) || safeGet(data.confirmed_prediction);
+                ? safeGet(isDelta ? data.delta_new_case : data.new_case)
+                : safeGet(isDelta ? data.delta_confirmed : data.confirmed) ||
+                      safeGet(
+                          isDelta
+                              ? data.delta_confirmed_prediction
+                              : data.confirmed_prediction
+                      );
         case 'recoveries':
             return type === 'daily'
-                ? safeGet(data.new_recoveries)
-                : safeGet(data.recoveries);
+                ? safeGet(
+                      isDelta ? data.delta_new_recoveries : data.new_recoveries
+                  )
+                : safeGet(isDelta ? data.delta_recoveries : data.recoveries);
         case 'deaths':
             return type === 'daily'
-                ? safeGet(data.new_deaths)
-                : safeGet(data.deaths);
+                ? safeGet(isDelta ? data.delta_new_death : data.new_deaths)
+                : safeGet(isDelta ? data.delta_death : data.deaths);
         default:
             return 0;
     }
