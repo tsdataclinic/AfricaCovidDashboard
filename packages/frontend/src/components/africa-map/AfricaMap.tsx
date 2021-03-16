@@ -11,7 +11,6 @@ import { legendColor } from 'd3-svg-legend';
 import africaTopology from './africa.json';
 import * as topojson from 'topojson-client';
 import { GeometryCollection, Topology } from 'topojson-specification';
-import styled from 'styled-components';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
 import { mapValues, values, isEmpty } from 'lodash';
@@ -79,6 +78,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         (key) => trendData?.[key].isPrediction
     );
 
+    console.log(trendData);
     const scaledTrendData = useMemo(() => {
         if (!trendData || !allStats) {
             return trendData;
@@ -88,14 +88,18 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             if (!population) {
                 return undefined;
             }
-            return scaleTrendDatum(datum, (1 / population) * 100000);
+            if (per100k) {
+                return scaleTrendDatum(datum, (1 / population) * 100000);
+            } else {
+                return datum;
+            }
         });
         // filter out null values
         Object.keys(scaled).forEach(
             (key) => scaled[key] === undefined && delete scaled[key]
         );
         return scaled as { [key: string]: CountryTrend };
-    }, [allStats, trendData]);
+    }, [allStats, trendData, per100k]);
 
     const trendKey = useMemo(() => {
         let trendKey: keyof CountryTrend = 'confirmed';
@@ -148,6 +152,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     );
 
     const fillMap = useCallback(() => {
+        console.log('Filling map');
         const svg = d3.select(svgNode.current);
         const countries = svg.selectAll('.country-border');
         countries.classed('selected-country', (d: MapData) => {
@@ -165,7 +170,15 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 ? 'confirmed_predicted'
                 : category;
             let colorRange = colorRanges[category_key] || colorRanges['deaths'];
-
+            console.log(
+                'scaled trend ',
+                Object.values(scaledTrendData).map((d) => d[trendKey])
+            );
+            let tmp_values = Object.values(scaledTrendData).map((d) =>
+                typeof d[trendKey] == undefined ? 0 : d[trendKey]
+            );
+            const max = Math.max(...(tmp_values as number[]));
+            console.log('max val is ', max);
             let extent = d3.extent(values(scaledTrendData), (d) =>
                 typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
@@ -174,17 +187,21 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 extent = [1, 1];
             }
 
+            console.log('raw extenxt ', extent);
+
             if (isLog) {
                 // Clean up the extent if we are using log scale.
-                const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
-                extent[1] = Math.pow(10, maxPowerOfTen);
+                // const maxPowerOfTen = Math.ceil(Math.log10(extent[1]));
+                // extent[1] = Math.pow(10, maxPowerOfTen);
                 extent[0] = 1;
             } else {
                 // Clean up extent if we use linear scale. Just round the nearest power of ten
-                const powerOfTen = Math.ceil(Math.log10(extent[1]));
-                extent[1] = Math.pow(10, powerOfTen);
+                // const powerOfTen = Math.ceil(Math.log10(extent[1]));
+                // extent[1] = Math.pow(10, powerOfTen);
                 extent[0] = 0;
             }
+
+            console.log('modified extext', extent);
 
             const baseScale = isLog ? d3.scaleLog() : d3.scaleLinear();
             const colorScale = baseScale
@@ -246,6 +263,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         isRegion,
         selectedRegion,
         isPrediction,
+        per100k,
     ]);
 
     const createTooltip = useCallback(() => {
