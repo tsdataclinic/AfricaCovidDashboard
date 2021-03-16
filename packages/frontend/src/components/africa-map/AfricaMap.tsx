@@ -18,12 +18,13 @@ import { mapValues, values, isEmpty } from 'lodash';
 import * as colors from '../../colors';
 import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
-import getTooltipContent, { tooltipCSS } from './getTooltipContent';
+import getTooltipContent from './getTooltipContent';
 import { getCountryA3, getRegion } from './utils';
 import { Card } from 'antd';
 import StatsContext from '../../contexts/StatsContext';
 import { scaleTrendDatum } from '../../utils/trendUtils';
 import { useTranslation } from 'react-i18next';
+import { MapContainer, TOOLTIP_HEIGHT, TOOLTIP_WIDTH } from './AfricaMapStyles';
 
 interface AfricaMapProps {
     category: Category;
@@ -42,8 +43,6 @@ interface AfricaMapProps {
 type MapData = Feature<Geometry, CountryProperties>;
 
 const MAP_TARGET = '#africa-map';
-const TOOLTIP_HEIGHT = 350;
-const TOOLTIP_WIDTH = 200;
 
 const topology = (africaTopology as unknown) as Topology<{
     collection: GeometryCollection<CountryProperties>;
@@ -397,48 +396,5 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         </Card>
     );
 };
-
-const MapContainer = styled.div`
-    .background {
-        fill-opacity: 0.0;
-    }
-    .continent { 
-        .country-border {
-            fill: none;
-            stroke: ${colors.BLACK};
-            stroke-width: 0.5px;
-            pointer-events: all;
-            stroke-linejoin: round;
-            stroke-linecap: round;
-            &.selected-country {
-                stroke-width: 3px;
-            }
-            &.loading {
-                fill: ${colors.LIGHT_GREY};
-            }
-        }
-    }
-    .overlay {
-        opacity: 1;
-        path {
-            fill: none;
-            cursor: pointer;
-            pointer-events: all;
-            &:hover {
-                stroke: ${colors.DARK_GREY};
-                stroke-width: 2px;
-            }
-        }
-    }
-    .map-tooltip {
-        opacity: 0;
-        rect {
-            height: ${TOOLTIP_HEIGHT}px;
-            width: ${TOOLTIP_WIDTH}px;
-            background-color ${colors.DARK_GREY};
-        }
-        ${tooltipCSS}
-    }
-`;
 
 export default React.memo(AfricaMap);
