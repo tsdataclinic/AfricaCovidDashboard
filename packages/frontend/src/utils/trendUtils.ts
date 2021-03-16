@@ -1,5 +1,7 @@
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
+import isNil from 'lodash/isNil';
+import { format } from 'd3';
 
 const safeFormatInteger = (num: number | undefined): number =>
     num ? Math.round(num) : 0;
@@ -13,6 +15,7 @@ export const scaleTrendDatum = (
     scale: number
 ): CountryTrend => {
     return {
+        ...datum,
         confirmed: safeFormatInteger(datum.confirmed * scale),
         date: datum.date,
         deaths: safeFormatInteger(datum.deaths * scale),
@@ -34,4 +37,7 @@ export const scaleTrendDatum = (
 };
 
 export const formatMonth = (d: Date) => moment(d).format('MMM YYYY');
-export const formatDay = (d: Date) => moment(d).format('DD MMM YYYY');
+export const formatDay = (d: Date) => moment(d).format('MMM DD YYYY');
+
+export const formatNumber = (num: number) =>
+    !isNil(num) ? format(',')(num) : '-';

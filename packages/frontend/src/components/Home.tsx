@@ -88,15 +88,16 @@ const Home = () => {
         africaTrends,
         allRegionTrendsError,
     ]);
+    const { timeseries, statsLoading } = useTrendsScale(currentTrends);
 
     const dates = useMemo(
         () =>
             uniq(
-                currentTrends
+                timeseries
                     .map((item) => convertDateStrToDate(item.date))
                     .sort((a, b) => a.valueOf() - b.valueOf())
             ),
-        [currentTrends]
+        [timeseries]
     );
 
     const lastNonPredictedDate: Moment | undefined = useMemo(() => {
@@ -137,11 +138,6 @@ const Home = () => {
         });
         return dictionary;
     }, [selectedDate, allCountryTrends]);
-
-    const { timeseries, dates: filterDates, statsLoading } = useTrendsScale(
-        currentTrends,
-        dates
-    );
 
     const selectedStats = useMemo(
         () => timeseries.find((item) => selectedDate?.isSame(item.date, 'day')),
@@ -206,10 +202,11 @@ const Home = () => {
                     <Col xs={24} xl={12}>
                         <Trend
                             trendData={timeseries}
-                            dates={filterDates}
+                            dates={dates}
                             isLog={isLog}
                             dataType={dataType}
                             statsLoading={statsLoading}
+                            selectedDate={selectedDate}
                         />
                     </Col>
                 </Row>

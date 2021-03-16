@@ -4,6 +4,7 @@ import Timeseries from './Timeseries';
 import { DataType } from '../types';
 
 import { CountryTrend } from '../hooks/useCountryTrends';
+import { Moment } from 'moment';
 
 interface TrendProps {
     trendData: CountryTrend[];
@@ -11,6 +12,7 @@ interface TrendProps {
     dataType: DataType;
     dates: Date[];
     isLog: boolean;
+    selectedDate?: Moment;
 }
 
 const Trend = ({
@@ -19,6 +21,7 @@ const Trend = ({
     statsLoading,
     dataType,
     isLog,
+    selectedDate,
 }: TrendProps) => {
     return (
         <Card>
@@ -28,6 +31,7 @@ const Trend = ({
                     dataType={dataType}
                     dates={dates}
                     isLog={isLog}
+                    selectedDate={selectedDate}
                 />
             </Skeleton>
         </Card>

@@ -2,13 +2,11 @@ import { CountryProperties } from './types';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { css } from 'styled-components';
 import * as colors from '../../colors';
-import { format } from 'd3';
 import { TFunction } from 'i18next';
 import { getCountryName } from '../../utils/i18nUtils';
 import { getCountryA3 } from './utils';
 import { StatsMap } from '../../contexts/StatsContext';
-
-const formatNumber = (num: number) => (num ? format(',')(num) : '-');
+import { formatNumber } from '../../utils/trendUtils';
 
 function getTooltipContent(
     t: TFunction,

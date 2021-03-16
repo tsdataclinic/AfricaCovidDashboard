@@ -15,7 +15,7 @@ import { WHITE } from '../../colors';
 
 const PLAY_SPEED = 100;
 // Chart margins
-const margin = { top: 5, right: 5, bottom: 5, left: 25 };
+const margin = { top: 5, right: 5, bottom: 5, left: 35 };
 const height = 60;
 
 export interface DateSliderProps {
@@ -47,7 +47,7 @@ const DateSlider = ({
             d3
                 .scaleTime()
                 .domain([startDate, endDate])
-                .range([0, targetValue - margin.left * 4])
+                .range([0, targetValue - 90])
                 .clamp(true),
         [startDate, endDate, targetValue]
     );
@@ -103,7 +103,6 @@ const DateSlider = ({
                 });
 
             slider
-
                 .insert('g', '.track-overlay')
                 .attr('class', 'circle-ticks')
                 .selectAll('circle')
