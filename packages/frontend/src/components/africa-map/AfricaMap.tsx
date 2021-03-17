@@ -24,6 +24,7 @@ import StatsContext from '../../contexts/StatsContext';
 import { scaleTrendDatum } from '../../utils/trendUtils';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TOOLTIP_HEIGHT, TOOLTIP_WIDTH } from './AfricaMapStyles';
+import { DailyRange } from '../../hooks/useQuntizedDailyRate';
 
 interface AfricaMapProps {
     category: Category;
@@ -31,6 +32,7 @@ interface AfricaMapProps {
     selectedCountry?: string;
     selectedRegion?: string;
     isRegion: boolean;
+    dailyRange?: DailyRange;
     onRegionSelect?: (region: string) => void;
     onCountrySelect?: (country: string) => void;
     trendData?: { [k in string]: CountryTrend }; // Data should be a map of country A3 to trend datum
@@ -43,17 +45,20 @@ type MapData = Feature<Geometry, CountryProperties>;
 
 const MAP_TARGET = '#africa-map';
 
+const NO_QUALTILE_BINS = 4;
+
 const topology = (africaTopology as unknown) as Topology<{
     collection: GeometryCollection<CountryProperties>;
 }>;
+
 const feature = topojson.feature(topology, topology.objects.collection);
 const africaMapFeatures: MapData[] = feature.features;
 
 const colorRanges = {
-    confirmed: [colors.LIGHT_GREY, colors.LIGHT_ORANGE, colors.ORANGE],
-    confirmed_predicted: [colors.LIGHT_GREY, colors.LIGHT_RED, colors.RED],
-    recoveries: [colors.LIGHT_GREY, colors.LIGHT_BLUE, colors.BLUE],
-    deaths: [colors.LIGHT_GREY, colors.LIGHT_PURPLE, colors.PURPLE],
+    confirmed: [colors.LIGHT_GREY, colors.ORANGE],
+    confirmed_predicted: [colors.LIGHT_GREY, colors.RED],
+    recoveries: [colors.LIGHT_GREY, colors.BLUE],
+    deaths: [colors.LIGHT_GREY, colors.PURPLE],
 };
 const AfricaMap: React.FC<AfricaMapProps> = ({
     category,
@@ -63,6 +68,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
     isRegion,
     onCountrySelect,
     trendData,
+    dailyRange,
     onRegionSelect,
     isLog,
     per100k,
@@ -89,7 +95,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 return undefined;
             }
             if (per100k) {
-                return scaleTrendDatum(datum, (1 / population) * 100000);
+                return scaleTrendDatum(datum, (1.0 / population) * 100000.0);
             } else {
                 return datum;
             }
@@ -170,15 +176,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 ? 'confirmed_predicted'
                 : category;
             let colorRange = colorRanges[category_key] || colorRanges['deaths'];
-            console.log(
-                'scaled trend ',
-                Object.values(scaledTrendData).map((d) => d[trendKey])
-            );
-            let tmp_values = Object.values(scaledTrendData).map((d) =>
-                typeof d[trendKey] == undefined ? 0 : d[trendKey]
-            );
-            const max = Math.max(...(tmp_values as number[]));
-            console.log('max val is ', max);
+
             let extent = d3.extent(values(scaledTrendData), (d) =>
                 typeof d[trendKey] === 'number' ? (d[trendKey] as number) : 0
             );
@@ -204,12 +202,30 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             console.log('modified extext', extent);
 
             const baseScale = isLog ? d3.scaleLog() : d3.scaleLinear();
-            const colorScale = baseScale
+            let colorScale: any = baseScale
                 .domain(extent)
                 // @ts-ignore
                 .range(colorRange)
                 // @ts-ignore
                 .interpolate(d3.interpolateHcl);
+
+            // If daily rates and non - log
+            // Use static quantile bins
+            console.log('data type ', dataType, ' is log ', isLog, dailyRange);
+            if (dataType === 'daily' && !isLog && dailyRange) {
+                let colorSpace = d3
+                    .scaleLinear()
+                    .domain([0, NO_QUALTILE_BINS])
+                    // @ts-ignore
+                    .range(colorRange)
+                    // @ts-ignore
+                    .interpolate(d3.interpolateHcl);
+                let colors = [...Array(NO_QUALTILE_BINS)].map((_, i) =>
+                    colorSpace(i)
+                );
+                console.log('colors for daily ', colors);
+                colorScale = dailyRange[category].range(colors);
+            }
 
             // update the legend color
             let legend = legendColor()
@@ -225,31 +241,47 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 );
             }
 
-            svg.select('.legend').remove();
+            svg.selectAll('.legend').remove();
+
+            // Add the custom areas for no data and 0
+            let customCategories = d3
+                .scaleOrdinal()
+                .domain(['no_data', '0'])
+                .range(['url(#hash4_4)', 'rgba(255,255,255,255)']);
 
             svg.select('.legend-container')
                 .append('g')
                 .attr('class', 'legend')
+                .call(legend.scale(customCategories));
+
+            // Add the color scale bins
+            svg.select('.legend-container')
+                .append('g')
+                .attr('class', 'legend')
+                .attr('transform', 'translate(0,40)')
                 .call(legend.scale(colorScale));
             countries
-                .transition()
-                .duration(1000)
+                // .transition()
+                // .duration(1000)
                 .style('fill', (d: MapData) => {
                     const countryCode = getCountryA3(d.properties);
                     // Loading
                     if (isEmpty(scaledTrendData)) {
-                        return colors.WHITE;
+                        return 'url(#hash4_4)';
                     }
 
                     if (!(countryCode in scaledTrendData)) {
-                        return colors.DARK_BLUE;
+                        return 'url(#hash4_4)';
                     }
                     const countryData: CountryTrend | undefined =
                         scaledTrendData?.[countryCode];
                     if (countryData?.[trendKey] !== undefined) {
-                        return colorScale(
-                            Math.max(1, countryData[trendKey] as number)
-                        );
+                        const val = countryData[trendKey] as number;
+                        if (val === 0) {
+                            return 'rgba(255,255,255,255)';
+                        } else {
+                            return colorScale(val);
+                        }
                     }
                     return colors.LIGHT_GREY;
                 });
@@ -262,6 +294,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         isLog,
         isRegion,
         selectedRegion,
+        dailyRange,
         isPrediction,
         per100k,
     ]);
@@ -315,6 +348,20 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .scale(410)
             .translate([width / 3, height / 2]);
         const path = d3.geoPath().projection(projection);
+
+        //Add paterns
+        svg.append('defs')
+            .append('pattern')
+            .attr('id', 'hash4_4')
+            .attr('width', '8')
+            .attr('height', '8')
+            .attr('patternUnits', 'userSpaceOnUse')
+            .attr('patternTransform', 'rotate(60)')
+            .append('rect')
+            .attr('width', '4')
+            .attr('height', '8')
+            .attr('transform', 'translate(0,0)')
+            .attr('fill', '#88AAEE');
         // create background box
         svg.append('rect')
             .attr('class', 'background')
