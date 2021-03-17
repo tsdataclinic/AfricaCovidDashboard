@@ -249,8 +249,8 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .labelFormat(d3.format(',.2r'))
                 // .useClass(true)
                 .labelOffset(3)
-                // @ts-ignore
                 .labels(
+                    // @ts-ignore
                     ({ i, generatedLabels, domain, range, labelDelimiter }) => {
                         if (generatedLabels) {
                             let vals = generatedLabels[i]

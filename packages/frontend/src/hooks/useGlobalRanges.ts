@@ -23,17 +23,20 @@ const createScales = (data: number[], cumulativeData: number[]) => {
     return {
         dailyScale: d3.scaleQuantile().domain(zeroFilteredData),
         // @ts-ignore
-        dailyScaleLog: d3
-            .scaleQuantize()
-            .domain(d3.extent(zeroFilteredLogData)),
+        dailyScaleLog: d3.scaleQuantize().domain(
+            // @ts-ignore
+            d3.extent(zeroFilteredLogData)
+        ),
         // @ts-ignore
-        cumulativeScale: d3
-            .scaleQuantize()
-            .domain(d3.extent(zeroFilteredCumulativeData)),
+        cumulativeScale: d3.scaleQuantize().domain(
+            // @ts-ignore
+            d3.extent(zeroFilteredCumulativeData)
+        ),
         // @ts-ignore
-        cumulativeScaleLog: d3
-            .scaleQuantize()
-            .domain(d3.extent(zeroFilteredCumulativeLogData)),
+        cumulativeScaleLog: d3.scaleQuantize().domain(
+            // @ts-ignore
+            d3.extent(zeroFilteredCumulativeLogData)
+        ),
     };
 };
 
