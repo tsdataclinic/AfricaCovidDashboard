@@ -4,7 +4,11 @@ import StatsContext from '../contexts/StatsContext';
 
 import * as d3 from 'd3';
 
-export type DailyRange = { [index: string]: d3.ScaleQuantile<number> };
+export type DataRangeStats = {
+    quantiles: d3.ScaleQuantile<number>;
+    logExtent: [number, number];
+};
+export type DailyRange = { [index: string]: DataRangeStats };
 
 export const useQuantizedDailyRate = (
     trends: CountryTrends | undefined,
@@ -48,15 +52,32 @@ export const useQuantizedDailyRate = (
                 });
             });
             setRange({
-                deaths: d3
-                    .scaleQuantile()
-                    .domain(all_deaths.filter((d) => d > 0)),
-                recoveries: d3
-                    .scaleQuantile()
-                    .domain(all_recoveries.filter((d) => d > 0)),
-                confirmed: d3
-                    .scaleQuantile()
-                    .domain(all_cases.filter((d) => d > 0)),
+                deaths: {
+                    quantiles: d3
+                        .scaleQuantile()
+                        .domain(all_deaths.filter((d) => d > 0)),
+                    logExtent: d3.extent(all_deaths.filter((d) => d > 0)) as [
+                        number,
+                        number
+                    ],
+                },
+                recoveries: {
+                    quantiles: d3
+                        .scaleQuantile()
+                        .domain(all_recoveries.filter((d) => d > 0)),
+                    logExtent: d3.extent(
+                        all_recoveries.filter((d) => d > 0)
+                    ) as [number, number],
+                },
+                confirmed: {
+                    quantiles: d3
+                        .scaleQuantile()
+                        .domain(all_cases.filter((d) => d > 0)),
+                    logExtent: d3.extent(all_cases.filter((d) => d > 0)) as [
+                        number,
+                        number
+                    ],
+                },
             });
         }
     }, [trends, per100k, isLog]);

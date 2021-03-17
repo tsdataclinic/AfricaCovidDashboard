@@ -199,6 +199,10 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 extent[0] = 0;
             }
 
+            if (isLog && dataType === 'daily' && dailyRange) {
+                extent = dailyRange[category].logExtent;
+            }
+
             console.log('modified extext', extent);
 
             const baseScale = isLog ? d3.scaleLog() : d3.scaleLinear();
@@ -224,7 +228,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                     colorSpace(i)
                 );
                 console.log('colors for daily ', colors);
-                colorScale = dailyRange[category].range(colors);
+                colorScale = dailyRange[category].quantiles.range(colors);
             }
 
             // update the legend color
