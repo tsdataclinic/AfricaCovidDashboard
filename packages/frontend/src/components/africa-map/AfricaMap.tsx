@@ -45,8 +45,6 @@ type MapData = Feature<Geometry, CountryProperties>;
 
 const MAP_TARGET = '#africa-map';
 
-const NO_QUALTILE_BINS = 6;
-
 const topology = (africaTopology as unknown) as Topology<{
     collection: GeometryCollection<CountryProperties>;
 }>;
@@ -209,19 +207,6 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             const category_key = isPrediction
                 ? 'confirmed_predicted'
                 : category;
-            // let colorRange = colorRanges[category_key] || colorRanges['deaths'];
-
-            // //Calculate the discrete colors for the bins
-            // let colorSpace = d3
-            //     .scaleLinear()
-            //     .domain([0, NO_QUALTILE_BINS])
-            //     // @ts-ignore
-            //     .range(colorRange)
-            //     // @ts-ignore
-            //     .interpolate(d3.interpolateHcl);
-            // let colors = [...Array(NO_QUALTILE_BINS)].map((_, i) =>
-            //     colorSpace(i)
-            // );
 
             let categoryScale = dailyRange[category];
 
