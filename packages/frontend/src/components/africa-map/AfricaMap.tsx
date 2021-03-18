@@ -239,7 +239,9 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                         if (generatedLabels) {
                             let vals = generatedLabels[i]
                                 .split(labelDelimiter)
-                                .map((v: string) => parseFloat(v));
+                                .map((v: string) =>
+                                    parseFloat(v.replace(/,/g, ''))
+                                );
                             if (isLog) {
                                 vals = vals.map((v: number) =>
                                     Math.pow(10, v).toLocaleString('en-US', {
@@ -252,7 +254,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                             } else if (i === generatedLabels.length - 1) {
                                 return `> ${vals[0]}`;
                             } else {
-                                return `${vals[0]} ${labelDelimiter} ${vals[1]}`;
+                                return `${vals[0]} - ${vals[1]}`;
                             }
                         } else {
                             return undefined;
