@@ -16,6 +16,7 @@ import styled from 'styled-components';
 import { Dictionary, uniq } from 'lodash';
 import Controls from './controls/Controls';
 import useTrendsScale from '../hooks/useTrendsScale';
+import { useGlobalRanges } from '../hooks/useGlobalRanges';
 
 const LAYOUT_GUTTER: [number, number] = [16, 16];
 
@@ -49,6 +50,9 @@ const Home = () => {
         error: africaTrendsError,
         isLoading: africaTrendsLoading,
     } = useAfricaTrends();
+    //Calculates an absolute range across all time periopds for the mapo
+
+    const dailyRange = useGlobalRanges(allCountryTrends, per100K, isLog);
 
     const currentTrends = useMemo(() => {
         if ((isRegion && !region) || (!isRegion && !country)) {
@@ -191,6 +195,7 @@ const Home = () => {
                             }
                             category={category}
                             dataType={dataType}
+                            dailyRange={dailyRange}
                             trendData={selectedStatsByCountry}
                             loading={isLoading}
                             isRegion={isRegion}
