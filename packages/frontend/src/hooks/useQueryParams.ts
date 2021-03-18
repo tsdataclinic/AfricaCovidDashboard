@@ -82,7 +82,7 @@ const useQueryParams = () => {
         per100K: per100K === 'true',
         selectedDate: selectedMoment,
         updateQuery,
-        dataType: (dataType || 'cumulative') as DataType,
+        dataType: (dataType || 'daily') as DataType,
         category: (category || 'confirmed') as Category,
     };
 };
