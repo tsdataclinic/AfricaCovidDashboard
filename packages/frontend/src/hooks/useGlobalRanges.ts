@@ -105,6 +105,6 @@ export const useGlobalRanges = (
                 confirmed: createScales(all_cases, all_cumulative_cases),
             });
         }
-    }, [trends, per100k, isLog]);
+    }, [trends, per100k, isLog, allStats]);
     return range;
 };
