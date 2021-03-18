@@ -14,7 +14,6 @@ import { getDataFromJHTS } from '../utils/JohnHopkins';
 import * as fs from 'fs';
 import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
 import { ModelService } from '../model/model.service';
-import { count } from 'console';
 
 @Injectable()
 export class CountryService {

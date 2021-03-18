@@ -13,10 +13,10 @@ export type GlobalRangeStats = {
 export type GlobalRange = { [index: string]: GlobalRangeStats };
 
 const createScales = (data: number[], cumulativeData: number[]) => {
-    let zeroFilteredData = data.filter((d) => d > 0);
-    let zeroFilteredLogData = zeroFilteredData.map((d) => Math.log10(d));
-    let zeroFilteredCumulativeData = cumulativeData.filter((d) => d > 0);
-    let zeroFilteredCumulativeLogData = zeroFilteredCumulativeData.map((d) =>
+    const zeroFilteredData = data.filter((d) => d > 0);
+    const zeroFilteredLogData = zeroFilteredData.map((d) => Math.log10(d));
+    const zeroFilteredCumulativeData = cumulativeData.filter((d) => d > 0);
+    const zeroFilteredCumulativeLogData = zeroFilteredCumulativeData.map((d) =>
         Math.log10(d)
     );
 
@@ -65,7 +65,6 @@ export const useGlobalRanges = (
                         d.new_recoveries < 0 ||
                         d.new_case < 0
                     ) {
-                        // console.log('negative count ', d);
                     } else {
                         let pop = allStats[iso]?.population / 100000.0;
                         let deaths = d.new_deaths;
@@ -107,6 +106,5 @@ export const useGlobalRanges = (
             });
         }
     }, [trends, per100k, isLog]);
-    console.log('range is ', range);
     return range;
 };

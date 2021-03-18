@@ -120,7 +120,6 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         (key) => trendData?.[key].isPrediction
     );
 
-    console.log(trendData);
     const scaledTrendData = useMemo(() => {
         if (!trendData || !allStats) {
             return trendData;
@@ -226,7 +225,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
             let categoryScale = dailyRange[category];
 
-            let colorScale: any | null = null;
+            let colorScale: any = null;
 
             if (dataType === 'daily' && categoryScale) {
                 if (isLog) {
