@@ -134,7 +134,7 @@ const Home = () => {
         const dictionary: Dictionary<CountryTrend> = {};
         Object.keys(allCountryTrends).forEach((country) => {
             const trend = allCountryTrends[country].find((t) =>
-                selectedDate.isSame(t.date)
+                selectedDate.isSame(t.date, 'day')
             );
             if (trend) {
                 dictionary[country] = trend;
