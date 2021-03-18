@@ -24,7 +24,7 @@ const QueryParamsContext = createContext<QueryParamsContextProps>({
     per100K: false,
     selectedDate: undefined,
     updateQuery: noop,
-    dataType: 'cumulative' as DataType,
+    dataType: 'daily' as DataType,
     category: 'confirmed' as Category,
 });
 
