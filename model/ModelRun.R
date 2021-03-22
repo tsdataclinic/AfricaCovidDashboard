@@ -27,6 +27,8 @@ else{
 
   model5 = readRDS(file.path("ModelData", paste("stanmodel",format(most_recent_model[[1]],format='%Y-%m-%d'),".rds",sep="")))
   update(model5,data = most_recent_data, chains=1, iter=1000,warmup=500)
+  model5name <- paste("ModelData/stanmodel",Sys.Date(),".rds",sep="")
+  saveRDS(model5,model5name)
 }
 
 # Make forecasts with this model.
