@@ -11,7 +11,7 @@ import { useResizeObserver } from '../../hooks/useResizeObserver';
 import * as d3 from 'd3';
 import moment, { Moment } from 'moment';
 import { formatDay, formatMonth } from '../../utils/trendUtils';
-import { WHITE } from '../../colors';
+import { WHITE, DARK_BLUE } from '../../colors';
 
 const PLAY_SPEED = 100;
 // Chart margins
@@ -113,7 +113,8 @@ const DateSlider = ({
                 .attr('cy', 0)
                 .attr('r', 6)
                 .attr('fill', WHITE)
-                .attr('stroke', '#ADC6FF');
+                .attr('stroke-width', 2)
+                .attr('stroke', DARK_BLUE);
 
             slider
                 .insert('circle', '.track-overlay')
@@ -125,6 +126,7 @@ const DateSlider = ({
                 .attr('class', 'label')
                 .attr('text-anchor', 'middle')
                 .attr('fill', '#0050B3')
+                .attr('font-weight', 'bold')
                 .text(formatDay(startDate))
                 .attr('transform', 'translate(0,' + -15 + ')');
 
@@ -267,7 +269,7 @@ const ControlButton = styled.div`
     position: absolute;
     right: 10px;
     top: 5px;
-    color: #096dd9;
+    color: ${DARK_BLUE};
     font-size: 30px;
     :hover {
         opacity: 0.8;
@@ -294,8 +296,7 @@ const Wrapper = styled.div`
     }
 
     .track {
-        stroke: #000;
-        stroke-opacity: 0.3;
+        stroke: ${DARK_BLUE};
         stroke-width: 10px;
     }
 
@@ -312,8 +313,8 @@ const Wrapper = styled.div`
     }
 
     .handle {
-        fill: #fff;
-        stroke: #096dd9;
+        fill: ${WHITE};
+        stroke: ${DARK_BLUE};
         stroke-width: 5px;
     }
 

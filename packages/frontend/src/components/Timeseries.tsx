@@ -26,7 +26,15 @@ import {
     TimeseriesMapper,
     CountryTrendWithDelta,
 } from '../types';
-import { BLUE, LIGHT_ORANGE, ORANGE, PURPLE, RED } from '../colors';
+import {
+    BLUE,
+    LIGHT_ORANGE,
+    ORANGE,
+    PURPLE,
+    RED,
+    HINT_GREY,
+    DARK_BLUE,
+} from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment, { Moment } from 'moment';
 import { Statistic } from 'antd';
@@ -68,24 +76,10 @@ const Timeseries = ({
         if (!timeseries || timeseries.length === 0) {
             return mapper;
         }
-        let prev = timeseries[0];
+
         timeseries.forEach((item) => {
             const key = moment(item.date).startOf('day').valueOf();
             mapper[key] = item;
-            mapper[key].delta_confirmed =
-                mapper[key].confirmed - prev.confirmed;
-            mapper[key].delta_death = mapper[key].deaths - prev.deaths;
-            mapper[key].delta_recoveries =
-                mapper[key].recoveries - prev.recoveries;
-            mapper[key].delta_confirmed_prediction =
-                (mapper[key].confirmed_prediction || 0) -
-                (prev.confirmed_prediction || 0);
-            mapper[key].delta_new_case = mapper[key].new_case - prev.new_case;
-            mapper[key].delta_new_death =
-                mapper[key].new_deaths - prev.new_deaths;
-            mapper[key].delta_new_recoveries =
-                mapper[key].new_recoveries - prev.new_recoveries;
-            prev = item;
         });
         return mapper;
     }, [timeseries]);
@@ -154,10 +148,14 @@ const Timeseries = ({
 
         const yAxis = (g: any, yScale: AxisScale<number>) =>
             g.attr('class', 'y-axis').call(
-                axisRight(yScale)
-                    .ticks(4)
-                    .tickFormat((num) => abbreviateNumber(num))
-                    .tickPadding(4)
+                isLog
+                    ? axisRight(yScale)
+                          .ticks(4, (num: number) => abbreviateNumber(num))
+                          .tickPadding(4)
+                    : axisRight(yScale)
+                          .ticks(4)
+                          .tickFormat((num: number) => abbreviateNumber(num))
+                          .tickPadding(4)
             );
 
         const generateYScale = (category: Category) => {
@@ -190,9 +188,6 @@ const Timeseries = ({
         };
 
         /* Begin drawing charts */
-        const unpredictedDates = timeseries
-            .filter((t) => !t.isPrediction)
-            .map((t) => convertDateStrToDate(t.date));
         const predictedTimeseries = timeseries.filter((t) => t.isPrediction);
         const unPredictedTimeseries = timeseries.filter((t) => !t.isPrediction);
 
@@ -217,31 +212,7 @@ const Timeseries = ({
                 .transition(t)
                 .call(yAxis, yScale);
 
-            /* Path */
             svg.selectAll('.trend').remove();
-            svg.select('.data')
-                .append('path')
-                .datum(
-                    category === 'confirmed'
-                        ? timeseries
-                        : unPredictedTimeseries
-                )
-                .attr('fill', 'none')
-                .attr('class', 'trend')
-                .attr('stroke', color)
-                .attr('stroke-width', 1.5)
-                .attr(
-                    'd',
-                    line()
-                        .x(function (d: any) {
-                            return xScale(convertDateStrToDate(d.date));
-                        })
-                        .y(function (d: any) {
-                            return yScale(getStatistic(dataType, category, d));
-                        })
-                );
-
-            // Listen events
 
             const focus = svg
                 .append('g')
@@ -384,6 +355,30 @@ const Timeseries = ({
                     .attr('y2', yScale(0))
                     .remove();
 
+                /* Path */
+                svg.select('.data')
+                    .append('path')
+                    .datum(
+                        category === 'confirmed'
+                            ? timeseries
+                            : unPredictedTimeseries
+                    )
+                    .attr('fill', 'none')
+                    .attr('class', 'trend')
+                    .attr('stroke', color)
+                    .attr('stroke-width', 1.5)
+                    .attr(
+                        'd',
+                        line()
+                            .x(function (d: any) {
+                                return xScale(convertDateStrToDate(d.date));
+                            })
+                            .y(function (d: any) {
+                                return yScale(
+                                    getStatistic(dataType, category, d)
+                                );
+                            })
+                    );
                 if (!dates.length) {
                     return;
                 }
@@ -432,30 +427,42 @@ const Timeseries = ({
 
                 svg.select('.data')
                     .selectAll('.stem')
-                    .data(unpredictedDates, (date: Date) => date)
+                    .data(
+                        category === 'confirmed'
+                            ? timeseries
+                            : unPredictedTimeseries
+                    )
                     .join((enter: any) =>
                         enter
                             .append('line')
                             .attr('class', 'stem')
                             .attr('stroke-width', barWidth)
-                            .attr('x1', (date: Date) => xScale(date))
+                            .attr('x1', (d: CountryTrendWithDelta) =>
+                                xScale(convertDateStrToDate(d.date))
+                            )
                             .attr('y1', chartBottom)
-                            .attr('x2', (date: Date) => xScale(date))
+                            .attr('x2', (d: CountryTrendWithDelta) =>
+                                xScale(convertDateStrToDate(d.date))
+                            )
                             .attr('y2', chartBottom)
                     )
                     .transition(t)
                     .attr('stroke-width', barWidth)
-                    .attr('x1', (date: Date) => xScale(date))
+                    .attr('x1', (d: CountryTrendWithDelta) =>
+                        xScale(convertDateStrToDate(d.date))
+                    )
                     .attr('y1', yScale(0))
-                    .attr('x2', (date: Date) => xScale(date))
-                    .attr('y2', (date: Date) =>
-                        yScale(
-                            getStatistic(
-                                dataType,
-                                category,
-                                timeseriesMapper[date.valueOf()]
-                            )
-                        )
+                    .attr('x2', (d: CountryTrendWithDelta) =>
+                        xScale(convertDateStrToDate(d.date))
+                    )
+                    .attr('y2', (data: CountryTrendWithDelta) =>
+                        yScale(getStatistic(dataType, category, data))
+                    )
+                    .attr('stroke-dasharray', (data: CountryTrendWithDelta) =>
+                        data.isPrediction ? 0.5 : 0
+                    )
+                    .attr('opacity', (data: CountryTrendWithDelta) =>
+                        data.isPrediction ? 0.5 : 1
                     );
             }
         });
@@ -464,7 +471,6 @@ const Timeseries = ({
         dimensions,
         getBarWidth,
         timeseries,
-        timeseriesMapper,
         dates,
         isLog,
         categories,
@@ -506,10 +512,8 @@ const Timeseries = ({
                 {categories.map(({ category, label }, index) => {
                     const highlight = getStatistic(dataType, category, stats);
                     const isPrediction = stats?.isPrediction;
-                    const isPredictedCumulative =
-                        isPrediction &&
-                        category === 'confirmed' &&
-                        dataType === 'cumulative';
+                    const isPredictedConfirmed =
+                        isPrediction && category === 'confirmed';
                     const unPredictable =
                         isPrediction && category !== 'confirmed';
                     return (
@@ -524,7 +528,7 @@ const Timeseries = ({
                             {selectedDate && (
                                 <div
                                     className={`stats is-${category} ${
-                                        isPredictedCumulative && 'predicted'
+                                        isPredictedConfirmed && 'predicted'
                                     }`}
                                 >
                                     <h5 className="title">
@@ -532,7 +536,7 @@ const Timeseries = ({
                                         <Text>
                                             {t(
                                                 `${label}${
-                                                    isPredictedCumulative
+                                                    isPredictedConfirmed
                                                         ? ' Prediction'
                                                         : ''
                                                 }`
@@ -555,15 +559,14 @@ const Timeseries = ({
                                         <Statistic
                                             value={
                                                 isPrediction &&
-                                                !isPredictedCumulative
+                                                !isPredictedConfirmed
                                                     ? '-'
                                                     : highlight
                                             }
-                                            precision={0}
                                             valueStyle={{
                                                 color: getStatColor(
                                                     category,
-                                                    !!isPredictedCumulative
+                                                    !!isPredictedConfirmed
                                                 ),
                                             }}
                                         />
@@ -589,8 +592,8 @@ const Timeseries = ({
                                 <g className="data" />
                                 <rect
                                     className="selected-date rotate"
-                                    width={6}
-                                    height={6}
+                                    width={10}
+                                    height={10}
                                     strokeWidth="1px"
                                     fill="white"
                                     stroke="red"
@@ -626,7 +629,7 @@ const getStatColor = (category: Category, isPrediction: boolean) => {
             return PURPLE;
         case 'recoveries':
         default:
-            return BLUE;
+            return DARK_BLUE;
     }
 };
 
@@ -658,9 +661,15 @@ const Wrapper = styled.div`
         width: 100%;
         .selected-date,
         path,
-        .tick,
         line {
             stroke: ${ORANGE};
+        }
+        .x-axis,
+        .y-axis {
+            path,
+            line {
+                stroke: #612500;
+            }
         }
         path.confirmed-prediction {
             stroke: ${RED};
@@ -668,8 +677,8 @@ const Wrapper = styled.div`
         path.confirmed-prediction-error {
             stroke: none;
         }
-        text {
-            opacity: 0.5;
+        .tick {
+            fill: ${HINT_GREY};
         }
     }
 
@@ -678,17 +687,23 @@ const Wrapper = styled.div`
         h5.title,
         h2,
         h6 {
-            color: ${BLUE};
+            color: ${DARK_BLUE};
         }
         .symbol {
-            border: 1px solid ${BLUE};
+            border: 1px solid ${DARK_BLUE};
         }
         svg {
             .selected-date,
             path,
-            .tick,
             line {
-                stroke: ${BLUE};
+                stroke: ${DARK_BLUE};
+            }
+            .x-axis,
+            .y-axis {
+                path,
+                line {
+                    stroke: #030852;
+                }
             }
         }
     }
@@ -706,9 +721,15 @@ const Wrapper = styled.div`
         svg {
             .selected-date,
             path,
-            .tick,
             line {
                 stroke: ${PURPLE};
+            }
+            .x-axis,
+            .y-axis {
+                path,
+                line {
+                    stroke: #120338;
+                }
             }
         }
     }
@@ -716,7 +737,6 @@ const Wrapper = styled.div`
     h5.title {
         margin: 0;
         transition: all 0.15s ease-in-out;
-        opacity: 0.6;
         color: ${ORANGE};
         font-weight: 900;
         line-height: 10px;
@@ -753,7 +773,6 @@ const Wrapper = styled.div`
     .focus text {
         font-size: 10px;
         fill: white;
-        opacity: 1;
     }
 
     .tooltip {
