@@ -13,5 +13,11 @@ const getSafeCountryCode = () => {
  * Return translated country name
  * @param isoCode country iso3 code
  */
-export const getCountryName = (isoCode: string | number): string =>
-    i18nCountries.getName(isoCode, getSafeCountryCode());
+export const getCountryName = (isoCode: string | number): string => {
+    const name = i18nCountries.getName(isoCode, getSafeCountryCode());
+    if (isoCode === 'CIV') {
+        return "Côte d'Ivoire";
+    } else {
+        return name;
+    }
+};
