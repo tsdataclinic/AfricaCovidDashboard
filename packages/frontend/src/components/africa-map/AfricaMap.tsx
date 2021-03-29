@@ -389,7 +389,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             .attr('width', '4')
             .attr('height', '8')
             .attr('transform', 'translate(0,0)')
-            .attr('fill', '#88AAEE');
+            .attr('fill', '#d3d3d3');
         // create background box
         svg.append('rect')
             .attr('class', 'background')
