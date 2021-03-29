@@ -280,6 +280,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             svg.select('.legend-container')
                 .append('g')
                 .attr('class', 'legend')
+                .attr('transform', 'translate(0 80)')
                 .call(
                     legendColor()
                         .labelFormat(d3.format(',.2r'))
@@ -293,7 +294,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             svg.select('.legend-container')
                 .append('g')
                 .attr('class', 'legend')
-                .attr('transform', 'translate(0,60)')
+                .attr('transform', 'translate(0 140)')
                 .call(legend.scale(colorScale));
             countries
                 // .transition()
@@ -455,7 +456,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         svgElement
             .attr('class', 'scaling-svg')
             .attr('preserveAspectRatio', 'xMinYMin')
-            .attr('viewBox', '0 0 ' + width + ' ' + height)
+            .attr('viewBox', '0 70 ' + width * 0.78 + ' ' + height * 0.78)
             .attr('width', null)
             .attr('height', null);
 
