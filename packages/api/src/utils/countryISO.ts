@@ -48,6 +48,9 @@ export function getCountryISO(country: string) {
 }
 
 export function getCountryDetailsForISO(iso: string) {
-  const { country, continent, iso3, region } = CountryLookup.byIso(iso);
+  let { country, continent, iso3, region } = CountryLookup.byIso(iso);
+  if (iso === 'CIV') {
+    country = "Côte d'Ivoire";
+  }
   return { name: country, continent, iso3, region };
 }
