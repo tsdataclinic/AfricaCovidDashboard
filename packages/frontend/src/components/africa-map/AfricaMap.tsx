@@ -271,12 +271,19 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 .domain(['Data Unavaliable', '0'])
                 .range(['url(#hash4_4)', 'rgba(255,255,255,255)']);
 
+            let legendTitle =
+                dataType.charAt(0).toUpperCase() +
+                dataType.slice(1) +
+                ' ' +
+                category +
+                (per100k ? ' per 100k people' : '');
             svg.select('.legend-container')
                 .append('g')
                 .attr('class', 'legend')
                 .call(
                     legendColor()
                         .labelFormat(d3.format(',.2r'))
+                        .title(legendTitle)
                         // .useClass(true)
                         .labelOffset(3)
                         .scale(customCategories)
@@ -286,7 +293,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
             svg.select('.legend-container')
                 .append('g')
                 .attr('class', 'legend')
-                .attr('transform', 'translate(0,40)')
+                .attr('transform', 'translate(0,60)')
                 .call(legend.scale(colorScale));
             countries
                 // .transition()
