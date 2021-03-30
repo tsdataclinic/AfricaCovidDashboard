@@ -5,7 +5,7 @@ import {
     StatsBarItem,
 } from './types';
 import moment from 'moment';
-import { BLUE, GREY, ORANGE, PURPLE, RED, DARK_BLUE } from './colors';
+import { BLUE, GREY, PURPLE, RED, DARK_BLUE } from './colors';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
@@ -68,7 +68,7 @@ const safeGet = (value?: number) => (value ? value : 0);
 export const getColor = (category: Category) => {
     switch (category) {
         case 'confirmed':
-            return ORANGE;
+            return RED;
         case 'recoveries':
             return DARK_BLUE;
         case 'deaths':
@@ -95,7 +95,7 @@ export const getCategories = (
                         label: 'Confirmed',
                         value: 'confirmed',
                         category: 'confirmed',
-                        color: ORANGE,
+                        color: RED,
                     },
               {
                   label: 'Recovered',
@@ -122,7 +122,7 @@ export const getCategories = (
                         label: 'New Cases',
                         value: 'new_case',
                         category: 'confirmed',
-                        color: ORANGE,
+                        color: RED,
                     },
               {
                   label: 'New Recoveries',

@@ -26,15 +26,7 @@ import {
     TimeseriesMapper,
     CountryTrendWithDelta,
 } from '../types';
-import {
-    BLUE,
-    LIGHT_ORANGE,
-    ORANGE,
-    PURPLE,
-    RED,
-    HINT_GREY,
-    DARK_BLUE,
-} from '../colors';
+import { BLUE, RED, PURPLE, HINT_GREY, DARK_BLUE } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment, { Moment } from 'moment';
 import { Statistic } from 'antd';
@@ -564,10 +556,7 @@ const Timeseries = ({
                                                     : highlight
                                             }
                                             valueStyle={{
-                                                color: getStatColor(
-                                                    category,
-                                                    !!isPredictedConfirmed
-                                                ),
+                                                color: getStatColor(category),
                                             }}
                                         />
                                     </HighlightNumber>
@@ -621,10 +610,10 @@ const getDeltaText = (
     return `1 Day Change: ${prefix}${delta} ${caseText} ${postfix}`;
 };
 
-const getStatColor = (category: Category, isPrediction: boolean) => {
+const getStatColor = (category: Category) => {
     switch (category) {
         case 'confirmed':
-            return isPrediction ? RED : ORANGE;
+            return RED;
         case 'deaths':
             return PURPLE;
         case 'recoveries':
@@ -636,7 +625,7 @@ const getStatColor = (category: Category, isPrediction: boolean) => {
 const Wrapper = styled.div`
     position: relative;
     align-self: center;
-    background: ${transparentize(0.85, LIGHT_ORANGE)};
+    background: #fff2eb;
     border-radius: 5px;
     display: flex;
     position: relative;
@@ -662,7 +651,7 @@ const Wrapper = styled.div`
         .selected-date,
         path,
         line {
-            stroke: ${ORANGE};
+            stroke: ${RED};
         }
         .x-axis,
         .y-axis {
@@ -737,13 +726,13 @@ const Wrapper = styled.div`
     h5.title {
         margin: 0;
         transition: all 0.15s ease-in-out;
-        color: ${ORANGE};
+        color: ${RED};
         font-weight: 900;
         line-height: 10px;
     }
     h2,
     h6 {
-        color: ${ORANGE};
+        color: ${RED};
         font-weight: 400;
     }
 
@@ -788,7 +777,7 @@ const Wrapper = styled.div`
         align-items: center;
     }
     .symbol {
-        border: 1px solid ${ORANGE};
+        border: 1px solid ${RED};
         width: 6px;
         height: 6px;
         display: inline-block;
