@@ -12,11 +12,11 @@ export const BLUE = '#3C91E6';
 export const LIGHT_ORANGE = '#f6c588';
 export const ORANGE = '#f79824ff';
 export const LIGHT_RED = '#D65E5C';
-export const RED = '#a22c29ff';
+export const RED = '#AD2102';
 export const LIGHT_GREEN = '#9fcb42';
 export const GREEN = '#7FB800';
-export const DARK_BLUE = '#002766';
-export const HINT_GREY = '434343';
+export const HINT_GREY = '#434343';
 
 export const GREEK_BLUE = '#F0F5FF';
 export const HIGHLIGHT_BLUE = '#0050b3';
+export const DARK_BLUE = '#096DD9';

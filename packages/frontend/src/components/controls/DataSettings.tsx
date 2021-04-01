@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import QueryParamsContext from '../../contexts/QueryParamsContext';
+import { DARK_BLUE } from '../../colors';
 
 const DataSettings = () => {
     const { t } = useTranslation();
@@ -40,6 +41,9 @@ const DataSettingsGroup = styled.div`
     text-align: left;
     font-size: 14px;
     width: 230px;
+    .ant-switch-checked {
+        background-color: ${DARK_BLUE};
+    }
 `;
 
 const Group = styled.div`

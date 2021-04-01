@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, Skeleton, Statistic } from 'antd';
+import { transparentize } from 'polished';
 import { Category, DataType, StatsBarItem } from '../../types';
 import styled from 'styled-components';
 import { getCategories } from '../../helper';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { useTranslation } from 'react-i18next';
-import * as colors from '../../colors';
+import { HINT_GREY } from '../../colors';
 import { buttonize } from '../../utils/buttonize';
 import SmallStatsBar from './SmallStatsBar';
 
@@ -47,6 +48,7 @@ const StatsBar: React.FC<StatsBarProps> = ({
                                 selectCategory(column.category)
                             )}
                             selected={column.category === category}
+                            color={column.color}
                             hoverable
                         >
                             <Skeleton
@@ -58,7 +60,6 @@ const StatsBar: React.FC<StatsBarProps> = ({
                                 <Statistic
                                     title={t(column.label)}
                                     value={value}
-                                    precision={0}
                                     valueStyle={{
                                         color: column.color,
                                         fontSize: '120%',
@@ -74,13 +75,16 @@ const StatsBar: React.FC<StatsBarProps> = ({
 };
 
 const Container = styled.div`
+    .ant-statistic-title {
+        color: ${HINT_GREY};
+    }
     @media (min-width: 768px) {
         display: flex;
         justify-content: space-between;
         margin-bottom: 10px;
     }
 `;
-const StyledCard = styled(Card)<{ selected: boolean }>`
+const StyledCard = styled(Card)<{ selected: boolean; color: string }>`
     flex: 1 1 30%;
     margin-right: 10px;
     &:last-child {
@@ -90,7 +94,8 @@ const StyledCard = styled(Card)<{ selected: boolean }>`
         props.selected &&
         `
     font-weight: bold;
-    outline: ${colors.GREY} solid 1px !important;
+    outline: ${props.color} solid 1px !important;
+    background: ${transparentize(0.85, props.color)};
   `};
     &:hover {
         cursor: pointer;

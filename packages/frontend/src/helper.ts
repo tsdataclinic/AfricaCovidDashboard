@@ -5,7 +5,7 @@ import {
     StatsBarItem,
 } from './types';
 import moment from 'moment';
-import { BLUE, GREY, ORANGE, PURPLE, RED } from './colors';
+import { BLUE, GREY, PURPLE, RED, DARK_BLUE } from './colors';
 
 export const numberFormatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
@@ -31,16 +31,23 @@ export const getStatistic = (
         return 0;
     }
 
+    const predictedDaily = safeGet(
+        isDelta ? data.delta_daily_prediction : data.daily_prediction
+    );
+
+    const predictedCumulative = safeGet(
+        isDelta ? data.delta_confirmed_prediction : data.confirmed_prediction
+    );
+
     switch (category) {
         case 'confirmed':
             return type === 'daily'
-                ? safeGet(isDelta ? data.delta_new_case : data.new_case)
-                : safeGet(isDelta ? data.delta_confirmed : data.confirmed) ||
-                      safeGet(
-                          isDelta
-                              ? data.delta_confirmed_prediction
-                              : data.confirmed_prediction
-                      );
+                ? data.isPrediction
+                    ? predictedDaily
+                    : safeGet(isDelta ? data.delta_new_case : data.new_case)
+                : data.isPrediction
+                ? predictedCumulative
+                : safeGet(isDelta ? data.delta_confirmed : data.confirmed);
         case 'recoveries':
             return type === 'daily'
                 ? safeGet(
@@ -61,9 +68,9 @@ const safeGet = (value?: number) => (value ? value : 0);
 export const getColor = (category: Category) => {
     switch (category) {
         case 'confirmed':
-            return ORANGE;
+            return RED;
         case 'recoveries':
-            return BLUE;
+            return DARK_BLUE;
         case 'deaths':
             return PURPLE;
     }
@@ -88,13 +95,13 @@ export const getCategories = (
                         label: 'Confirmed',
                         value: 'confirmed',
                         category: 'confirmed',
-                        color: ORANGE,
+                        color: RED,
                     },
               {
                   label: 'Recovered',
                   value: 'recoveries',
                   category: 'recoveries',
-                  color: BLUE,
+                  color: DARK_BLUE,
               },
               {
                   label: 'Deaths',
@@ -104,12 +111,19 @@ export const getCategories = (
               },
           ]
         : [
-              {
-                  label: 'New Cases',
-                  value: 'new_case',
-                  category: 'confirmed',
-                  color: ORANGE,
-              },
+              isPrediction
+                  ? {
+                        label: 'New Cases Prediction',
+                        value: 'daily_prediction',
+                        category: 'confirmed',
+                        color: RED,
+                    }
+                  : {
+                        label: 'New Cases',
+                        value: 'new_case',
+                        category: 'confirmed',
+                        color: RED,
+                    },
               {
                   label: 'New Recoveries',
                   value: 'new_recoveries',

@@ -49,7 +49,6 @@ const SmallStatsBar = ({
                                     <Statistic
                                         title={t(column.label)}
                                         value={value}
-                                        precision={0}
                                         valueStyle={{
                                             color: column.color,
                                             fontSize: '120%',

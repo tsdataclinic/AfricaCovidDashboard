@@ -1,39 +1,40 @@
-import { CountryTrend } from '../hooks/useCountryTrends';
 import moment from 'moment';
 import isNil from 'lodash/isNil';
 import { format } from 'd3';
+import { CountryTrendWithDelta } from '../types';
 
 const safeFormatInteger = (num: number | undefined): number =>
     num ? Math.round(num) : 0;
+
+export const safeFormatFloat = (num: number | undefined): number =>
+    num ? Number(num.toFixed(2)) : 0;
+
 /**
  * Scale the provided trend datum by the specified amount. Useful for computing trend per X population
  * @param datum
  * @param scale
  */
 export const scaleTrendDatum = (
-    datum: CountryTrend,
-    scale: number
-): CountryTrend => {
-    return {
-        ...datum,
-        confirmed: safeFormatInteger(datum.confirmed * scale),
-        date: datum.date,
-        deaths: safeFormatInteger(datum.deaths * scale),
-        new_case: safeFormatInteger(datum.new_case * scale),
-        new_deaths: safeFormatInteger(datum.new_deaths * scale),
-        new_recoveries: safeFormatInteger(datum.new_recoveries * scale),
-        recoveries: safeFormatInteger(datum.recoveries * scale),
-        days_since_first_case: safeFormatInteger(datum.days_since_first_case),
-        confirmed_prediction: safeFormatInteger(
-            (datum.confirmed_prediction || 0) * scale
-        ),
-        confirmed_prediction_lower: safeFormatInteger(
-            (datum.confirmed_prediction_lower || 0) * scale
-        ),
-        confirmed_prediction_upper: safeFormatInteger(
-            (datum.confirmed_prediction_upper || 0) * scale
-        ),
-    };
+    datum: CountryTrendWithDelta,
+    scale: number,
+    notInteger?: boolean
+): CountryTrendWithDelta => {
+    const formatter = notInteger ? safeFormatFloat : safeFormatInteger;
+    const formattedData: CountryTrendWithDelta = { ...datum };
+    Object.keys(datum).forEach((key) => {
+        // @ts-ignore access key
+        const data = datum[key];
+        if (typeof data !== 'number') {
+            // @ts-ignore access key
+            formattedData[key] = data;
+        } else if (key === 'days_since_first_case') {
+            formattedData[key] = safeFormatInteger(data);
+        } else {
+            // @ts-ignore access key
+            formattedData[key] = formatter(data * scale);
+        }
+    });
+    return formattedData;
 };
 
 export const formatMonth = (d: Date) => moment(d).format('MMM YYYY');
