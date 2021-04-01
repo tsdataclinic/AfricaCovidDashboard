@@ -134,6 +134,6 @@ export const getCategories = (
                   label: 'New Deaths',
                   value: 'new_deaths',
                   category: 'deaths',
-                  color: GREY,
+                  color: PURPLE,
               },
           ];
