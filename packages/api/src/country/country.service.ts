@@ -21,6 +21,7 @@ export class CountryService {
   allCountryStats: CountryStats[];
   countries: Country[];
   avaliableCountries: string[];
+  lastUpdatedTime: Date;
 
   constructor(private readonly modelService: ModelService) {
     this.loadCountryStats().then((data: CountryStats[]) => {
@@ -33,6 +34,8 @@ export class CountryService {
         this.countries = Object.keys(this.allCountryTrends).map(
           getCountryDetailsForISO,
         );
+
+        this.lastUpdatedTime = new Date();
       });
     }
   }
@@ -106,6 +109,10 @@ export class CountryService {
       ...ms,
       population: population[ms.iso3],
     }));
+  }
+
+  getLastUpdate() {
+    return this.lastUpdatedTime;
   }
 
   //** Returns a list of countries for which we have data*/
