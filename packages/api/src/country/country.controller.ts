@@ -133,6 +133,15 @@ export class CountryController {
     return this.countryService.getStatsForCountryISO(countryISO);
   }
 
+  @Get('/updated')
+  @ApiOkResponse({
+    description: 'Returns the time the data was last updated',
+    type: Date,
+  })
+  getLastUpdated(): Date {
+    return this.countryService.getLastUpdate();
+  }
+
   @Get('/stats')
   @ApiOkResponse({
     description: 'JSON array of relevant stats for a country',
