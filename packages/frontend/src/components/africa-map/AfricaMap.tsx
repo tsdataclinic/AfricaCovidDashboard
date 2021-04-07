@@ -243,12 +243,13 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                                     parseFloat(v.replace(/,/g, ''))
                                 );
                             if (isLog) {
-                                vals = vals.map((v: number) =>
-                                    Math.pow(10, v).toLocaleString('en-US', {
-                                        maximumSignificantDigits: 2,
-                                    })
-                                );
+                                vals = vals.map((v: number) => Math.pow(10, v));
                             }
+                            vals = vals.map((v: number) =>
+                                v.toLocaleString('en-US', {
+                                    maximumSignificantDigits: 2,
+                                })
+                            );
                             if (i === 0) {
                                 return `< ${vals[1]}`;
                             } else if (i === generatedLabels.length - 1) {
