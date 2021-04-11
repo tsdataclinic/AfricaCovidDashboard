@@ -625,7 +625,7 @@ const getStatColor = (category: Category) => {
 const Wrapper = styled.div`
     position: relative;
     align-self: center;
-    background: #fff2eb;
+    background: ${transparentize(0.85, RED)};
     border-radius: 5px;
     display: flex;
     position: relative;
