@@ -52,13 +52,6 @@ const topology = (africaTopology as unknown) as Topology<{
 const feature = topojson.feature(topology, topology.objects.collection);
 const africaMapFeatures: MapData[] = feature.features;
 
-// const colorRanges = {
-//     confirmed: [colors.LIGHT_GREY, colors.ORANGE],
-//     confirmed_predicted: [colors.LIGHT_GREY, colors.RED],
-//     recoveries: [colors.LIGHT_GREY, colors.BLUE],
-//     deaths: [colors.LIGHT_GREY, colors.PURPLE],
-// };
-
 const colorRanges = {
     confirmed: [
         '#ffffcc',
@@ -128,7 +121,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                 return undefined;
             }
             if (per100k) {
-                return scaleTrendDatum(datum, 100000.0 / population);
+                return scaleTrendDatum(datum, 100000.0 / population, true);
             } else {
                 return datum;
             }
@@ -359,6 +352,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
                         getTooltipContent(
                             t,
                             d,
+                            dataType,
                             allStats,
                             scaledTrendData?.[getCountryA3(d)],
                             per100k
@@ -371,7 +365,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
         };
         svg.selectAll('.overlay-country-border').on('mouseenter', showTooltip);
         svg.selectAll('.overlay-country-border').on('mouseout', hideTooltip);
-    }, [scaledTrendData, per100k, t, allStats]);
+    }, [scaledTrendData, per100k, t, allStats, dataType]);
 
     const initializeMap = useCallback(() => {
         const svg = d3
@@ -491,7 +485,11 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
     return (
         <Card>
-            <MapContainer id="svg-parent" className="scaling-svg-container">
+            <MapContainer
+                id="svg-parent"
+                className="scaling-svg-container"
+                selectedAll={!selectedCountry && !selectedRegion}
+            >
                 <svg id="africa-map" ref={svgNode} />
             </MapContainer>
         </Card>
