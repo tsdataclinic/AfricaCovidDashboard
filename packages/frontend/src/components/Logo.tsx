@@ -1,13 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { DARK_BLUE, HINT_GREY } from '../colors';
 
 const Logo = () => {
     const { t } = useTranslation();
 
     return (
-        <LogoWrapper>
+        <LogoWrapper to="/">
             <LogoTop>
                 <i className="fas fa-globe-africa"></i>
                 <LogoHeader>{t('Africa COVID')}</LogoHeader>
@@ -21,9 +22,10 @@ const Logo = () => {
 
 export default Logo;
 
-const LogoWrapper = styled.div`
+const LogoWrapper = styled(Link)`
     padding: 20px 10px;
     text-align: left;
+    display: block;
 `;
 
 const LogoTop = styled.div`

@@ -5,7 +5,7 @@ import { tooltipCSS } from './getTooltipContent';
 export const TOOLTIP_HEIGHT = 350;
 export const TOOLTIP_WIDTH = 200;
 
-export const MapContainer = styled.div`
+export const MapContainer = styled.div<{ selectedAll: boolean }>`
     .background {
         fill-opacity: 0;
     }
@@ -17,8 +17,10 @@ export const MapContainer = styled.div`
             pointer-events: all;
             stroke-linejoin: round;
             stroke-linecap: round;
+            opacity: ${(props) => (props.selectedAll ? 1 : 0.4)};
             &.selected-country {
                 stroke-width: 3px;
+                opacity: 1;
             }
             &.loading {
                 fill: ${colors.LIGHT_GREY};

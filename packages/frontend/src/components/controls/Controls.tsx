@@ -4,6 +4,7 @@ import TopControl from './TopControl';
 import TypeControl from './TypeControl';
 import DateSlider, { DateSliderProps } from './DateSlider';
 import DataSettings from './DataSettings';
+import { useUpdated } from '../../hooks/useUpdated';
 
 const SMALL_TOGGLE_KEY = 'small_screen_toggle_key';
 const getLocalToggle = () => localStorage.getItem(SMALL_TOGGLE_KEY) === 'true';
@@ -21,12 +22,14 @@ const Controls = ({
         updateLocalToggle(showSmallToggle ? 'false' : 'true');
         setShowSmallToggle(!showSmallToggle);
     }, [showSmallToggle]);
+    const { data } = useUpdated();
 
     return (
         <>
             <TopControl
                 handleToggle={handleToggle}
                 selectedToggle={showSmallToggle}
+                lastUpdatedDate={data}
             />
             <BottomControl showToggle={showSmallToggle}>
                 <DataSettingWrapper className="hide-large">

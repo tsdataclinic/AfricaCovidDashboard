@@ -7,10 +7,13 @@ import { getCountryName } from '../../utils/i18nUtils';
 import { getCountryA3 } from './utils';
 import { StatsMap } from '../../contexts/StatsContext';
 import { formatNumber } from '../../utils/trendUtils';
+import { getStatistic } from '../../helper';
+import { DataType } from '../../types';
 
 function getTooltipContent(
     t: TFunction,
     countryProperties: CountryProperties,
+    dataType: DataType,
     statsMap?: StatsMap,
     trendData?: CountryTrend,
     isPer100K?: boolean
@@ -38,21 +41,17 @@ function getTooltipContent(
           <span class="label confirmed">${
               trendData.isPrediction ? t('Predicted Cases') : t('Confirmed')
           }${asterisk}:</span>
-          ${formatNumber(
-              trendData.confirmed_prediction
-                  ? trendData.confirmed_prediction
-                  : trendData.confirmed
-          )}&nbsp;
+          ${formatNumber(getStatistic(dataType, 'confirmed', trendData))}&nbsp;
         </li>
         <li>
           <span class="label recovered">${t(
               'Recovered'
           )}${asterisk}:&nbsp;</span>
-          ${formatNumber(trendData.deaths)}&nbsp;
+          ${formatNumber(getStatistic(dataType, 'recoveries', trendData))}&nbsp;
         </li>
         <li>
           <span class="label deaths">${t('Deaths')}${asterisk}:&nbsp;</span>
-          ${formatNumber(trendData.recoveries)}&nbsp
+          ${formatNumber(getStatistic(dataType, 'deaths', trendData))}&nbsp
         </li>
         ${per100k}
       </ul>

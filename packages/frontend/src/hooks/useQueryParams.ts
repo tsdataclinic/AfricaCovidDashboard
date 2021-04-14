@@ -79,7 +79,7 @@ const useQueryParams = () => {
         region: region as string,
         isRegion: isRegion === 'true',
         isLog: isLog === 'true',
-        per100K: per100K === 'true',
+        per100K: per100K !== 'false',
         selectedDate: selectedMoment,
         updateQuery,
         dataType: (dataType || 'daily') as DataType,
