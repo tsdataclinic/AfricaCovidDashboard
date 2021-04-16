@@ -195,7 +195,10 @@ const Home = () => {
                             }
                             category={category}
                             dataType={dataType}
+<<<<<<< HEAD
                             dailyRange={dailyRange}
+=======
+>>>>>>> 8267c15 (tnew map using deckgl and selection interactions)
                             trendData={selectedStatsByCountry}
                             loading={isLoading}
                             isRegion={isRegion}
@@ -222,6 +225,7 @@ const Home = () => {
 
 const HomeWrapper = styled.div`
     padding: 16px;
+    flex: 1;
 `;
 
 const StyledAlert = styled(Alert)`
