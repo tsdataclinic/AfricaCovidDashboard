@@ -47,10 +47,9 @@ type MapData = Feature<Geometry, CountryProperties>;
 const MAP_TARGET = '#africa-map';
 
 const topology = (africaTopology as unknown) as Topology<{
-    collection: GeometryCollection<CountryProperties>;
+    data: GeometryCollection<CountryProperties>;
 }>;
-
-const feature = topojson.feature(topology, topology.objects.collection);
+const feature = topojson.feature(topology, topology.objects.data);
 const africaMapFeatures: MapData[] = feature.features;
 
 const colorRanges = {

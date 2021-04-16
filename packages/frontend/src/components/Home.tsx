@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useMemo } from 'react';
-import AfricaMap from './africa-map/AfricaMap';
+import { AfricaMap } from './africa-map/AfricaMap2';
 import { Alert, Col, Row } from 'antd';
 import {
     CountryTrend,
