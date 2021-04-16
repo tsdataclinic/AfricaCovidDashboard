@@ -13,7 +13,7 @@ import * as topojson from 'topojson-client';
 import { GeometryCollection, Topology } from 'topojson-specification';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import { Category, DataType } from '../../types';
-import { mapValues, values, isEmpty } from 'lodash';
+import { mapValues, isEmpty } from 'lodash';
 import * as colors from '../../colors';
 import { CountryProperties } from './types';
 import { Feature, Geometry } from 'geojson';
@@ -25,6 +25,7 @@ import { scaleTrendDatum } from '../../utils/trendUtils';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TOOLTIP_HEIGHT, TOOLTIP_WIDTH } from './AfricaMapStyles';
 import { GlobalRange } from '../../hooks/useGlobalRanges';
+import InfoTooltip from '../InfoTooltip';
 
 interface AfricaMapProps {
     category: Category;
@@ -485,6 +486,7 @@ const AfricaMap: React.FC<AfricaMapProps> = ({
 
     return (
         <Card>
+            <InfoTooltip message="The animated map is best viewed on a logarithmic scale" />
             <MapContainer
                 id="svg-parent"
                 className="scaling-svg-container"
