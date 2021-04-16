@@ -82,6 +82,8 @@ const Container = styled.div`
         display: flex;
         justify-content: space-between;
         margin-bottom: 10px;
+        position: relative;
+        z-index: 100;
     }
 `;
 const StyledCard = styled(Card)<{ selected: boolean; color: string }>`

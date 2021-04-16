@@ -174,7 +174,7 @@ const Home = () => {
                 lastNonPredictedDate={lastNonPredictedDate}
             />
             <HomeWrapper>
-                <Row gutter={LAYOUT_GUTTER}>
+                <Row style={{ height: '100%' }} gutter={LAYOUT_GUTTER}>
                     <Col xs={24} xl={12}>
                         <StatsBar
                             dataType={dataType}
@@ -182,6 +182,7 @@ const Home = () => {
                             selectCategory={(category) =>
                                 updateQuery('category', category)
                             }
+                            style={{ position: 'relative', zIndex: 100 }}
                             loading={isLoading}
                             data={selectedStats}
                         />
@@ -195,10 +196,7 @@ const Home = () => {
                             }
                             category={category}
                             dataType={dataType}
-<<<<<<< HEAD
                             dailyRange={dailyRange}
-=======
->>>>>>> 8267c15 (tnew map using deckgl and selection interactions)
                             trendData={selectedStatsByCountry}
                             loading={isLoading}
                             isRegion={isRegion}
@@ -226,6 +224,8 @@ const Home = () => {
 const HomeWrapper = styled.div`
     padding: 16px;
     flex: 1;
+    width: 100%;
+    height: 100%;
 `;
 
 const StyledAlert = styled(Alert)`

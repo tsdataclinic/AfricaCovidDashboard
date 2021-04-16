@@ -3,8 +3,9 @@ import DeckGL from '@deck.gl/react';
 import { StaticMap } from 'react-map-gl';
 import { Category, DataType } from '../../types';
 import { CountryTrend } from '../../hooks/useCountryTrends';
-import { GeoJsonLayer } from '@deck.gl/layers';
-import { select } from 'd3-selection';
+import { GlobalRange } from '../../hooks/useGlobalRanges';
+import { useGLLayers } from '../../hooks/useGLLayers';
+import { defaultMaxListeners } from 'stream';
 // import { FillStyleExtension } from '@deck.gl/extensions';
 
 interface AfrticaMapProps {
@@ -19,12 +20,13 @@ interface AfrticaMapProps {
     loading?: boolean;
     isLog: boolean;
     per100k: boolean;
+    dailyRange?: GlobalRange;
 }
 
 const INITIAL_VIEW_STATE = {
-    longitude: 32.58252,
-    latitude: 0.347596,
-    zoom: 2,
+    longitude: 20.890111835079598,
+    latitude: 5.590997915397574,
+    zoom: 2.6677604216415842,
     pitch: 0,
     bearing: 0,
 };
@@ -35,6 +37,9 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
     category,
     dataType,
     trendData,
+    dailyRange,
+    isLog,
+    per100k,
 }) => {
     const [mapData, setMapData] = useState<any>(null);
 
@@ -48,74 +53,18 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
         (key) => trendData?.[key].isPrediction
     );
 
-    const trendKey = useMemo(() => {
-        let trendKey: keyof CountryTrend = 'confirmed';
-        if (dataType === 'daily') {
-            if (category === 'confirmed') {
-                trendKey = 'new_case';
-            } else if (category === 'recoveries') {
-                trendKey = 'new_recoveries';
-            } else if (category === 'deaths') {
-                trendKey = 'new_deaths';
-            }
-        } else {
-            if (category === 'confirmed') {
-                trendKey = isPrediction ? 'confirmed_prediction' : 'confirmed';
-            } else if (category === 'recoveries') {
-                trendKey = 'recoveries';
-            } else if (category === 'deaths') {
-                trendKey = 'deaths';
-            }
-        }
-        return trendKey;
-    }, [category, dataType, isPrediction]);
-
-    const layers = useMemo(
-        () => [
-            new GeoJsonLayer({
-                id: 'countries',
-                getFillColor: (f: any) => [
-                    288,
-                    125,
-                    96,
-                    f.properties.iso3 === selectedCountry ? 200 : 100,
-                ],
-                getLineColor: (f: any) => {
-                    console.log('features are ', f, ' ', f.properties.iso3);
-                    return f.properties.iso3 == selectedCountry
-                        ? [255, 0, 0, 255]
-                        : [255, 255, 255, 255];
-                },
-                stroked: true,
-                pickable: true,
-                data: mapData,
-                getLineWidth: 1,
-                lineWidthUnits: 'pixels',
-                getPosition: (f) => {
-                    const z = f.properties.iso3 === selectedCountry ? 20 : 0;
-                    return [...f.geometry.coordinates, z];
-                },
-                updateTriggers: {
-                    getLineColor: [selectedCountry],
-                    getPosition: [selectedCountry],
-                    getFillColor: [selectedCountry],
-                },
-                // //@ts-ignore
-                // fillPatternMask: true,
-                // fillPatternAtlas:
-                //     'https://raw.githubusercontent.com/visgl/deck.gl/master/examples/layer-browser/data/pattern.png',
-                // fillPatternMapping:
-                //     'https://raw.githubusercontent.com/visgl/deck.gl/master/examples/layer-browser/data/pattern.json',
-                // extensions: [new FillStyleExtension({ pattern: true })],
-                // getFillPattern: 'hatch-cross',
-                // getFillPatternScale: 500,
-                // getFillPatternOffset: [0, 0],
-            }),
-        ],
-        [mapData, selectedCountry]
+    const layers = useGLLayers(
+        mapData,
+        selectedCountry,
+        trendData,
+        isPrediction,
+        dataType,
+        category,
+        per100k,
+        isLog,
+        dailyRange
     );
 
-    console.log('layers are ', layers);
     return (
         <DeckGL
             width="100%"
@@ -128,6 +77,9 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
                 onCountrySelect(
                     info.object ? info.object.properties.iso3 : null
                 );
+            }}
+            onDragEnd={(data) => {
+                console.log('drag end data ', data);
             }}
         >
             <StaticMap
