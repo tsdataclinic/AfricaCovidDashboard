@@ -82,6 +82,8 @@ const Container = styled.div`
         display: flex;
         justify-content: space-between;
         margin-bottom: 10px;
+        position: relative;
+        z-index: 100;
     }
 `;
 const StyledCard = styled(Card)<{ selected: boolean; color: string }>`
@@ -94,8 +96,7 @@ const StyledCard = styled(Card)<{ selected: boolean; color: string }>`
         props.selected &&
         `
     font-weight: bold;
-    outline: ${props.color} solid 1px !important;
-    background: ${transparentize(0.85, props.color)};
+    outline: ${props.color} solid 2px !important;
   `};
     &:hover {
         cursor: pointer;

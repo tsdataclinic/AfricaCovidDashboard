@@ -62,4 +62,5 @@ export interface CountryProperties {
     abbrev_len: number;
     tiny: number;
     homepart: number;
+    region: string;
 }

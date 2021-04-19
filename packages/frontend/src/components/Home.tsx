@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useMemo } from 'react';
-import AfricaMap from './africa-map/AfricaMap';
+import { AfricaMap } from './africa-map/AfricaMap2';
 import { Alert, Col, Row } from 'antd';
 import {
     CountryTrend,
@@ -166,7 +166,9 @@ const Home = () => {
     }
 
     return (
-        <>
+        <div
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
             <Controls
                 dates={dates}
                 selectedDate={selectedDate}
@@ -174,7 +176,7 @@ const Home = () => {
                 lastNonPredictedDate={lastNonPredictedDate}
             />
             <HomeWrapper>
-                <Row gutter={LAYOUT_GUTTER}>
+                <Row style={{ height: '100%' }} gutter={LAYOUT_GUTTER}>
                     <Col xs={24} xl={12}>
                         <StatsBar
                             dataType={dataType}
@@ -216,12 +218,15 @@ const Home = () => {
                     </Col>
                 </Row>
             </HomeWrapper>
-        </>
+        </div>
     );
 };
 
 const HomeWrapper = styled.div`
     padding: 16px;
+    flex: 1;
+    width: 100%;
+    height: 100%;
 `;
 
 const StyledAlert = styled(Alert)`

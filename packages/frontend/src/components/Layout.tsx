@@ -46,7 +46,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
             </StyledDrawer>
             <Main>
                 <SmallScreenHeader openDrawer={() => setDrawer(true)} />
-                <Content>
+                <Content style={{ flex: 1, height: '100%' }}>
                     <QueryParamsContext.Provider
                         value={{
                             country,
