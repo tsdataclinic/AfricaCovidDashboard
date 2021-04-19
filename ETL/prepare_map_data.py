@@ -34,6 +34,18 @@ def merge_countries(polys):
 def simplify_geoms(polys):
     polys.geometry = polys.geometry.simplify(0.015, preserve_topology=True)
     return polys
+
+    
+def generate_regions(polys):
+    result = pd.DataFrame()
+    for region, countries in polys.groupby("region"):
+        combined = cascaded_union(countries.geometry)
+        if region=="Middle Africa":
+            region = "Central Africa"
+        result = result.append({"geometry": combined, "region": region},ignore_index=True)
+    
+    return result
+
 if __name__ =='__main__':
     polys = (fetch_polygons()
             .pipe(assign_iso_3)
@@ -42,9 +54,14 @@ if __name__ =='__main__':
 
     polys.to_file("africa_large.geojson", driver="GeoJSON")
 
+    regions = gpd.GeoDataFrame(generate_regions(polys))
+
     with open("africa.topojson", 'w') as f:
         f.write(tp.Topology(data=polys, topology=True, toposimplify=0.2).to_json())
-    
+
     polys = polys.pipe(simplify_geoms)
 
+    simple_regions = regions.pipe(simplify_geoms)
+
     polys.to_file("africa.geojson", driver="GeoJSON")
+    simple_regions.to_file("regions.geojson", driver="GeoJSON")

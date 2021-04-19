@@ -166,7 +166,9 @@ const Home = () => {
     }
 
     return (
-        <>
+        <div
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
             <Controls
                 dates={dates}
                 selectedDate={selectedDate}
@@ -182,7 +184,6 @@ const Home = () => {
                             selectCategory={(category) =>
                                 updateQuery('category', category)
                             }
-                            style={{ position: 'relative', zIndex: 100 }}
                             loading={isLoading}
                             data={selectedStats}
                         />
@@ -217,7 +218,7 @@ const Home = () => {
                     </Col>
                 </Row>
             </HomeWrapper>
-        </>
+        </div>
     );
 };
 

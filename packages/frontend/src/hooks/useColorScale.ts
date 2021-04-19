@@ -48,7 +48,7 @@ export const useColorScale = (
     isLog: boolean,
     dailyRange: GlobalRange
 ) => {
-    let colorScale = useMemo(() => {
+    let { scale, bins, colors } = useMemo(() => {
         if (dailyRange) {
             let colors = mapColors[category];
             let categoryScale = dailyRange[category as string];
@@ -70,13 +70,24 @@ export const useColorScale = (
             }
 
             colorScale.range(colors);
-            return colorScale;
+            let bins: number[] = [];
+
+            if (isLog || dataType == 'cumulative') {
+                bins = colorScale.thresholds();
+                if (isLog) {
+                    bins.map((t: number) => Math.pow(10, t));
+                }
+            } else {
+                bins = colorScale.quantiles();
+            }
+
+            return { scale: colorScale, bins, colors };
         } else {
-            return () => [200, 200, 200, 255];
+            return { scale: () => [200, 200, 200, 255], bins: [], colors: [] };
         }
     }, [per100k, category, dataType, isLog, dailyRange]);
 
-    return useCallback(
+    let colorScale = useCallback(
         (
             datum: CountryTrend | null,
             trendKey: string
@@ -92,9 +103,11 @@ export const useColorScale = (
             if (v === 0) {
                 return [255, 255, 255, 255];
             } else {
-                return colorScale(v);
+                return scale(v);
             }
         },
-        [colorScale, isLog]
+        [scale, isLog]
     );
+
+    return { colorScale, bins, colors };
 };

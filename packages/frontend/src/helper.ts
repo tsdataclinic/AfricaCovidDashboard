@@ -31,6 +31,8 @@ export const getStatistic = (
         return 0;
     }
 
+    console.log('getting stat', type, category, data, isDelta);
+
     const predictedDaily = safeGet(
         isDelta ? data.delta_daily_prediction : data.daily_prediction
     );

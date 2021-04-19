@@ -1,11 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { Category, DataType } from '../types';
 import { CountryTrend } from './useCountryTrends';
-import { useScaledData } from './useScaledData';
-import { useColorScale } from './useColorScale';
 import { GlobalRange } from './useGlobalRanges';
-import { select } from 'd3-selection';
 
 const getTrendKey = (
     category: Category,
@@ -33,75 +30,112 @@ const getTrendKey = (
     return trendKey;
 };
 
+// const regionMap={
+//     "Western Africa":,
+//     "Northen Africa":,
+//     "Southern Africa":,
+//     "Cenrtal Africa":,
+//     "Eastern Africa":
+// }
+
 export const useGLLayers = (
     mapData: any,
+    regions: any,
     selectedCountry: string | undefined,
-    trendData: { [k in string]: CountryTrend } | undefined,
+    selectedRegion: string | undefined,
+    isRegion: boolean,
+    scaledData: { [k in string]: CountryTrend } | undefined,
     isPrediction: boolean,
     dataType: DataType,
     category: Category,
     per100k: boolean,
-    isLog: boolean,
-    dailyRange: GlobalRange
+    colorScale: any,
+    onHover: (info: any) => void
 ) => {
-    let scaledData = useScaledData(trendData, per100k);
-    let colorScale = useColorScale(
-        dataType,
-        category,
-        per100k,
-        isLog,
-        dailyRange
-    );
-
     const layers = useMemo(() => {
         let trendKey = getTrendKey(category, dataType, isPrediction);
+        let layers = [];
+        if (mapData) {
+            layers.push(
+                new GeoJsonLayer({
+                    id: 'countries',
+                    getFillColor: (f: any) => {
+                        let datum = scaledData
+                            ? scaledData[f.properties.iso3 as string]
+                            : null;
+                        let col = colorScale(datum, trendKey);
+                        let opacity = 200;
+                        if (
+                            selectedCountry &&
+                            f.properties.iso3 !== selectedCountry
+                        ) {
+                            opacity = 150;
+                        }
+                        return [col[0], col[1], col[2], opacity];
+                    },
+                    getLineColor: [255, 255, 255, 255],
+                    stroked: true,
+                    pickable: true,
+                    data: mapData,
+                    getLineWidth: 1,
+                    lineWidthUnits: 'pixels',
+                    onHover: onHover,
+                    updateTriggers: {
+                        getLineColor: [selectedCountry, colorScale, per100k],
+                        getPosition: [selectedCountry],
+                        getFillColor: [selectedCountry, colorScale, per100k],
+                    },
+                    dataComparator: () => false,
+                })
+            );
+            layers.push(
+                new GeoJsonLayer({
+                    id: 'selected country border',
+                    data: mapData,
+                    getLineWidth: 1,
+                    lineWidthUnits: 'pixels',
+                    filled: false,
+                    stroked: true,
+                    getLineColor: (f) =>
+                        f.properties.iso3 === selectedCountry && !isRegion
+                            ? [0, 0, 0, 255]
+                            : [255, 0, 0, 0],
+                    updateTriggers: {
+                        getLineColor: [selectedCountry, isRegion],
+                    },
+                })
+            );
+        }
 
-        return [
-            new GeoJsonLayer({
-                id: 'countries',
-                getFillColor: (f: any) => {
-                    let datum = scaledData
-                        ? scaledData[f.properties.iso3 as string]
-                        : null;
-                    let col = colorScale(datum, trendKey);
-                    let opacity = 240;
-                    if (
-                        selectedCountry &&
-                        f.properties.iso3 !== selectedCountry
-                    ) {
-                        opacity = 150;
-                    }
-                    return [col[0], col[1], col[2], opacity];
-                },
-                getLineColor: [255, 255, 255, 255],
-                stroked: true,
-                pickable: true,
-                data: mapData,
-                getLineWidth: 1,
-                lineWidthUnits: 'pixels',
-                updateTriggers: {
-                    getLineColor: [selectedCountry, colorScale, per100k],
-                    getPosition: [selectedCountry],
-                    getFillColor: [selectedCountry, colorScale, per100k],
-                },
-                dataComparator: () => false,
-            }),
-            new GeoJsonLayer({
-                id: 'selected country border',
-                data: mapData,
-                getLineWidth: 1,
-                lineWidthUnits: 'pixels',
-                filled: false,
-                stroked: true,
-                getLineColor: (f) =>
-                    f.properties.iso3 === selectedCountry
-                        ? [0, 0, 0, 255]
-                        : [255, 0, 0, 0],
-                updateTriggers: {
-                    getLineColor: [selectedCountry],
-                },
-            }),
-        ];
-    }, [mapData, selectedCountry, scaledData, colorScale, per100k]);
+        if (regions) {
+            layers.push(
+                new GeoJsonLayer({
+                    id: 'region',
+                    data: regions,
+                    getLineWidth: 2,
+                    lineWidthUnits: 'pixels',
+                    filled: false,
+                    stroked: true,
+                    getLineColor: (f) =>
+                        f.properties.region === selectedRegion && isRegion
+                            ? [0, 0, 0, 255]
+                            : [255, 0, 0, 0],
+                    updateTriggers: {
+                        getLineColor: [selectedRegion, isRegion],
+                    },
+                })
+            );
+        }
+        return layers;
+    }, [
+        mapData,
+        regions,
+        selectedCountry,
+        selectedRegion,
+        isRegion,
+        scaledData,
+        colorScale,
+        per100k,
+    ]);
     return layers;
 };
