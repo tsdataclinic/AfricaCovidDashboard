@@ -3,16 +3,26 @@ import React from 'react';
 import styled from 'styled-components';
 
 const LegendOuter = styled.div`
+    display: none;
     position: absolute;
+    @media (min-width: 768px) {
+        display: block;
+    }
     background-color: rgba(255, 255, 255, 0.9);
     bottom: 10px;
     left: 10px;
     padding: 10px;
     text-align: left;
+
     ul {
         margin: 0px;
         padding: 0px;
         list-style: none;
+        display: flex;
+        @media (min-width: 768px) {
+            flex-direction: column;
+        }
+        flex-direction: row;
         li {
             display: flex;
             flex-direction: row;
@@ -50,7 +60,6 @@ const binLabel = (bins: number[], index: number) => {
 };
 
 export const Legend: React.FC<LegendProps> = ({ header, colors, bins }) => {
-    console.log('bins are ', bins);
     return (
         <LegendOuter>
             <h4>{header}</h4>
