@@ -38,18 +38,19 @@ const formatNumber = (val: number) => {
 };
 
 const binLabel = (bins: number[], index: number) => {
-    if (index === bins.length - 1) {
-        return `> ${formatNumber(bins[index])}`;
+    if (index === bins.length) {
+        return `> ${formatNumber(bins[index - 1])}`;
     } else if (index === 0) {
         return `< ${formatNumber(bins[index])}`;
     } else {
-        return `> ${formatNumber(bins[index])} - ${formatNumber(
-            bins[index + 1]
+        return `> ${formatNumber(bins[index - 1])} - ${formatNumber(
+            bins[index]
         )}`;
     }
 };
 
 export const Legend: React.FC<LegendProps> = ({ header, colors, bins }) => {
+    console.log('bins are ', bins);
     return (
         <LegendOuter>
             <h4>{header}</h4>
@@ -57,9 +58,9 @@ export const Legend: React.FC<LegendProps> = ({ header, colors, bins }) => {
                 <li>
                     <ColorBox color="white" /> 0
                 </li>
-                {bins.map((bin, index) => (
+                {colors.map((col, index) => (
                     <li>
-                        <ColorBox color={`rgba(${colors[index].join(',')})`} />
+                        <ColorBox color={`rgba(${col.join(',')})`} />
                         {binLabel(bins, index)}
                     </li>
                 ))}
