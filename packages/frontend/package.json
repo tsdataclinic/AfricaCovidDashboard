@@ -4,7 +4,7 @@
     "private": true,
     "dependencies": {
         "@danmarshall/deckgl-typings": "^4.9.0",
-        "@dataclinic/dataclinic": "^0.3.5",
+        "@dataclinic/dataclinic": "^0.3.11",
         "@juggle/resize-observer": "^3.2.0",
         "@testing-library/jest-dom": "^4.2.4",
         "@testing-library/react": "^9.3.2",

@@ -1,67 +1,194 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+
 import {
     AboutPage,
     ProjectInfoSection,
     Body,
+    Header,
     DataClinicSection,
     ContributeSection,
+    DCLogoWhite,
+    AboutPageSegment,
+    Contribute,
+    Ideas,
+    Analytics,
+    Datasets,
+    IconColumn,
+    TextColumn,
+    SubHeader,
 } from '@dataclinic/dataclinic';
+
+const DataSources = [
+    'DataSources_0',
+    'DataSources_1',
+    'WhoCIADSI_0',
+    'WhoDC_0',
+    'WhoDC_1',
+    'WhoDC_2',
+];
 const About = () => {
+    const { t } = useTranslation();
     return (
         <div style={{ textAlign: 'left' }}>
             <AboutPage>
-                <ProjectInfoSection
-                    appName={'Africa Covid Dashboard'}
-                    appDescription={
-                        'We built the Africa Covid Dashboard to help policy makers understand the covid pandemic in Africa'
-                    }
-                    appSubHeading={'Monitor the state of Covid in Africa'}
+                <AboutPageSegment
+                    style={{ backgroundColor: 'white', color: '#103470' }}
+                    imageLocation="right"
                 >
-                    <Body style={{ textAlign: 'left' }}>
-                        Over the past year we have been bombarded with data
-                        visualizations, dashboards and charts all detailing the
-                        spread of COVID around the world. While some of these
-                        dashboards are excellent sources of information, few of
-                        them take into account regional variations in the
-                        factors associated with transmission.
-                    </Body>
-                    <Body>
-                        Inspired by the work of the{' '}
-                        <a
-                            href="https://sites.bu.edu/covid-19-in-africa/"
-                            target="_blank"
+                    <TextColumn>
+                        <SubHeader>{t('Intro_subheader')}</SubHeader>
+                        <Header style={{ color: '#103470' }}>
+                            {t('Intro_0')}
+                        </Header>
+                        <Body>{t('Intro_1')}</Body>
+                        <Body
+                            dangerouslySetInnerHTML={{ __html: t('Intro_2') }}
+                        ></Body>
+                        <Body
+                            dangerouslySetInnerHTML={{ __html: t('Intro_3') }}
+                        ></Body>
+                        <Body
+                            dangerouslySetInnerHTML={{ __html: t('Intro_4') }}
+                        ></Body>
+                        <Body
+                            dangerouslySetInnerHTML={{ __html: t('Intro_5') }}
+                        ></Body>
+
+                        <Body
+                            dangerouslySetInnerHTML={{ __html: t('Intro_6') }}
+                            style={{
+                                backgroundColor: '#F0F5FF',
+                                padding: '10px',
+                                borderRadius: '10px',
+                            }}
+                        ></Body>
+                        <Body
+                            dangerouslySetInnerHTML={{ __html: t('Intro_7') }}
+                            style={{
+                                backgroundColor: '#F0F5FF',
+                                padding: '10px',
+                                borderRadius: '10px',
+                            }}
+                        ></Body>
+                    </TextColumn>
+                    <IconColumn>
+                        <Contribute
+                            style={{ width: '400px', height: '400px' }}
+                        />
+                    </IconColumn>
+                </AboutPageSegment>
+                <AboutPageSegment
+                    style={{ backgroundColor: '#F0F5FF', color: '#103470' }}
+                >
+                    <TextColumn>
+                        <Header style={{ color: '#103470' }}>
+                            {t('AboutModel_header')}
+                        </Header>
+                        <Body>{t('AboutModel_0')}</Body>
+                        <Body
+                            style={{
+                                backgroundColor: '#D6e4ff',
+                                padding: '20px',
+                                borderRadius: '10px',
+                            }}
                         >
-                            COVID-19 in Africa Data Science Initiative
-                        </a>
-                        , Data Clinic produced a COVID dashboard focused
-                        specifically on{' '}
-                        <a
-                            href="https://github.com/tmh741/AFCOVIDDashboard"
-                            target="_blank"
-                        >
-                            data and forecasts
-                        </a>{' '}
-                        for African countries, with the hope that it could help
-                        decision-makers better understand the state of the
-                        pandemic on the continent.
-                    </Body>
-                    <Body>
-                        The dashboard, written using a React-based frontend and
-                        a NestJS API, displays infection, recovery and death
-                        statistics for each African country along with forecasts
-                        based on{' '}
-                        <a
-                            href="https://github.com/tmh741/AFCOVIDDashboard"
-                            target="_blank"
-                        >
-                            the model
-                        </a>{' '}
-                        produced by the COVID-19 in Africa Data Science
-                        Initiative.
-                    </Body>
-                </ProjectInfoSection>
-                <DataClinicSection />
-                <ContributeSection appName="the Africa Covid Dashboard" />
+                            {t('AboutModel_1')}
+                            <br />
+                            {t('AboutModel_2')}
+                        </Body>
+                        <Body>
+                            {t('AboutModel_3_1')}
+                            <a
+                                target="_blank"
+                                href={
+                                    'https://github.com/tmh741/AFCOVIDDashboard'
+                                }
+                            >
+                                {' ' + t('AboutModel_link')}
+                            </a>
+                            {t('AboutModel_3_2')}
+                        </Body>
+                    </TextColumn>
+                    <IconColumn>
+                        <Analytics
+                            style={{ width: '400px', height: '400px' }}
+                        />
+                    </IconColumn>
+                </AboutPageSegment>
+                <AboutPageSegment
+                    id="DataSources"
+                    style={{ backgroundColor: 'white', color: '#103470' }}
+                    imageLocation="left"
+                >
+                    <TextColumn>
+                        <Header style={{ color: '#103470' }}>
+                            {t('DataSources_header')}
+                        </Header>
+                        <ul>
+                            {DataSources.map((datasource: string) => (
+                                <li
+                                    dangerouslySetInnerHTML={{
+                                        __html: t(datasource),
+                                    }}
+                                />
+                            ))}
+                        </ul>
+                    </TextColumn>
+                    <IconColumn>
+                        <Datasets style={{ width: '400px', height: '400px' }} />
+                    </IconColumn>
+                </AboutPageSegment>
+
+                <AboutPageSegment
+                    id="DataClinic"
+                    style={{ backgroundColor: '#F0F5FF', color: '#103470' }}
+                >
+                    <TextColumn>
+                        <Header style={{ color: '#103470' }}>
+                            {t('DataClinic_header')}
+                        </Header>
+                        <Body>{t('DataClinic_0')}</Body>
+                        <Body> {t('DataClinic_1')}</Body>
+                        <Body
+                            dangerouslySetInnerHTML={{
+                                __html: t('DataClinic_2'),
+                            }}
+                        ></Body>
+                    </TextColumn>
+                    <IconColumn>
+                        <img
+                            style={{ width: '300px', height: '300px' }}
+                            src="https://miro.medium.com/max/3152/1*6g_929Nj-THV-1BYC0egZA.png"
+                        />
+                    </IconColumn>
+                </AboutPageSegment>
+
+                <AboutPageSegment
+                    id="Contribute"
+                    imageLocation="left"
+                    style={{ backgroundColor: 'white', color: '#103470' }}
+                >
+                    <TextColumn>
+                        <Header style={{ color: '#103470' }}>
+                            {t('Contribute_header')}
+                        </Header>
+                        <Body>{t('Contribute_0')}</Body>
+                        <Body
+                            dangerouslySetInnerHTML={{
+                                __html: t('Contribute_1'),
+                            }}
+                        ></Body>
+                        <Body
+                            dangerouslySetInnerHTML={{
+                                __html: t('Contribute_2'),
+                            }}
+                        ></Body>
+                    </TextColumn>
+                    <IconColumn>
+                        <Ideas style={{ width: '400px', height: '400px' }} />
+                    </IconColumn>
+                </AboutPageSegment>
             </AboutPage>
         </div>
     );
