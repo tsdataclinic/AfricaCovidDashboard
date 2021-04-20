@@ -3,7 +3,7 @@ import { Menu } from 'antd';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useLocation, Link } from 'react-router-dom';
-import { ABOUT_PATH, HOME_PATH } from '../Routes';
+import { ABOUT_PATH, HOME_PATH, LEGAL_PATH, FEEDBACK_PATH } from '../Routes';
 import { DARK_BLUE } from '../colors';
 import LanguagePanel from './LanguagePanel';
 import Logo from './Logo';
@@ -31,6 +31,20 @@ const AppMenu = () => {
                         icon={<i className="fas fa-info-circle"></i>}
                     >
                         <Link to={ABOUT_PATH}>{t('About')}</Link>
+                    </Option>
+
+                    <Option
+                        key="legal"
+                        icon={<i className="fas fa-balance-scale"></i>}
+                    >
+                        <Link to={LEGAL_PATH}>{t('Legal')}</Link>
+                    </Option>
+
+                    <Option
+                        key="feedback"
+                        icon={<i className="fas fa-comments"></i>}
+                    >
+                        <Link to={FEEDBACK_PATH}>{t('feedback')}</Link>
                     </Option>
                 </Menu>
                 <LanguagePanel />
