@@ -8985,6 +8985,18 @@ fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
+fathom-client@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fathom-client/-/fathom-client-3.0.0.tgz#409c047cf1e2fea45b148e28d50fcd635e992893"
+  integrity sha512-d0oH2SHWCMIVLbbegB7nBIjSvbqbHrZBZxIOWSVAxlJL/roL0Ah9NNb6rTIcKMlA4gov9AjWQGEcZRzlnGc3XQ==
+
+fathom-react@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/fathom-react/-/fathom-react-1.0.1.tgz#036235eba3b00aa70afb0d8b1fec52ac02b43ada"
+  integrity sha512-/wjkYm7Z4jTg9rWw41H4ybX1spnqLFkPPjSSd3JlvaTQTq7TjKjzDR4ykOe3VVbH9fp7att2adk9ecq1lwepwg==
+  dependencies:
+    prop-types "^15.7.2"
+
 faye-websocket@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/faye-websocket/-/faye-websocket-0.10.0.tgz#4e492f8d04dfb6f89003507f6edbf2d501e7c6f4"
