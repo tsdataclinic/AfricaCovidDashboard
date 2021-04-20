@@ -1,9 +1,11 @@
 import { useQuery } from 'react-query';
 
+const IgnoreRegions = ['Indian Ocean'];
+
 const getAvailableRegions = async () => {
     const request = await fetch('/api/country/region');
     const result = await request.json();
-    return result;
+    return result.filter((region: string) => !IgnoreRegions.includes(region));
 };
 
 export function useAvailableRegions() {
