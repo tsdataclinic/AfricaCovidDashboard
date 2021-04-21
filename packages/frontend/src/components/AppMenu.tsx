@@ -44,7 +44,7 @@ const AppMenu = () => {
                         key="feedback"
                         icon={<i className="fas fa-comments"></i>}
                     >
-                        <Link to={FEEDBACK_PATH}>{t('feedback')}</Link>
+                        <Link to={FEEDBACK_PATH}>{t('Feedback')}</Link>
                     </Option>
                 </Menu>
                 <LanguagePanel />
