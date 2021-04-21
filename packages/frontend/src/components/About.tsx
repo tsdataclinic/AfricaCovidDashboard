@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
 
 import {
     AboutPage,
@@ -19,14 +20,14 @@ import {
     SubHeader,
 } from '@dataclinic/dataclinic';
 
-const DataSources = [
-    'DataSources_0',
-    'DataSources_1',
-    'WhoCIADSI_0',
-    'WhoDC_0',
-    'WhoDC_1',
-    'WhoDC_2',
-];
+const DataSources = ['DataSources_0', 'DataSources_1'];
+
+const BlockLink = styled(Body)`
+    background-color: rgb(214, 228, 255);
+    padding: 10px;
+    border-radius: 10px;
+`;
+
 const About = () => {
     const { t } = useTranslation();
     return (
@@ -37,11 +38,10 @@ const About = () => {
                     imageLocation="right"
                 >
                     <TextColumn>
-                        <SubHeader>{t('Intro_subheader')}</SubHeader>
+                        <SubHeader>{t('Intro_0')}</SubHeader>
                         <Header style={{ color: '#103470' }}>
-                            {t('Intro_0')}
+                            {t('Intro_1')}
                         </Header>
-                        <Body>{t('Intro_1')}</Body>
                         <Body
                             dangerouslySetInnerHTML={{ __html: t('Intro_2') }}
                         ></Body>
@@ -55,22 +55,13 @@ const About = () => {
                             dangerouslySetInnerHTML={{ __html: t('Intro_5') }}
                         ></Body>
 
-                        <Body
+                        <BlockLink
                             dangerouslySetInnerHTML={{ __html: t('Intro_6') }}
-                            style={{
-                                backgroundColor: '#F0F5FF',
-                                padding: '10px',
-                                borderRadius: '10px',
-                            }}
-                        ></Body>
-                        <Body
+                        ></BlockLink>
+
+                        <BlockLink
                             dangerouslySetInnerHTML={{ __html: t('Intro_7') }}
-                            style={{
-                                backgroundColor: '#F0F5FF',
-                                padding: '10px',
-                                borderRadius: '10px',
-                            }}
-                        ></Body>
+                        ></BlockLink>
                     </TextColumn>
                     <IconColumn>
                         <Contribute
@@ -94,6 +85,7 @@ const About = () => {
                             }}
                         >
                             {t('AboutModel_1')}
+                            <br />
                             <br />
                             {t('AboutModel_2')}
                         </Body>
@@ -125,15 +117,13 @@ const About = () => {
                         <Header style={{ color: '#103470' }}>
                             {t('DataSources_header')}
                         </Header>
-                        <ul>
-                            {DataSources.map((datasource: string) => (
-                                <li
-                                    dangerouslySetInnerHTML={{
-                                        __html: t(datasource),
-                                    }}
-                                />
-                            ))}
-                        </ul>
+                        {DataSources.map((datasource: string) => (
+                            <BlockLink
+                                dangerouslySetInnerHTML={{
+                                    __html: t(datasource),
+                                }}
+                            />
+                        ))}
                     </TextColumn>
                     <IconColumn>
                         <Datasets style={{ width: '400px', height: '400px' }} />
@@ -141,8 +131,31 @@ const About = () => {
                 </AboutPageSegment>
 
                 <AboutPageSegment
-                    id="DataClinic"
+                    id="DatasciInitative"
                     style={{ backgroundColor: '#F0F5FF', color: '#103470' }}
+                >
+                    <TextColumn>
+                        <Header style={{ color: '#103470' }}>
+                            {t('COVID19InAfricaDatascienceInitative')}
+                        </Header>
+                        <Body
+                            dangerouslySetInnerHTML={{
+                                __html: t('WhoCIADSI_0'),
+                            }}
+                        ></Body>
+                    </TextColumn>
+                    <IconColumn>
+                        <img
+                            style={{ width: '300px', height: '300px' }}
+                            src="/colab.png"
+                        />
+                    </IconColumn>
+                </AboutPageSegment>
+
+                <AboutPageSegment
+                    id="DataClinic"
+                    style={{ backgroundColor: 'white', color: '#103470' }}
+                    imageLocation="left"
                 >
                     <TextColumn>
                         <Header style={{ color: '#103470' }}>
@@ -166,8 +179,7 @@ const About = () => {
 
                 <AboutPageSegment
                     id="Contribute"
-                    imageLocation="left"
-                    style={{ backgroundColor: 'white', color: '#103470' }}
+                    style={{ backgroundColor: '#F0F5FF', color: '#103470' }}
                 >
                     <TextColumn>
                         <Header style={{ color: '#103470' }}>
