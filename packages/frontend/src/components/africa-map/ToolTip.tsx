@@ -86,7 +86,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
             countryProperties.region === 'Middle Africa'
                 ? 'Central Africa'
                 : countryProperties.region
-        ].population;
+        ];
     const countryStat = allStats[countryProperties.iso3];
 
     const asterisk = isPer100k ? <sup>*</sup> : null;
@@ -98,7 +98,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
             <ToolTipStats>
                 <li>
                     <span className="label">{t('Population Estimate')}</span>
-                    {formatNumber(countryStat.population)}
+                    {countryStat ? formatNumber(countryStat.population) : 'NA'}
                 </li>
                 <li>
                     <span className="label">{t('Region')}</span>
@@ -106,7 +106,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
                 </li>
                 <li>
                     <span className="label">{t('Region Population')}</span>
-                    {regionPop ? formatNumber(regionPop) : 'NA'}
+                    {regionPop ? formatNumber(regionPop.population) : 'NA'}
                 </li>
                 <li>
                     <span className="label confirmed">
