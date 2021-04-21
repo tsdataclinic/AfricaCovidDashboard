@@ -140,25 +140,35 @@ export class CountryService {
       this.allCountryTrends &&
       Object.keys(this.allCountryTrends).includes(countryISO)
     ) {
-      const trend = this.allCountryTrends[countryISO];
-      const prediction = this.modelService.predictForCountry(countryISO);
-      return [...trend, ...prediction];
+      return this.getTrendAndPrediction(countryISO);
     } else {
       throw new NotFoundException('Count not find country');
     }
   }
 
+  getTrendAndPrediction(iso: string) {
+    const trend = this.allCountryTrends[iso];
+    const prediction = this.modelService.predictForCountry(iso);
+    const combined = [...trend, ...(prediction ? prediction : [])];
+    return combined;
+  }
+
   //** Returns a TrendDatum of data aggregated to the entire continent */
   getContinentTrends(): TrendDatum[] {
-    const africaISOS = this.countries
-      .filter((c) => c.continent === 'Africa')
-      .map((c) => c.iso3);
-    const africaTrends = africaISOS.map((iso) => this.allCountryTrends[iso]);
+    let africaTrends = Object.values(this.getAllTrends());
+    let names = Object.keys(this.getAllTrends());
+
     return africaTrends.reduce(
-      (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
+      (trend: TrendDatum[], countryTrend: TrendDatum[], index) =>
         trend.length == 0
           ? countryTrend
-          : trend.map((t, i) => t.add(countryTrend[i])),
+          : trend.map((t, i) => {
+              const sum =
+                countryTrend[i] && names[index] !== 'TZA'
+                  ? t.add(countryTrend[i])
+                  : t;
+              return sum;
+            }),
       [],
     );
   }
@@ -175,18 +185,15 @@ export class CountryService {
       let last_value = trend[trend.length - 1];
       let last_cumulative_value = last_value.confirmed;
       let countryPrediction = predictions[iso3] ? [...predictions[iso3]] : [];
-
-      //Update the cumulative predictions
-      for (let i = 0; i < countryPrediction.length; i++) {
-        let prediction = countryPrediction[i];
-        let upper = last_cumulative_value + prediction.daily_prediction_upper;
-        let lower = last_cumulative_value + prediction.daily_prediction_lower;
-
-        last_cumulative_value += prediction.daily_prediction;
-
-        countryPrediction[i].confirmed_prediction = last_cumulative_value;
-        countryPrediction[i].confirmed_prediction_lower = lower;
-        countryPrediction[i].confirmed_prediction_upper = upper;
+      if (countryPrediction[0]) {
+        countryPrediction[0].daily_prediction =
+          countryPrediction[0].confirmed_prediction - last_cumulative_value;
+        countryPrediction[0].daily_prediction_upper =
+          countryPrediction[0].confirmed_prediction_upper -
+          last_cumulative_value;
+        countryPrediction[0].daily_prediction_lower =
+          countryPrediction[0].confirmed_prediction_lower -
+          last_cumulative_value;
       }
 
       trendsPlusPredictions[iso3] = [
@@ -250,12 +257,16 @@ export class CountryService {
       const regionISOS = this.countries
         .filter((c) => c.region === region)
         .map((c) => c.iso3);
-      const trends = regionISOS.map((iso) => this.allCountryTrends[iso]);
+      const trends = regionISOS
+        .filter((iso) => iso !== 'TZA')
+        .map((iso) => this.getTrendAndPrediction(iso));
       let region_trend = trends.reduce(
-        (trend: TrendDatum[], countryTrend: TrendDatum[]) =>
+        (trend: TrendDatum[], countryTrend: TrendDatum[], index) =>
           trend.length == 0
             ? countryTrend
-            : trend.map((t, i) => t.add(countryTrend[i])),
+            : trend.map((t, i) =>
+                countryTrend[i] ? t.add(countryTrend[i]) : t,
+              ),
         [],
       );
 

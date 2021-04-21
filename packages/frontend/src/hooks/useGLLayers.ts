@@ -12,7 +12,7 @@ const getTrendKey = (
     let trendKey: keyof CountryTrend = 'confirmed';
     if (dataType === 'daily') {
         if (category === 'confirmed') {
-            trendKey = 'new_case';
+            trendKey = isPrediction ? 'daily_prediction' : 'new_case';
         } else if (category === 'recoveries') {
             trendKey = 'new_recoveries';
         } else if (category === 'deaths') {
@@ -60,15 +60,6 @@ export const useGLLayers = (
                 new GeoJsonLayer({
                     id: 'countries',
                     getFillColor: (f: any) => {
-                        console.log(f.properties.iso3);
-                        if (f.properties.iso3 === 'COG' && scaledData) {
-                            console.log(
-                                'Looking at you congo ',
-                                f.properties.iso3,
-                                scaledData[f.properties.iso3 as string],
-                                Object.keys(scaledData)
-                            );
-                        }
                         let datum = scaledData
                             ? scaledData[f.properties.iso3 as string]
                             : null;
@@ -144,6 +135,7 @@ export const useGLLayers = (
         isRegion,
         scaledData,
         colorScale,
+        isPrediction,
         per100k,
     ]);
     return layers;

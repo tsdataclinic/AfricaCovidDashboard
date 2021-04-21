@@ -64,10 +64,10 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
     }, []);
     const isPrediction = Object.keys(trendData || {}).find(
         (key) => trendData?.[key].isPrediction
-    );
-    if (trendData) {
-        console.log('Does trend data have COG ', trendData['COG']);
-    }
+    )
+        ? true
+        : false;
+
     const scaledData = useScaledData(trendData, per100k);
 
     let { colorScale, colors, bins } = useColorScale(
@@ -91,7 +91,6 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
         per100k,
         colorScale,
         (hoverInfo: any) => {
-            console.log('Hover info ', hoverInfo);
             setHoverInfo(hoverInfo);
         }
     );
@@ -114,9 +113,6 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
                 onCountrySelect(
                     info.object ? info.object.properties.iso3 : null
                 );
-            }}
-            onDragEnd={(data) => {
-                console.log('drag end data ', data);
             }}
         >
             <StaticMap

@@ -11,11 +11,28 @@ export class ModelService {
   predictions: CountryTrendDict | null;
   constructor() {
     this.loadPredictions().then((data: CountryTrendDict) => {
+      this.normalizePredictions(data);
       this.predictions = data;
-      console.log('Setting predictions as ', Object.keys(data));
     });
   }
 
+  normalizePredictions(data: CountryTrendDict) {
+    Object.keys(data).forEach((country) => {
+      data[country].forEach((datum: TrendDatum, index) => {
+        if (index > 0) {
+          data[country][index].daily_prediction =
+            data[country][index].confirmed_prediction -
+            data[country][index - 1].confirmed_prediction;
+          data[country][index].daily_prediction_upper =
+            data[country][index].confirmed_prediction_upper -
+            data[country][index - 1].confirmed_prediction_upper;
+          data[country][index].daily_prediction_lower =
+            data[country][index].confirmed_prediction_lower -
+            data[country][index - 1].confirmed_prediction_lower;
+        }
+      });
+    });
+  }
   loadPredictions() {
     return new Promise((resolve, reject) => {
       let data: CountryTrendDict = {};
@@ -32,10 +49,10 @@ export class ModelService {
           if (countryDetails && row['prediction'] !== 'NA') {
             const datum = new TrendDatum();
             datum.isPrediction = true;
-            datum.date = row['Date'];
-            datum.daily_prediction = row['Est'];
-            datum.daily_prediction_upper = row['Upper'];
-            datum.daily_prediction_lower = row['Lower'];
+            datum.date = new Date(row['Date']);
+            datum.confirmed_prediction = Math.exp(row['Est']);
+            datum.confirmed_prediction_upper = Math.exp(row['Upper']);
+            datum.confirmed_prediction_lower = Math.exp(row['Lower']);
             data[countryDetails.iso3] = data[countryDetails.iso3]
               ? [...data[countryDetails.iso3], datum]
               : [datum];

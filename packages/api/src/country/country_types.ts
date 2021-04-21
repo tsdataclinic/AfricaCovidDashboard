@@ -211,6 +211,9 @@ export class TrendDatum {
   daily_prediction: number | null;
 
   add(other: TrendDatum): TrendDatum {
+    if (this.isPrediction) {
+      // console.log('self is ', this, ' other is ', other);
+    }
     if (!datesAreOnSameDay(this.date, other.date)) {
       throw new Error(`Trend Datum don't match ${this.date}, ${other.date}`);
     }
@@ -224,19 +227,33 @@ export class TrendDatum {
 
     newObs.date = this.date;
     newObs.days_since_first_case = this.days_since_first_case;
+    newObs.isPrediction = false;
+
     if (this.isPrediction) {
+      // console.log('self ', this, ' other ', other);
+      if (
+        this.confirmed_prediction === null ||
+        other.confirmed_prediction === null
+      ) {
+        console.log('YELL HERE');
+      }
+
       newObs.confirmed_prediction =
         this.confirmed_prediction + other.confirmed_prediction;
-      // TODO: update prediction
+
       newObs.confirmed_prediction_upper =
         this.confirmed_prediction_upper + other.confirmed_prediction_upper;
+
       newObs.confirmed_prediction_lower =
         this.confirmed_prediction_lower + other.confirmed_prediction_lower;
 
-      newObs.daily_prediction += this.daily_prediction + other.daily_prediction;
+      newObs.daily_prediction = this.daily_prediction + other.daily_prediction;
+      newObs.daily_prediction_upper =
+        this.daily_prediction_upper + other.daily_prediction_upper;
+      newObs.daily_prediction_lower =
+        this.daily_prediction_lower + other.daily_prediction_lower;
       newObs.isPrediction = true;
     }
-
     return newObs;
   }
 }
@@ -245,7 +262,10 @@ export type CountryTrendDict = { [country: string]: TrendDatum[] };
 export type CountryStatsDict = { [country: string]: CountryStats[] };
 export type RegionStatsDict = { [region: string]: RegionStats };
 
-const datesAreOnSameDay = (first: Date, second: Date) =>
-  first.getFullYear() === second.getFullYear() &&
-  first.getMonth() === second.getMonth() &&
-  first.getDate() === second.getDate();
+const datesAreOnSameDay = (first: Date, second: Date) => {
+  return (
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
+  );
+};

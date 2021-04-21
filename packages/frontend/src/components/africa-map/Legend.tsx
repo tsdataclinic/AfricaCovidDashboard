@@ -60,7 +60,6 @@ const binLabel = (bins: number[], index: number) => {
 };
 
 export const Legend: React.FC<LegendProps> = ({ header, colors, bins }) => {
-    console.log(header, colors, bins);
     return (
         <LegendOuter>
             <h4>{header}</h4>

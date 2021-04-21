@@ -123,9 +123,11 @@ export const ToolTip: React.FC<ToolTipProps> = ({
                         {t('Recovered')}
                         {asterisk}:
                     </span>
-                    {formatNumber(
-                        getStatistic(dataType, 'recoveries', trendData)
-                    )}
+                    {isPrediction
+                        ? 'Unavailable'
+                        : formatNumber(
+                              getStatistic(dataType, 'recoveries', trendData)
+                          )}
                     &nbsp;
                 </li>
                 <li>
@@ -133,7 +135,12 @@ export const ToolTip: React.FC<ToolTipProps> = ({
                         {t('Deaths')}
                         {asterisk}
                     </span>
-                    {formatNumber(getStatistic(dataType, 'deaths', trendData))}
+
+                    {!isPrediction
+                        ? 'Unavailable'
+                        : formatNumber(
+                              getStatistic(dataType, 'deaths', trendData)
+                          )}
                 </li>
                 {isPer100k && (
                     <li>
