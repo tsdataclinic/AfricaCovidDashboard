@@ -45,7 +45,7 @@ To get the servers running. The frontend will be served at http://localhost:3000
 
 The majority of data that the team is using comes from the [COVID-19 Data Repository](https://github.com/CSSEGISandData/COVID-19) by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University, https://github.com/CSSEGISandData/COVID-19.
 
-Population data comes from the UN Department of Economic and Social Affairs, [World Population Prospects](https://population.un.org/wpp/), https://population.un.org/wpp/.
+Population data comes from The World Bank, [World Development Indicators](https://datacatalog.worldbank.org/dataset/world-development-indicators), https://datacatalog.worldbank.org/dataset/world-development-indicators.
 
 In addition, we have some model output data that can be found in the data/raw directory. 
 
