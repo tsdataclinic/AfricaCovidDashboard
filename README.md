@@ -1,5 +1,16 @@
+
+<p align="center">
+  <img src="site-logo.png" width="400"/>
+</p>
+
 ## Africa COVID Dashboard
 [![Netlify Status](https://api.netlify.com/api/v1/badges/25700efb-ac20-4b91-8ce6-f9d4dcadc810/deploy-status)](https://app.netlify.com/sites/ts-africa-covid/deploys)
+
+### Overview
+
+Data Clinic collaborated with the [COVID-19 in Africa Data Science](https://sites.bu.edu/covid-19-in-africa/) team to develop an open source interactive multilingual dashboard that facilitates access to their nuanced insights of the trajectory of COVID-19 in Africa and supports decision-makers across the continent.
+
+The dashboard, written using a React-based frontend and a NestJS API, displays infection, recovery, and death statistics for each African country along with forecasts based on the model produced by the COVID-19 in Africa Data Science Initiative.
 
 ### Repo structure 
 
