@@ -50,7 +50,11 @@ export class CountryService {
         .on('data', (row) => {
           // Get the ISO details of the country so we can link things up
           // using the iso3 number
-          const countryDetails = getCountryISO(row['countryorarea']);
+          const countryDetails = getCountryISO(
+            row['countryorarea'] === 'Congo'
+              ? 'Republic of the Congo'
+              : row['countryorarea'],
+          );
           const datum = {
             name: row['countryorarea'],
             population: 10000,
@@ -84,7 +88,10 @@ export class CountryService {
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: false }))
         .on('data', (row, index) => {
           if (lineNo > 3) {
-            let pop = row[row.length - 3];
+            let pops = row.slice(3, row.length - 1);
+            pops.reverse();
+            let pop = pops.find((f) => f);
+            row[row.length - 3];
             if (typeof pop == 'string') {
               pop = parseInt(pop);
             }
