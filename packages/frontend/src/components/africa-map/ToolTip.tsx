@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import * as colors from '../../colors';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { getStatistic } from '../../helper';
 import { DataType } from '../../types';
 import { CountryProperties } from './types';
 import { CountryTrend } from '../../hooks/useCountryTrends';
+import StatsContext from '../../contexts/StatsContext';
 
 interface ToolTipProps {
     country: string;
@@ -78,7 +79,15 @@ export const ToolTip: React.FC<ToolTipProps> = ({
     y,
 }) => {
     const { t } = useTranslation();
-    const regionPop = statsMap?.[countryProperties.region]?.population;
+    const { allStats } = useContext(StatsContext);
+
+    const regionPop =
+        allStats[
+            countryProperties.region === 'Middle Africa'
+                ? 'Central Africa'
+                : countryProperties.region
+        ].population;
+    const countryStat = allStats[countryProperties.iso3];
 
     const asterisk = isPer100k ? <sup>*</sup> : null;
     console.log(countryProperties);
@@ -89,7 +98,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
             <ToolTipStats>
                 <li>
                     <span className="label">{t('Population Estimate')}</span>
-                    {formatNumber(countryProperties.pop_est)}
+                    {formatNumber(countryStat.population)}
                 </li>
                 <li>
                     <span className="label">{t('Region')}</span>
