@@ -65,7 +65,9 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
     const isPrediction = Object.keys(trendData || {}).find(
         (key) => trendData?.[key].isPrediction
     );
-
+    if (trendData) {
+        console.log('Does trend data have COG ', trendData['COG']);
+    }
     const scaledData = useScaledData(trendData, per100k);
 
     let { colorScale, colors, bins } = useColorScale(
@@ -131,6 +133,7 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
                     countryProperties={hoverInfo.object.properties}
                     isPer100k={per100k}
                     isPrediction={isPrediction}
+                    dataType={dataType}
                     x={hoverInfo.x}
                     y={hoverInfo.y}
                     trendData={scaledData[hoverInfo.object.properties.iso3]}
