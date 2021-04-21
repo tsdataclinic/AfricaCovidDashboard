@@ -60,6 +60,15 @@ export const useGLLayers = (
                 new GeoJsonLayer({
                     id: 'countries',
                     getFillColor: (f: any) => {
+                        console.log(f.properties.iso3);
+                        if (f.properties.iso3 === 'COG' && scaledData) {
+                            console.log(
+                                'Looking at you congo ',
+                                f.properties.iso3,
+                                scaledData[f.properties.iso3 as string],
+                                Object.keys(scaledData)
+                            );
+                        }
                         let datum = scaledData
                             ? scaledData[f.properties.iso3 as string]
                             : null;
@@ -73,7 +82,7 @@ export const useGLLayers = (
                         }
                         return [col[0], col[1], col[2], opacity];
                     },
-                    getLineColor: [255, 255, 255, 255],
+                    getLineColor: [200, 200, 200, 255],
                     stroked: true,
                     pickable: true,
                     data: mapData,
