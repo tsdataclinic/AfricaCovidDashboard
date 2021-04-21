@@ -13,7 +13,7 @@ export const Legal: React.FC = () => {
                 height: '100%',
             }}
         >
-            <p>{t('legal_p1')}</p>
+            <p dangerouslySetInnerHTML={{ __html: t('legal_p1') }}></p>
 
             <p>{t('legal_p2')}</p>
 
