@@ -60,20 +60,23 @@ const binLabel = (bins: number[], index: number) => {
 };
 
 export const Legend: React.FC<LegendProps> = ({ header, colors, bins }) => {
+    console.log(header, colors, bins);
     return (
         <LegendOuter>
             <h4>{header}</h4>
-            <ul>
-                <li>
-                    <ColorBox color="white" /> 0
-                </li>
-                {colors.map((col, index) => (
+            {bins && bins.length > 0 && bins.filter((b) => b).length > 0 && (
+                <ul>
                     <li>
-                        <ColorBox color={`rgba(${col.join(',')})`} />
-                        {binLabel(bins, index)}
+                        <ColorBox color="white" /> 0
                     </li>
-                ))}
-            </ul>
+                    {colors.map((col, index) => (
+                        <li>
+                            <ColorBox color={`rgba(${col.join(',')})`} />
+                            {binLabel(bins, index)}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </LegendOuter>
     );
 };
