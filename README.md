@@ -48,14 +48,16 @@ To get the servers running. The frontend will be served at http://localhost:3000
 
 ### Data 
 
-The majority of data that the team is using comes from the [Johns Hopkins dashboard](https://coronavirus.jhu.edu/us-map).
+The majority of data that the team is using comes from the [COVID-19 Data Repository](https://github.com/CSSEGISandData/COVID-19) by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University, https://github.com/CSSEGISandData/COVID-19.
 
-In addition we have some model output data that can be found in the data/raw directory. 
+Population data comes from the UN Department of Economic and Social Affairs, [World Population Prospects](https://population.un.org/wpp/), https://population.un.org/wpp/.
 
-For an example of the model outputs + some other data files look at the summary here : 
+In addition, we have some model output data that can be found in the data/raw directory. 
+
+For an example of the model outputs + some other data files, look at the summary here : 
 - [Model output data summary](/data/raw/test/summary.md)
 
-Some variables additionally come from the Institute of Health Metrics and Evaluation (IHME),  Population Reference Bureau 
+Some additional variables come from the Institute of Health Metrics and Evaluation (IHME),  Population Reference Bureau 
 
 ### Model specifications 
 
@@ -79,3 +81,7 @@ model <- ivreg(lncaseload_lastobs ~ lnrchange + lnexpo + lnsdi + lnurban + lnp70
 - lnasthma  : Prevalance of Asthma (from Institute of Health Metrics and Evaluation (IHME))
 - lnhiv : Prevalance of HIV (from Institute of Health Metrics and Evaluation (IHME))  
 - lntraffic : Incoming air traffic
+
+### License
+
+This repo and the dashboard are shared pursuant to the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.html)
