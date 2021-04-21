@@ -52,7 +52,7 @@
     "AboutModel_link": "visit the repo",
     "AboutModel_3_2": " to learn more.",
     "DataSources_header": "Data Sources",
-    "DataSources_0": "COVID-19 <a href='https://miro.medium.com/max/3152/1*6g_929Nj-THV-1BYC0egZA.png'>Data Repository</a> by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.",
+    "DataSources_0": "COVID-19 <a href='https://github.com/CSSEGISandData/COVID-19'>Data Repository</a> by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.",
     "DataSources_1": "<a target=\"_blank\" href=\"https://population.un.org/wpp/\">World Population Prospects</a> by the UN Department of Economic and Social Affairs, https://population.un.org/wpp/.",
     "WhoCIADSI_0": "The <a href=\"https://sites.bu.edu/covid-19-in-africa/\">COVID-19 in Africa Data Science Initiative</a> is a collaboration between researchers at Boston University and other academic institutions around the world that was constituted to model and map the trajectory of COVID-19 on the African continent as well as develop tools to aid policy makers in real-time decision-making leading to efficient resource and therapeutic allocation.",
     "WhoDC_0": "As the data and tech philanthropic arm of Two Sigma, Data Clinic provides pro bono data science and engineering support to nonprofits and engages in open source tooling and research that contribute to the Data for Good movement.",
