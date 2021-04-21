@@ -41,11 +41,6 @@ yarn start
 
 To get the servers running. The frontend will be served at http://localhost:3000 and the API will be hosted at http://localhost:4000  
 
-### Existing resources 
-
-- [India Dashboard Project](https://www.covid19india.org/) A good source of components for visualizing COVID data 
-- [The R Shiny app](https://github.com/tmh741/AFCOVIDDashboard) that the BU team is currently using.
-
 ### Data 
 
 The majority of data that the team is using comes from the [COVID-19 Data Repository](https://github.com/CSSEGISandData/COVID-19) by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University, https://github.com/CSSEGISandData/COVID-19.
