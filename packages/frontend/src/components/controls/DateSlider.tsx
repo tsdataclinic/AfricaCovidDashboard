@@ -187,10 +187,15 @@ const DateSlider = ({
         }
 
         const lastDate = moment(dates[dates.length - 1]);
+        const today = moment();
+        const initDate = today.isSameOrBefore(lastDate, 'day')
+            ? today
+            : lastDate;
+
         if (selectedDate === undefined) {
             // init the start date to be the latest one
-            if (xAxis(lastDate) >= 0) {
-                onUpdate(lastDate);
+            if (xAxis(initDate) >= 0) {
+                onUpdate(initDate);
             }
             return;
         }
