@@ -34,9 +34,12 @@ import { useTranslation } from 'react-i18next';
 import { transparentize } from 'polished';
 import capitalize from 'lodash/capitalize';
 import { formatDay, formatNumber } from '../utils/trendUtils';
+import InfoTooltip from './InfoTooltip';
 
 // Chart margins
 const margin = { top: 15, right: 35, bottom: 25, left: 25 };
+const dayChangeMessage =
+    '"1 Day Change" shows the difference between the currently selected date and the preceding dates.';
 
 interface TimeseriesProps {
     timeseries: CountryTrend[];
@@ -251,6 +254,7 @@ const Timeseries = ({
                 .attr('class', 'overlay')
                 .attr('width', width)
                 .attr('height', height)
+                .attr('x', margin.left)
                 .on('touchmove', mousemove)
                 .on('mouseover', function () {
                     focus.style('display', null);
@@ -498,6 +502,11 @@ const Timeseries = ({
         return styles;
     }, []);
 
+    const infoMessage = `${dayChangeMessage} ${
+        dataType === 'cumulative'
+            ? ''
+            : '(Notes: negative values likely indicate a correction in values from the original data source.)'
+    }`;
     return (
         <>
             <div className="Timeseries">
@@ -561,11 +570,20 @@ const Timeseries = ({
                                         />
                                     </HighlightNumber>
                                     <Delta>
-                                        {getDeltaText(
-                                            dataType,
-                                            category,
-                                            stats
-                                        )}
+                                        <span>
+                                            {getDeltaText(
+                                                dataType,
+                                                category,
+                                                stats
+                                            )}
+                                        </span>
+                                        <Info>
+                                            <InfoTooltip
+                                                message={infoMessage}
+                                                top={0}
+                                                right={0}
+                                            />
+                                        </Info>
                                     </Delta>
                                 </div>
                             )}
@@ -639,10 +657,12 @@ const Wrapper = styled.div`
         flex-direction: column;
         left: 0.5rem;
         padding: 0.25rem;
-        pointer-events: none;
         position: absolute;
         top: 0.5rem;
         text-align: start;
+        button {
+            color: ${RED};
+        }
     }
 
     svg {
@@ -681,6 +701,9 @@ const Wrapper = styled.div`
         .symbol {
             border: 1px solid ${DARK_BLUE};
         }
+        button {
+            color: ${DARK_BLUE};
+        }
         svg {
             .selected-date,
             path,
@@ -706,6 +729,9 @@ const Wrapper = styled.div`
         }
         .symbol {
             border: 1px solid ${PURPLE};
+        }
+        button {
+            color: ${PURPLE};
         }
         svg {
             .selected-date,
@@ -791,8 +817,23 @@ const HighlightNumber = styled.h2`
 
 const Delta = styled.h6`
     font-size: 10px;
+    position: relative;
+    button {
+        left: -10px;
+    }
 `;
 
 const Text = styled.span`
     margin-right: 5px;
+`;
+
+const Info = styled.span`
+    position: relative;
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+    z-index: 10;
+    button {
+        left: 1px;
+    }
 `;
