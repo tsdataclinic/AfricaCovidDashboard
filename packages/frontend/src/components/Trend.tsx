@@ -2,7 +2,6 @@ import React from 'react';
 import { Skeleton, Card } from 'antd';
 import Timeseries from './Timeseries';
 import { DataType } from '../types';
-import InfoTooltip from './InfoTooltip';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import { Moment } from 'moment';
 
@@ -25,11 +24,6 @@ const Trend = ({
 }: TrendProps) => {
     return (
         <Card>
-            <InfoTooltip
-                message='"1 Day Change" shows the difference between the currently selected date and the preceding dates.'
-                top={10}
-                right={10}
-            />
             <Skeleton active loading={statsLoading}>
                 <Timeseries
                     timeseries={trendData}
