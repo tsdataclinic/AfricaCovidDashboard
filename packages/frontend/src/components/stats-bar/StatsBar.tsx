@@ -15,6 +15,7 @@ interface StatsBarProps {
     category: Category;
     selectCategory: (category: Category) => void;
     data?: CountryTrend;
+    selectedCountry: string;
     loading?: boolean;
 }
 
@@ -24,9 +25,11 @@ const StatsBar: React.FC<StatsBarProps> = ({
     selectCategory,
     data,
     loading,
+    selectedCountry,
 }) => {
     const { t } = useTranslation();
     const items: StatsBarItem[] = getCategories(dataType, data?.isPrediction);
+
     return (
         <>
             <SmallStatsBar
@@ -59,7 +62,15 @@ const StatsBar: React.FC<StatsBarProps> = ({
                             >
                                 <Statistic
                                     title={t(column.label)}
-                                    value={value}
+                                    value={
+                                        selectedCountry === 'TZA' &&
+                                        (column.label ===
+                                            'New Cases Prediction' ||
+                                            column.label ===
+                                                'Confirmed Prediction')
+                                            ? 'No predictions'
+                                            : value
+                                    }
                                     valueStyle={{
                                         color: column.color,
                                         fontSize: '120%',

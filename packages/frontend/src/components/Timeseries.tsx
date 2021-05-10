@@ -47,6 +47,7 @@ interface TimeseriesProps {
     dataType: DataType;
     isLog: boolean;
     selectedDate?: Moment;
+    country?: string;
 }
 
 const Timeseries = ({
@@ -55,6 +56,7 @@ const Timeseries = ({
     dataType,
     isLog,
     selectedDate,
+    country,
 }: TimeseriesProps) => {
     const { t } = useTranslation();
     const refs = useRef<(SVGSVGElement | null)[]>([]);
@@ -511,8 +513,15 @@ const Timeseries = ({
         <>
             <div className="Timeseries">
                 {categories.map(({ category, label }, index) => {
-                    const highlight = getStatistic(dataType, category, stats);
+                    let highlight: string | number = getStatistic(
+                        dataType,
+                        category,
+                        stats
+                    );
                     const isPrediction = stats?.isPrediction;
+
+                    const isUnreliableData = country === 'TZA' && isPrediction;
+
                     const isPredictedConfirmed =
                         isPrediction && category === 'confirmed';
                     const unPredictable =
@@ -559,8 +568,10 @@ const Timeseries = ({
                                     <HighlightNumber>
                                         <Statistic
                                             value={
-                                                isPrediction &&
-                                                !isPredictedConfirmed
+                                                isUnreliableData
+                                                    ? 'Predictions for Tanzania are unreliable because of lack of data'
+                                                    : isPrediction &&
+                                                      !isPredictedConfirmed
                                                     ? '-'
                                                     : highlight
                                             }
@@ -569,22 +580,24 @@ const Timeseries = ({
                                             }}
                                         />
                                     </HighlightNumber>
-                                    <Delta>
-                                        <span>
-                                            {getDeltaText(
-                                                dataType,
-                                                category,
-                                                stats
-                                            )}
-                                        </span>
-                                        <Info>
-                                            <InfoTooltip
-                                                message={infoMessage}
-                                                top={0}
-                                                right={0}
-                                            />
-                                        </Info>
-                                    </Delta>
+                                    {!isUnreliableData && (
+                                        <Delta>
+                                            <span>
+                                                {getDeltaText(
+                                                    dataType,
+                                                    category,
+                                                    stats
+                                                )}
+                                            </span>
+                                            <Info>
+                                                <InfoTooltip
+                                                    message={infoMessage}
+                                                    top={0}
+                                                    right={0}
+                                                />
+                                            </Info>
+                                        </Delta>
+                                    )}
                                 </div>
                             )}
                             <svg
