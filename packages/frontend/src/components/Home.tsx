@@ -189,12 +189,20 @@ const Home = () => {
                         />
                         <AfricaMap
                             selectedCountry={country}
-                            onCountrySelect={(country) =>
-                                updateQuery('country', country)
-                            }
-                            onRegionSelect={(region) =>
-                                updateQuery('region', region)
-                            }
+                            onCountrySelect={(newCountry) => {
+                                if (country === newCountry) {
+                                    updateQuery('country', '');
+                                } else {
+                                    updateQuery('country', newCountry);
+                                }
+                            }}
+                            onRegionSelect={(newRegion) => {
+                                if (newRegion === region) {
+                                    updateQuery('region', '');
+                                } else {
+                                    updateQuery('region', newRegion);
+                                }
+                            }}
                             category={category}
                             dataType={dataType}
                             dailyRange={dailyRange}
