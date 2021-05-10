@@ -48,6 +48,7 @@ interface TimeseriesProps {
     isLog: boolean;
     selectedDate?: Moment;
     country?: string;
+    onSelectDate: (value: moment.Moment) => void;
 }
 
 const Timeseries = ({
@@ -57,6 +58,7 @@ const Timeseries = ({
     isLog,
     selectedDate,
     country,
+    onSelectDate,
 }: TimeseriesProps) => {
     const { t } = useTranslation();
     const refs = useRef<(SVGSVGElement | null)[]>([]);
@@ -239,12 +241,13 @@ const Timeseries = ({
                 .attr('x', LINE_TOOLTIP_PADDING)
                 .attr('y', -2);
 
-            tooltip
+            const text = tooltip
                 .append('text')
-                .attr('class', 'tooltip-delta')
                 .attr('x', LINE_TOOLTIP_PADDING)
                 .attr('y', 36)
-                .text('1 Day Change: --');
+                .text('1 Day Change:');
+
+            text.append('tspan').attr('class', 'tooltip-delta');
 
             tooltip
                 .append('text')
@@ -256,35 +259,38 @@ const Timeseries = ({
                 .attr('class', 'overlay')
                 .attr('width', width)
                 .attr('height', height)
-                .attr('x', margin.left)
                 .on('touchmove', mousemove)
                 .on('mouseover', function () {
                     focus.style('display', null);
                 })
                 .on('mouseout', mouseout)
                 .on('touchend', mouseout)
-                .on('mousemove', mousemove);
+                .on('mousemove', mousemove)
+                .on('click', mouseClick);
 
             function mouseout() {
                 focus.style('display', 'none');
             }
 
-            function mousemove(res: any) {
+            function getHoverDate(res: any) {
                 const xm = pointer(res)[0];
                 const date = xScale.invert(xm);
                 if (date && dates.length > 0) {
                     const bisectDate = bisector((date) => date).left;
                     const index = bisectDate(dates, date, 1);
-                    const dataLeft = timeseries[index - 1];
-                    const dataRight = timeseries[index];
-                    const dateLeft = dates[index - 1];
-                    const dateRight = dates[index];
-                    if (dateLeft && dateRight) {
-                        const isLeft =
-                            date.valueOf() - dateLeft.valueOf() <
-                            dateRight.valueOf() - date.valueOf();
-                        const hoverDate = isLeft ? dateLeft : dateRight;
-                        const hoverValue = isLeft ? dataLeft : dataRight;
+                    return dates[index];
+                }
+                return null;
+            }
+
+            function mousemove(res: any) {
+                const hoverDate = getHoverDate(res);
+                if (hoverDate) {
+                    const hoverValue =
+                        timeseriesMapper[
+                            moment(hoverDate).startOf('day').valueOf()
+                        ];
+                    if (hoverValue) {
                         const data = getStatistic(
                             dataType,
                             category,
@@ -339,6 +345,13 @@ const Timeseries = ({
                         focus.select('.tooltip-value').text(formatNumber(data));
                         focus.select('.tooltip-delta').text(deltaText);
                     }
+                }
+            }
+
+            function mouseClick(res: any) {
+                const hoverDate = getHoverDate(res);
+                if (hoverDate) {
+                    onSelectDate(moment(hoverDate));
                 }
             }
 
@@ -468,7 +481,7 @@ const Timeseries = ({
         dataType,
         dimensions,
         getBarWidth,
-        timeseries,
+        timeseriesMapper,
         dates,
         isLog,
         categories,
@@ -580,24 +593,25 @@ const Timeseries = ({
                                             }}
                                         />
                                     </HighlightNumber>
-                                    {!isUnreliableData && (
-                                        <Delta>
-                                            <span>
+                                    <Delta>
+                                        <span>
+                                            1 Day Change:{' '}
+                                            <strong>
                                                 {getDeltaText(
                                                     dataType,
                                                     category,
                                                     stats
                                                 )}
-                                            </span>
-                                            <Info>
-                                                <InfoTooltip
-                                                    message={infoMessage}
-                                                    top={0}
-                                                    right={0}
-                                                />
-                                            </Info>
-                                        </Delta>
-                                    )}
+                                            </strong>
+                                        </span>
+                                        <Info>
+                                            <InfoTooltip
+                                                message={infoMessage}
+                                                top={0}
+                                                right={0}
+                                            />
+                                        </Info>
+                                    </Delta>
                                 </div>
                             )}
                             <svg
@@ -637,8 +651,8 @@ const getDeltaText = (
     const delta = getStatistic(type, category, data, true);
     const caseText = Math.abs(delta) > 1 ? 'Cases' : 'Case';
     const prefix = delta && delta > 0 ? '+' : '';
-    const postfix = delta ? (delta > 0 ? '↗' : '↘') : '';
-    return `1 Day Change: ${prefix}${delta} ${caseText} ${postfix}`;
+    const arrow = delta ? (delta > 0 ? '↑' : '↓') : '';
+    return `${arrow} ${prefix}${delta} ${caseText}`;
 };
 
 const getStatColor = (category: Category) => {
@@ -677,9 +691,10 @@ const Wrapper = styled.div`
             color: ${RED};
         }
     }
-
+    .tooltip-delta {
+        font-weight: bold;
+    }
     svg {
-        z-index: 1;
         width: 100%;
         .selected-date,
         path,
