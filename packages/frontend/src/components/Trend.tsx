@@ -13,6 +13,7 @@ interface TrendProps {
     isLog: boolean;
     selectedDate?: Moment;
     country: string;
+    onSelectDate: (value: moment.Moment) => void;
 }
 
 const Trend = ({
@@ -23,6 +24,7 @@ const Trend = ({
     isLog,
     selectedDate,
     country,
+    onSelectDate,
 }: TrendProps) => {
     return (
         <Card>
@@ -34,6 +36,7 @@ const Trend = ({
                     isLog={isLog}
                     selectedDate={selectedDate}
                     country={country}
+                    onSelectDate={onSelectDate}
                 />
             </Skeleton>
         </Card>

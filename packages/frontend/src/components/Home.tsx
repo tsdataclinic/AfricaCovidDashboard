@@ -124,24 +124,23 @@ const Home = () => {
         [updateQuery]
     );
 
-    const selectedStatsByCountry:
-        | Dictionary<CountryTrend>
-        | undefined = useMemo(() => {
-        if (!allCountryTrends || !selectedDate) {
-            return undefined;
-        }
-
-        const dictionary: Dictionary<CountryTrend> = {};
-        Object.keys(allCountryTrends).forEach((country) => {
-            const trend = allCountryTrends[country].find((t) =>
-                selectedDate.isSame(t.date, 'day')
-            );
-            if (trend) {
-                dictionary[country] = trend;
+    const selectedStatsByCountry: Dictionary<CountryTrend> | undefined =
+        useMemo(() => {
+            if (!allCountryTrends || !selectedDate) {
+                return undefined;
             }
-        });
-        return dictionary;
-    }, [selectedDate, allCountryTrends]);
+
+            const dictionary: Dictionary<CountryTrend> = {};
+            Object.keys(allCountryTrends).forEach((country) => {
+                const trend = allCountryTrends[country].find((t) =>
+                    selectedDate.isSame(t.date, 'day')
+                );
+                if (trend) {
+                    dictionary[country] = trend;
+                }
+            });
+            return dictionary;
+        }, [selectedDate, allCountryTrends]);
 
     const selectedStats = useMemo(
         () => timeseries.find((item) => selectedDate?.isSame(item.date, 'day')),
@@ -224,6 +223,7 @@ const Home = () => {
                             statsLoading={statsLoading}
                             selectedDate={selectedDate}
                             country={country}
+                            onSelectDate={onSelectDate}
                         />
                     </Col>
                 </Row>
