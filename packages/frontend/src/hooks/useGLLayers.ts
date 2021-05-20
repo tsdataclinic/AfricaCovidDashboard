@@ -60,6 +60,9 @@ export const useGLLayers = (
                 new GeoJsonLayer({
                     id: 'countries',
                     getFillColor: (f: any) => {
+                        if (f.properties.iso3 === 'TZA' && isPrediction) {
+                            return [0, 0, 0, 255];
+                        }
                         let datum = scaledData
                             ? scaledData[f.properties.iso3 as string]
                             : null;

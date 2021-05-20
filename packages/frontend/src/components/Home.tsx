@@ -179,6 +179,7 @@ const Home = () => {
                 <Row style={{ height: '100%' }} gutter={LAYOUT_GUTTER}>
                     <Col xs={24} xl={12}>
                         <StatsBar
+                            selectedCountry={country}
                             dataType={dataType}
                             category={category}
                             selectCategory={(category) =>
@@ -222,6 +223,7 @@ const Home = () => {
                             dataType={dataType}
                             statsLoading={statsLoading}
                             selectedDate={selectedDate}
+                            country={country}
                         />
                     </Col>
                 </Row>
