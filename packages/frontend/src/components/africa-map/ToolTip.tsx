@@ -9,6 +9,7 @@ import { DataType } from '../../types';
 import { CountryProperties } from './types';
 import { CountryTrend } from '../../hooks/useCountryTrends';
 import StatsContext from '../../contexts/StatsContext';
+import { countryNameMapping } from '../../utils';
 
 interface ToolTipProps {
     country: string;
@@ -90,11 +91,10 @@ export const ToolTip: React.FC<ToolTipProps> = ({
     const countryStat = allStats[countryProperties.iso3];
 
     const asterisk = isPer100k ? <sup>*</sup> : null;
-    console.log(countryProperties);
 
     return (
         <ToolTipContainer x={x} y={y}>
-            <h3>{countryProperties.COUNTRY_NA}</h3>
+            <h3>{countryNameMapping(countryProperties.COUNTRY_NA)}</h3>
             <ToolTipStats>
                 <li>
                     <span className="label">{t('Population Estimate')}</span>
