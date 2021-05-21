@@ -108,47 +108,67 @@ export const ToolTip: React.FC<ToolTipProps> = ({
                     <span className="label">{t('Region Population')}</span>
                     {regionPop ? formatNumber(regionPop.population) : 'NA'}
                 </li>
-                <li>
-                    <span className="label confirmed">
-                        {isPrediction ? t('Predicted Cases') : t('Confirmed')}
-                        {asterisk}:
-                    </span>
-
-                    {formatNumber(
-                        getStatistic(dataType, 'confirmed', trendData)
-                    )}
-                </li>
-                <li>
-                    <span className="label recovered">
-                        {t('Recovered')}
-                        {asterisk}:
-                    </span>
-                    {isPrediction
-                        ? 'Unavailable'
-                        : formatNumber(
-                              getStatistic(dataType, 'recoveries', trendData)
-                          )}
-                    &nbsp;
-                </li>
-                <li>
-                    <span className="label deaths">
-                        {t('Deaths')}
-                        {asterisk}
-                    </span>
-
-                    {!isPrediction
-                        ? 'Unavailable'
-                        : formatNumber(
-                              getStatistic(dataType, 'deaths', trendData)
-                          )}
-                </li>
-                {isPer100k && (
+                {isPrediction && countryProperties.iso3 === 'TZA' ? (
                     <li>
-                        <span className="per100k">
-                            {' '}
-                            <sup>*</sup>per 100K pop.
-                        </span>
+                        <span className="label confirmed">Prediction</span>
+                        Predictions for Tanzania are unreliable because of lack
+                        of data
                     </li>
+                ) : (
+                    <>
+                        <li>
+                            <span className="label confirmed">
+                                {isPrediction
+                                    ? t('Predicted Cases')
+                                    : t('Confirmed')}
+                                {asterisk}:
+                            </span>
+
+                            {formatNumber(
+                                getStatistic(dataType, 'confirmed', trendData)
+                            )}
+                        </li>
+                        <li>
+                            <span className="label recovered">
+                                {t('Recovered')}
+                                {asterisk}:
+                            </span>
+                            {isPrediction
+                                ? 'Unavailable'
+                                : formatNumber(
+                                      getStatistic(
+                                          dataType,
+                                          'recoveries',
+                                          trendData
+                                      )
+                                  )}
+                            &nbsp;
+                        </li>
+                        <li>
+                            <span className="label deaths">
+                                {t('Deaths')}
+                                {asterisk}
+                            </span>
+
+                            {!isPrediction
+                                ? 'Unavailable'
+                                : formatNumber(
+                                      getStatistic(
+                                          dataType,
+                                          'deaths',
+                                          trendData
+                                      )
+                                  )}
+                        </li>
+                        {isPer100k && (
+                            <li>
+                                <span className="per100k">
+                                    {' '}
+                                    <sup>*</sup>per 100K pop.
+                                </span>
+                            </li>
+                        )}
+                    </>
                 )}
             </ToolTipStats>
         </ToolTipContainer>
