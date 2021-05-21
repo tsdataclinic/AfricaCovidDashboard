@@ -16,6 +16,7 @@ const countryMapping: CountryMapping = {
     'Sao Tome & Principe': 'São Tomé and Príncipe',
     'Sao Tome and Principe': 'São Tomé and Príncipe',
     'Tanzania, United Republic of': 'Tanzania',
+    'The Gambia': 'Gambia',
 };
 
 export const countryNameMapping = (name: string) => {
