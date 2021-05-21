@@ -1,9 +1,14 @@
 import { useQuery } from 'react-query';
+import { countryNameMapping } from '../utils';
 
 const getAvailableCountries = async () => {
     const request = await fetch('/api/country/');
     const result = await request.json();
-    return result;
+
+    return result.map((country: any) => ({
+        ...country,
+        name: countryNameMapping(country.name),
+    }));
 };
 
 export function useAvailableCountries() {

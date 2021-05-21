@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { getCountryName } from '../../utils/i18nUtils';
 import QueryParamsContext from '../../contexts/QueryParamsContext';
 import { GREEK_BLUE, WHITE, HIGHLIGHT_BLUE } from '../../colors';
+import { countryNameMapping } from '../../utils';
 
 const REGION_OPTIONS = [
     { value: 'Region', label: 'By Region' },
@@ -102,7 +103,7 @@ const CountryMenu = ({ handleToggle, selectedToggle }: CountryMenuProps) => {
                                   key={country.name}
                                   value={country.iso3}
                               >
-                                  {getCountryName(country.iso3)}
+                                  {countryNameMapping(country.name)}
                               </Select.Option>
                           ))}
                 </ListSelect>
