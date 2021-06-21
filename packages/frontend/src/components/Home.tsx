@@ -3,6 +3,8 @@ import { AfricaMap } from './africa-map/AfricaMap2';
 import { Alert, Col, Row } from 'antd';
 import {
     CountryTrend,
+    CountryTrends,
+    TrendMap,
     useAfricaTrends,
     useAllCountryTrends,
 } from '../hooks/useCountryTrends';
@@ -52,47 +54,64 @@ const Home = () => {
     } = useAfricaTrends();
     //Calculates an absolute range across all time periopds for the mapo
 
-    const dailyRange = useGlobalRanges(allCountryTrends, per100K, isLog);
+    const dailyRange = useGlobalRanges(
+        allCountryTrends?.rolling7Days,
+        per100K,
+        isLog
+    );
 
-    const currentTrends = useMemo(() => {
-        if ((isRegion && !region) || (!isRegion && !country)) {
-            // If no country or region is selected lets show all the stats
-            return africaTrends || [];
-        }
+    const currentTrends = useMemo(
+        () =>
+            getTrendDate(
+                false,
+                isRegion,
+                region,
+                country,
+                africaTrends,
+                allRegionTrends,
+                allCountryTrends,
+                allRegionTrendsError,
+                allTrendsError
+            ),
+        [
+            allCountryTrends,
+            allTrendsError,
+            country,
+            region,
+            allRegionTrends,
+            isRegion,
+            africaTrends,
+            allRegionTrendsError,
+        ]
+    );
 
-        // Region data
-        if (isRegion) {
-            if (
-                allRegionTrendsError ||
-                !allRegionTrends ||
-                !(region in allRegionTrends)
-            ) {
-                return [];
-            }
+    const rawTrends = useMemo(
+        () =>
+            getTrendDate(
+                true,
+                isRegion,
+                region,
+                country,
+                africaTrends,
+                allRegionTrends,
+                allCountryTrends,
+                allRegionTrendsError,
+                allTrendsError
+            ),
+        [
+            allCountryTrends,
+            allTrendsError,
+            country,
+            region,
+            allRegionTrends,
+            isRegion,
+            africaTrends,
+            allRegionTrendsError,
+        ]
+    );
 
-            return allRegionTrends[region];
-        }
-
-        // Country data
-        if (
-            allTrendsError ||
-            !allCountryTrends ||
-            !(country in allCountryTrends)
-        ) {
-            return [];
-        }
-        return allCountryTrends[country];
-    }, [
-        allCountryTrends,
-        allTrendsError,
-        country,
-        region,
-        allRegionTrends,
-        isRegion,
-        africaTrends,
-        allRegionTrendsError,
-    ]);
     const { timeseries, statsLoading } = useTrendsScale(currentTrends);
+    const { timeseries: rawTimeseries } = useTrendsScale(rawTrends);
 
     const dates = useMemo(
         () =>
@@ -124,23 +143,24 @@ const Home = () => {
         [updateQuery]
     );
 
-    const selectedStatsByCountry: Dictionary<CountryTrend> | undefined =
-        useMemo(() => {
-            if (!allCountryTrends || !selectedDate) {
-                return undefined;
-            }
+    const selectedStatsByCountry:
+        | Dictionary<CountryTrend>
+        | undefined = useMemo(() => {
+        if (!allCountryTrends || !selectedDate) {
+            return undefined;
+        }
 
-            const dictionary: Dictionary<CountryTrend> = {};
-            Object.keys(allCountryTrends).forEach((country) => {
-                const trend = allCountryTrends[country].find((t) =>
-                    selectedDate.isSame(t.date, 'day')
-                );
-                if (trend) {
-                    dictionary[country] = trend;
-                }
-            });
-            return dictionary;
-        }, [selectedDate, allCountryTrends]);
+        const dictionary: Dictionary<CountryTrend> = {};
+        Object.keys(allCountryTrends?.rolling7Days).forEach((country) => {
+            const trend = allCountryTrends?.rolling7Days[country]?.find((t) =>
+                selectedDate.isSame(t.date, 'day')
+            );
+            if (trend) {
+                dictionary[country] = trend;
+            }
+        });
+        return dictionary;
+    }, [selectedDate, allCountryTrends]);
 
     const selectedStats = useMemo(
         () => timeseries.find((item) => selectedDate?.isSame(item.date, 'day')),
@@ -217,6 +237,7 @@ const Home = () => {
                     <Col xs={24} xl={12}>
                         <Trend
                             trendData={timeseries}
+                            rawDailyTimeseries={rawTimeseries}
                             dates={dates}
                             isLog={isLog}
                             dataType={dataType}
@@ -244,3 +265,51 @@ const StyledAlert = styled(Alert)`
 `;
 
 export default Home;
+
+const getTrendDate = (
+    isRawDaily: boolean,
+    isRegion: boolean,
+    region: string | undefined,
+    country: string | undefined,
+    africaTrends: TrendMap<CountryTrend[]> | undefined,
+    allRegionTrends: TrendMap<CountryTrends> | undefined,
+    allCountryTrends: TrendMap<CountryTrends> | undefined,
+    allRegionTrendsError: Error | null,
+    allTrendsError: Error | null
+): CountryTrend[] => {
+    if ((isRegion && !region) || (!isRegion && !country)) {
+        // If no country or region is selected lets show all the stats
+        return isRawDaily
+            ? africaTrends?.rawDaily ?? []
+            : africaTrends?.rolling7Days ?? [];
+    }
+
+    // Region data
+    if (isRegion) {
+        if (
+            allRegionTrendsError ||
+            !allRegionTrends ||
+            !region ||
+            !(region in allRegionTrends)
+        ) {
+            return [];
+        }
+
+        return isRawDaily
+            ? allRegionTrends.rawDaily[region] ?? []
+            : allRegionTrends.rolling7Days[region] ?? [];
+    }
+
+    // Country data
+    if (
+        allTrendsError ||
+        !allCountryTrends?.rolling7Days ||
+        !country ||
+        !(country in allCountryTrends.rolling7Days)
+    ) {
+        return [];
+    }
+    return isRawDaily
+        ? allCountryTrends.rawDaily[country] ?? []
+        : allCountryTrends.rolling7Days[country] ?? [];
+};

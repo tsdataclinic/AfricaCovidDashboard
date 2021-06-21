@@ -37,11 +37,16 @@ export class CountryController {
   }
 
   @Get('/region/trends')
+  @ApiQuery({
+    name: 'rolling',
+    description: 'Rolling days for daily data',
+    example: 7,
+  })
   @ApiOkResponse({
     description: 'Trends for all regions',
   })
-  regionTrends() {
-    return this.countryService.getRegionTrends();
+  regionTrends(@Query('rolling') rollingDays?: number) {
+    return this.countryService.getRegionTrends(rollingDays);
   }
 
   @Get('/region/stats')
@@ -67,6 +72,11 @@ export class CountryController {
     example: '2020-10-04',
     required: false,
   })
+  @ApiQuery({
+    name: 'rolling',
+    description: 'Rolling days for daily data',
+    example: 7,
+  })
   @ApiOkResponse({
     description: 'Time series data array of trend data for a country',
     type: TrendDatum,
@@ -75,8 +85,9 @@ export class CountryController {
   continentTrends(
     @Query('startDate') startDate?: Date,
     @Query('endDate') endDate?: Date,
+    @Query('rolling') rollingDays?: number,
   ) {
-    return this.countryService.getContinentTrends();
+    return this.countryService.getContinentTrends(rollingDays);
   }
 
   @Get('/:countryISO/trends')
@@ -99,6 +110,11 @@ export class CountryController {
     example: '2020-10-04',
     required: false,
   })
+  @ApiQuery({
+    name: 'rolling',
+    description: 'Rolling days for daily data',
+    example: 7,
+  })
   @ApiOkResponse({
     description: 'Time series data array of trend data for a country',
     type: TrendDatum,
@@ -108,11 +124,13 @@ export class CountryController {
     @Param('countryISO') countryISO: string,
     @Query('startDate') startDate?: Date,
     @Query('endDate') endDate?: Date,
+    @Query('rolling') rollingDays?: number,
   ): TrendDatum[] {
     return this.countryService.getTrendForCountryISO(
       countryISO,
       startDate,
       endDate,
+      rollingDays,
     );
   }
 
@@ -154,10 +172,15 @@ export class CountryController {
     return this.countryService.getAllStats();
   }
   @Get('/trends')
+  @ApiQuery({
+    name: 'rolling',
+    description: 'Rolling days for daily data',
+    example: 7,
+  })
   @ApiOkResponse({
     description: 'JSON dict of the trends for each country',
   })
-  getAllTrends(): CountryTrendDict {
-    return this.countryService.getAllTrends();
+  getAllTrends(@Query('rolling') rollingDays?: number): CountryTrendDict {
+    return this.countryService.getAllTrends(rollingDays);
   }
 }

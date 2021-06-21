@@ -110,7 +110,7 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
             initialViewState={INITIAL_VIEW_STATE}
             onHover={(info: any) => {}}
             onClick={(info: any) => {
-                onCountrySelect(
+                onCountrySelect?.(
                     info.object ? info.object.properties.iso3 : null
                 );
             }}
@@ -125,22 +125,16 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
             />
             {hoverInfo && hoverInfo.object && (
                 <ToolTip
-                    county={hoverInfo.object.properties.iso3}
                     countryProperties={hoverInfo.object.properties}
                     isPer100k={per100k}
                     isPrediction={isPrediction}
                     dataType={dataType}
                     x={hoverInfo.x}
                     y={hoverInfo.y}
-                    trendData={scaledData[hoverInfo.object.properties.iso3]}
+                    trendData={scaledData?.[hoverInfo.object.properties.iso3]}
                 />
             )}
-            <Legend
-                header={legendHeader}
-                colorScale={colorScale}
-                colors={colors}
-                bins={bins}
-            />
+            <Legend header={legendHeader} colors={colors} bins={bins} />
         </DeckGL>
     );
 };

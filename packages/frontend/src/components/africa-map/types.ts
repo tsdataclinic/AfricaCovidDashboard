@@ -63,4 +63,6 @@ export interface CountryProperties {
     tiny: number;
     homepart: number;
     region: string;
+    iso3: string;
+    COUNTRY_NA: string;
 }

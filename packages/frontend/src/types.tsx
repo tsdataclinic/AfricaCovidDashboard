@@ -12,6 +12,9 @@ export interface CountryTrendWithDelta extends CountryTrend {
     delta_new_death?: number;
     delta_new_recoveries?: number;
     delta_daily_prediction?: number;
+    raw_new_case?: number;
+    raw_new_death?: number;
+    raw_new_recoveries?: number;
 }
 
 export interface SearchQuery {

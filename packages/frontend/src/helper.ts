@@ -25,10 +25,25 @@ export const getStatistic = (
     type: DataType,
     category: Category,
     data?: CountryTrendWithDelta,
-    isDelta?: boolean
+    isDelta?: boolean,
+    isRaw?: boolean
 ) => {
     if (!data) {
         return 0;
+    }
+
+    if (isRaw) {
+        if (category === 'confirmed') {
+            return safeGet(data.raw_new_case);
+        }
+
+        if (category === 'recoveries') {
+            return safeGet(data.raw_new_recoveries);
+        }
+
+        if (category === 'deaths') {
+            return safeGet(data.raw_new_death);
+        }
     }
 
     const predictedDaily = safeGet(

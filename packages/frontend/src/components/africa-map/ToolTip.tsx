@@ -12,11 +12,9 @@ import StatsContext from '../../contexts/StatsContext';
 import { countryNameMapping } from '../../utils';
 
 interface ToolTipProps {
-    country: string;
     countryProperties: CountryProperties;
     dataType: DataType;
-    statsMap: StatsMap;
-    trendData: CountryTrend;
+    trendData?: CountryTrend;
     isPer100k?: boolean;
     isPrediction?: boolean;
     x: number;
@@ -69,10 +67,8 @@ const ToolTipStats = styled.ul`
 `;
 
 export const ToolTip: React.FC<ToolTipProps> = ({
-    country,
     countryProperties,
     dataType,
-    statsMap,
     trendData,
     isPer100k,
     isPrediction,
@@ -83,12 +79,12 @@ export const ToolTip: React.FC<ToolTipProps> = ({
     const { allStats } = useContext(StatsContext);
 
     const regionPop =
-        allStats[
+        allStats?.[
             countryProperties.region === 'Middle Africa'
                 ? 'Central Africa'
                 : countryProperties.region
         ];
-    const countryStat = allStats[countryProperties.iso3];
+    const countryStat = allStats?.[countryProperties.iso3];
 
     const asterisk = isPer100k ? <sup>*</sup> : null;
 

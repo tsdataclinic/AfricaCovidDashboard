@@ -17,6 +17,9 @@ const useTrendsScale = (trendData: CountryTrend[]) => {
         // Remove duplicated data in same day;
         const mapper: TimeseriesMapper = {};
         const cleanData: CountryTrend[] = [];
+        if (!trendData) {
+            return [];
+        }
         let prev = trendData[0];
         trendData.forEach((item) => {
             const key = moment(item.date).startOf('day').valueOf();
