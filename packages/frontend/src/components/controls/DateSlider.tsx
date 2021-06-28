@@ -8,6 +8,7 @@ import React, {
 import { PauseCircleFilled, PlayCircleFilled } from '@ant-design/icons';
 import styled from 'styled-components';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
+import { usePlaybackControlls } from '../../hooks/usePlaybackControlls';
 import * as d3 from 'd3';
 import moment, { Moment } from 'moment';
 import { formatDay, formatMonth } from '../../utils/trendUtils';
@@ -35,7 +36,6 @@ const DateSlider = ({
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const dimensions = useResizeObserver(wrapperRef) || { width: 0, height: 0 };
     const sliderRef = useRef<SVGSVGElement | null>();
-    const timer = useRef<number>();
     const startDate = dates[0] || new Date();
 
     const endDate = dates[dates.length - 1] || new Date();
@@ -210,38 +210,7 @@ const DateSlider = ({
         }
     }, [xAxis, dates, onUpdate, selectedDate]);
 
-    useEffect(() => {
-        return () => clearInterval(timer.current);
-    }, []);
-
-    const handleClick = useCallback(
-        (moving: boolean) => {
-            const step = () => {
-                if (!selectedDate || !dates || !dates[0]) {
-                    return;
-                }
-                const lastDate = dates[dates.length - 1];
-                const nextDate = selectedDate.add(1, 'day');
-                if (nextDate.isAfter(lastDate)) {
-                    // Stop play when reach end
-                    setIsMoving(false);
-                    if (timer.current) {
-                        clearInterval(timer.current);
-                    }
-                    onUpdate(moment(dates[0]));
-                } else {
-                    onUpdate(nextDate);
-                }
-            };
-
-            setIsMoving(moving);
-            clearInterval(timer.current);
-            if (moving) {
-                timer.current = setInterval(step, PLAY_SPEED);
-            }
-        },
-        [dates, onUpdate, selectedDate]
-    );
+    const { togglePlaying, playing } = usePlaybackControlls();
 
     return (
         <Wrapper ref={wrapperRef}>
@@ -258,10 +227,10 @@ const DateSlider = ({
                 </g>
             </svg>
             <ControlButton>
-                {isMoving ? (
-                    <PauseCircleFilled onClick={() => handleClick(false)} />
+                {playing ? (
+                    <PauseCircleFilled onClick={togglePlaying} />
                 ) : (
-                    <PlayCircleFilled onClick={() => handleClick(true)} />
+                    <PlayCircleFilled onClick={togglePlaying} />
                 )}
             </ControlButton>
         </Wrapper>
