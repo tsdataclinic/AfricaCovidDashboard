@@ -46,7 +46,7 @@ export const useColorScale = (
     category: Category,
     per100k: boolean,
     isLog: boolean,
-    dailyRange: GlobalRange
+    dailyRange: GlobalRange | undefined
 ) => {
     let { scale, bins, colors } = useMemo(() => {
         if (dailyRange) {

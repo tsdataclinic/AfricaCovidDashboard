@@ -1,22 +1,18 @@
 import { useQuery } from 'react-query';
-import { CountryTrends } from './useCountryTrends';
+import { CountryTrends, getTrendMap, TrendMap } from './useCountryTrends';
 
 const getAllRegionTrends = async (_: any) => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    const promise = fetch(`/api/country/region/trends`, { signal });
-    // Cancel the request if React Query calls the `promise.cancel` method
-    (promise as any).cancel = () => controller.abort();
-
-    const request = await promise;
-    const result = await request.json();
-    return result;
+    const path = '/api/country/region/trends';
+    return getTrendMap(path);
 };
 
 export function useAllRegionTrends() {
-    return useQuery<CountryTrends>(['allRegionTrend'], getAllRegionTrends, {
-        initialData: {},
-        initialStale: true,
-    });
+    return useQuery<TrendMap<CountryTrends>, Error>(
+        ['allRegionTrend'],
+        getAllRegionTrends,
+        {
+            initialData: { rolling7Days: {}, rawDaily: {} },
+            initialStale: true,
+        }
+    );
 }

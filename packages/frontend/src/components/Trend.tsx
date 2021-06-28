@@ -7,6 +7,7 @@ import { Moment } from 'moment';
 
 interface TrendProps {
     trendData: CountryTrend[];
+    rawDailyTimeseries: CountryTrend[];
     statsLoading: boolean;
     dataType: DataType;
     dates: Date[];
@@ -18,6 +19,7 @@ interface TrendProps {
 
 const Trend = ({
     trendData,
+    rawDailyTimeseries,
     dates,
     statsLoading,
     dataType,
@@ -31,6 +33,7 @@ const Trend = ({
             <Skeleton active loading={statsLoading}>
                 <Timeseries
                     timeseries={trendData}
+                    rawDailyTimeseries={rawDailyTimeseries}
                     dataType={dataType}
                     dates={dates}
                     isLog={isLog}

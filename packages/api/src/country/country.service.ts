@@ -14,6 +14,7 @@ import { getDataFromJHTS } from '../utils/JohnHopkins';
 import * as fs from 'fs';
 import { getCountryISO, getCountryDetailsForISO } from 'src/utils/countryISO';
 import { ModelService } from '../model/model.service';
+import { rollingDailyData } from 'src/utils/rollingUtils';
 
 @Injectable()
 export class CountryService {
@@ -47,7 +48,7 @@ export class CountryService {
       const readStream = fs.createReadStream('data/filtereddata.csv', 'utf8');
       readStream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
-        .on('data', (row) => {
+        .on('data', row => {
           // Get the ISO details of the country so we can link things up
           // using the iso3 number
           const countryDetails = getCountryISO(
@@ -68,7 +69,7 @@ export class CountryService {
         .on('end', () => {
           resolve(data);
         })
-        .on('error', (err) => {
+        .on('error', err => {
           reject(err);
         });
     });
@@ -90,7 +91,7 @@ export class CountryService {
           if (lineNo > 3) {
             let pops = row.slice(3, row.length - 1);
             pops.reverse();
-            let pop = pops.find((f) => f);
+            let pop = pops.find(f => f);
             row[row.length - 3];
             if (typeof pop == 'string') {
               pop = parseInt(pop);
@@ -102,7 +103,7 @@ export class CountryService {
         .on('end', () => {
           resolve(result);
         })
-        .on('error', (err) => {
+        .on('error', err => {
           reject(err);
         });
     });
@@ -112,7 +113,7 @@ export class CountryService {
   async loadCountryStats() {
     const modelStats = await this.loadCountryModelStats();
     const population = await this.loadPopulationStats();
-    return modelStats.map((ms) => ({
+    return modelStats.map(ms => ({
       ...ms,
       population: population[ms.iso3],
     }));
@@ -125,7 +126,7 @@ export class CountryService {
   //** Returns a list of countries for which we have data*/
   getAvailableCountries() {
     return this.countries
-      ? this.countries.filter((c) => c.continent === 'Africa')
+      ? this.countries.filter(c => c.continent === 'Africa')
       : [];
   }
 
@@ -134,29 +135,30 @@ export class CountryService {
     countryISO: string,
     startDate: Date,
     endDate: Date,
+    rollingDays: number = 1,
     includePrediction: boolean = false,
   ): TrendDatum[] {
     if (
       this.allCountryTrends &&
       Object.keys(this.allCountryTrends).includes(countryISO)
     ) {
-      return this.getTrendAndPrediction(countryISO);
+      return this.getTrendAndPrediction(countryISO, rollingDays);
     } else {
       throw new NotFoundException('Count not find country');
     }
   }
 
-  getTrendAndPrediction(iso: string) {
-    const trend = this.allCountryTrends[iso];
+  getTrendAndPrediction(iso: string, rollingDays: number = 1) {
+    const trend = rollingDailyData(this.allCountryTrends[iso], rollingDays);
     const prediction = this.modelService.predictForCountry(iso);
     const combined = [...trend, ...(prediction ? prediction : [])];
     return combined;
   }
 
   //** Returns a TrendDatum of data aggregated to the entire continent */
-  getContinentTrends(): TrendDatum[] {
-    let africaTrends = Object.values(this.getAllTrends());
-    let names = Object.keys(this.getAllTrends());
+  getContinentTrends(rollingDays: number = 1): TrendDatum[] {
+    let africaTrends = Object.values(this.getAllTrends(rollingDays));
+    let names = Object.keys(this.getAllTrends(rollingDays));
 
     return africaTrends.reduce(
       (trend: TrendDatum[], countryTrend: TrendDatum[], index) =>
@@ -174,12 +176,12 @@ export class CountryService {
   }
 
   //** Returns the trends for all countries */
-  getAllTrends(): CountryTrendDict {
+  getAllTrends(rollingDays: number = 1): CountryTrendDict {
     let trendsPlusPredictions: CountryTrendDict = {};
     const predictions = this.modelService.allPredictions();
-    const onlyAfrica = this.countries.filter((c) => c.continent === 'Africa');
+    const onlyAfrica = this.countries.filter(c => c.continent === 'Africa');
 
-    onlyAfrica.forEach((country) => {
+    onlyAfrica.forEach(country => {
       let iso3 = country.iso3;
       let trend = this.allCountryTrends[country.iso3];
       let last_value = trend[trend.length - 1];
@@ -197,10 +199,11 @@ export class CountryService {
       }
 
       trendsPlusPredictions[iso3] = [
-        ...this.allCountryTrends[iso3],
+        ...rollingDailyData(this.allCountryTrends[iso3], rollingDays),
         ...countryPrediction,
       ];
     });
+
     return trendsPlusPredictions;
   }
 
@@ -216,11 +219,11 @@ export class CountryService {
   getRegionStats(): RegionStatsDict {
     const regions = this.getRegions();
     let result: RegionStatsDict = {};
-    regions.forEach((region) => {
+    regions.forEach(region => {
       const regionStats = this.countries
-        .filter((c) => c.region === region)
-        .map((c) => this.allCountryStats.find((s) => s.iso3 == c.iso3))
-        .filter((c) => c && c.population);
+        .filter(c => c.region === region)
+        .map(c => this.allCountryStats.find(s => s.iso3 == c.iso3))
+        .filter(c => c && c.population);
       const population = regionStats.reduce(
         (acc, stats) => acc + stats.population,
         0,
@@ -233,7 +236,7 @@ export class CountryService {
   //** Returns a Country Stats for the requested country*/
   getStatsForCountryISO(countryISO: string): CountryStats {
     if (this.allCountryStats) {
-      return this.allCountryStats.find((cs) => cs.iso3 === countryISO);
+      return this.allCountryStats.find(cs => cs.iso3 === countryISO);
     } else {
       throw new NotFoundException('Country not found');
     }
@@ -243,23 +246,21 @@ export class CountryService {
   getRegions(): string[] {
     return Array.from(
       new Set(
-        this.countries
-          .filter((c) => c.continent === 'Africa')
-          .map((c) => c.region),
+        this.countries.filter(c => c.continent === 'Africa').map(c => c.region),
       ),
     );
   }
 
-  getRegionTrends(): CountryTrendDict {
+  getRegionTrends(rollingDays: number = 1): CountryTrendDict {
     const regions = this.getRegions();
     let result: CountryTrendDict = {};
-    regions.forEach((region) => {
+    regions.forEach(region => {
       const regionISOS = this.countries
-        .filter((c) => c.region === region)
-        .map((c) => c.iso3);
+        .filter(c => c.region === region)
+        .map(c => c.iso3);
       const trends = regionISOS
-        .filter((iso) => iso !== 'TZA')
-        .map((iso) => this.getTrendAndPrediction(iso));
+        .filter(iso => iso !== 'TZA')
+        .map(iso => this.getTrendAndPrediction(iso, rollingDays));
       let region_trend = trends.reduce(
         (trend: TrendDatum[], countryTrend: TrendDatum[], index) =>
           trend.length == 0

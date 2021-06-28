@@ -43,6 +43,7 @@ const dayChangeMessage =
 
 interface TimeseriesProps {
     timeseries: CountryTrend[];
+    rawDailyTimeseries: CountryTrend[];
     dates: Date[];
     dataType: DataType;
     isLog: boolean;
@@ -53,6 +54,7 @@ interface TimeseriesProps {
 
 const Timeseries = ({
     timeseries,
+    rawDailyTimeseries,
     dates,
     dataType,
     isLog,
@@ -80,8 +82,14 @@ const Timeseries = ({
             const key = moment(item.date).startOf('day').valueOf();
             mapper[key] = item;
         });
+        rawDailyTimeseries.forEach((item) => {
+            const key = moment(item.date).startOf('day').valueOf();
+            mapper[key].raw_new_case = item.new_case;
+            mapper[key].raw_new_death = item.new_deaths;
+            mapper[key].raw_new_recoveries = item.new_recoveries;
+        });
         return mapper;
-    }, [timeseries]);
+    }, [timeseries, rawDailyTimeseries]);
 
     const stats = useMemo(
         () =>
@@ -365,74 +373,6 @@ const Timeseries = ({
                     .attr('y1', yScale(0))
                     .attr('y2', yScale(0))
                     .remove();
-
-                /* Path */
-                svg.select('.data')
-                    .append('path')
-                    .datum(
-                        category === 'confirmed'
-                            ? timeseries
-                            : unPredictedTimeseries
-                    )
-                    .attr('fill', 'none')
-                    .attr('class', 'trend')
-                    .attr('stroke', color)
-                    .attr('stroke-width', 1.5)
-                    .attr(
-                        'd',
-                        line()
-                            .x(function (d: any) {
-                                return xScale(convertDateStrToDate(d.date));
-                            })
-                            .y(function (d: any) {
-                                return yScale(
-                                    getStatistic(dataType, category, d)
-                                );
-                            })
-                    );
-                if (!dates.length) {
-                    return;
-                }
-
-                if (!predictedTimeseries.length || category !== 'confirmed') {
-                    return;
-                }
-
-                svg.append('path')
-                    .datum(predictedTimeseries)
-                    .attr('class', 'confirmed-prediction-error')
-                    .attr('fill', '#cce5df')
-                    .attr('stroke', 'none')
-                    .attr(
-                        'd',
-                        area()
-                            .x(function (d: any) {
-                                return xScale(convertDateStrToDate(d.date));
-                            })
-                            .y0(function (d: any) {
-                                return yScale(d.confirmed_prediction_upper);
-                            })
-                            .y1(function (d: any) {
-                                return yScale(d.confirmed_prediction_lower);
-                            })
-                    );
-                svg.append('path')
-                    .datum(predictedTimeseries)
-                    .attr('fill', 'none')
-                    .attr('class', 'confirmed-prediction')
-                    .attr('stroke', 'steelblue')
-                    .attr('stroke-dasharray', 1)
-                    .attr('stroke-width', 1.5)
-                    .attr(
-                        'd',
-                        line()
-                            .x(function (d: any) {
-                                return xScale(convertDateStrToDate(d.date));
-                            })
-                            .y(function (d: any) {
-                                return yScale(d.confirmed_prediction);
-                            })
-                    );
             } else {
                 /* DAILY TRENDS */
 
@@ -440,8 +380,8 @@ const Timeseries = ({
                     .selectAll('.stem')
                     .data(
                         category === 'confirmed'
-                            ? timeseries
-                            : unPredictedTimeseries
+                            ? rawDailyTimeseries
+                            : rawDailyTimeseries.filter((t) => !t.isPrediction)
                     )
                     .join((enter: any) =>
                         enter
@@ -476,6 +416,73 @@ const Timeseries = ({
                         data.isPrediction ? 0.5 : 1
                     );
             }
+
+            // Add path
+            /* Path */
+            svg.select('.data')
+                .append('path')
+                .datum(
+                    category === 'confirmed'
+                        ? timeseries
+                        : unPredictedTimeseries
+                )
+                .attr('fill', 'none')
+                .attr('class', 'trend')
+                .attr('stroke', color)
+                .attr('stroke-width', 1.5)
+                .attr(
+                    'd',
+                    line()
+                        .x(function (d: any) {
+                            return xScale(convertDateStrToDate(d.date));
+                        })
+                        .y(function (d: any) {
+                            return yScale(getStatistic(dataType, category, d));
+                        })
+                );
+            if (!dates.length) {
+                return;
+            }
+
+            if (!predictedTimeseries.length || category !== 'confirmed') {
+                return;
+            }
+
+            svg.append('path')
+                .datum(predictedTimeseries)
+                .attr('class', 'confirmed-prediction-error')
+                .attr('fill', '#cce5df')
+                .attr('stroke', 'none')
+                .attr(
+                    'd',
+                    area()
+                        .x(function (d: any) {
+                            return xScale(convertDateStrToDate(d.date));
+                        })
+                        .y0(function (d: any) {
+                            return yScale(d.confirmed_prediction_upper);
+                        })
+                        .y1(function (d: any) {
+                            return yScale(d.confirmed_prediction_lower);
+                        })
+                );
+            svg.append('path')
+                .datum(predictedTimeseries)
+                .attr('fill', 'none')
+                .attr('class', 'confirmed-prediction')
+                .attr('stroke', 'steelblue')
+                .attr('stroke-dasharray', 1)
+                .attr('stroke-width', 1.5)
+                .attr(
+                    'd',
+                    line()
+                        .x(function (d: any) {
+                            return xScale(convertDateStrToDate(d.date));
+                        })
+                        .y(function (d: any) {
+                            return yScale(d.confirmed_prediction);
+                        })
+                );
         });
     }, [
         dataType,
@@ -577,7 +584,6 @@ const Timeseries = ({
                                                 ` (Forecast metrics are not available for "${label}")`}
                                         </div>
                                     </h5>
-
                                     <HighlightNumber>
                                         <Statistic
                                             value={
@@ -612,6 +618,29 @@ const Timeseries = ({
                                             />
                                         </Info>
                                     </Delta>
+                                    {dataType === 'daily' && (
+                                        <Delta className="stem">
+                                            <span>
+                                                Raw Daily:{' '}
+                                                <strong>
+                                                    {getStatistic(
+                                                        dataType,
+                                                        category,
+                                                        stats,
+                                                        false,
+                                                        true
+                                                    )}
+                                                </strong>
+                                            </span>
+                                            <Info>
+                                                <InfoTooltip
+                                                    message="Bar charts using raw daily data. Other data in dashboard using 7 days rolling average."
+                                                    top={0}
+                                                    right={0}
+                                                />
+                                            </Info>
+                                        </Delta>
+                                    )}
                                 </div>
                             )}
                             <svg
@@ -836,6 +865,9 @@ const Wrapper = styled.div`
         height: 6px;
         display: inline-block;
         transform: translate(-40%, 0%) rotate(45deg);
+    }
+    .stem {
+        opacity: 0.6;
     }
 `;
 

@@ -1,4 +1,3 @@
-import { numericToAlpha3 } from 'i18n-iso-countries';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -38,7 +37,7 @@ const ColorBox = styled.div<{ color: string }>`
     margin-right: 10px;
 `;
 interface LegendProps {
-    colors: string[];
+    colors: number[][];
     bins: number[];
     header: string;
 }

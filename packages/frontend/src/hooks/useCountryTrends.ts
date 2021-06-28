@@ -1,4 +1,5 @@
 import { useQuery } from 'react-query';
+import { DEFAULT_ROLLING_DAYS } from '../constants';
 
 export interface CountryTrend {
     date: string;
@@ -18,49 +19,60 @@ export interface CountryTrend {
     daily_prediction_upper?: number;
 }
 
+export interface TrendMap<T> {
+    rolling7Days: T;
+    rawDaily: T;
+}
+
 export type CountryTrends = { [k in string]: CountryTrend[] };
+
+export const getTrendMap = async (path: string) => {
+    const controller = new AbortController();
+    const { signal } = controller;
+    const rolling = fetch(`${path}?rolling=${DEFAULT_ROLLING_DAYS}`, {
+        signal,
+    });
+    const daily = fetch(path, { signal });
+
+    const requests = await Promise.all([rolling, daily]);
+
+    const [rolling7Days, rawDaily] = await Promise.all([
+        requests[0].json(),
+        requests[1].json(),
+    ]);
+
+    return { rolling7Days, rawDaily };
+};
 
 const getTrendForCountry = async (_: any, country: string | undefined) => {
     if (country === undefined) {
-        return [];
+        return { rolling7Days: [], rawDaily: [] };
     }
-    const controller = new AbortController();
-    const { signal } = controller;
-    const promise = fetch(`/api/country/${country}/trends`, { signal });
-    // Cancel the request if React Query calls the `promise.cancel` method
-    (promise as any).cancel = () => controller.abort();
-
-    const request = await promise;
-    const result = await request.json();
-    return result;
+    const path = `/api/country/${country}/trends`;
+    return getTrendMap(path);
 };
 
 export function useCountryTrends(country: string | undefined) {
-    return useQuery<CountryTrend[]>(
+    return useQuery<TrendMap<CountryTrend[]>>(
         ['countryTrend', country],
         getTrendForCountry,
         {
-            initialData: [],
+            initialData: { rolling7Days: [], rawDaily: [] },
             initialStale: true,
         }
     );
 }
 
 const getAllCountryTrends = async (_: any) => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    const promise = fetch(`/api/country/trends`, { signal });
-    // Cancel the request if React Query calls the `promise.cancel` method
-    (promise as any).cancel = () => controller.abort();
-
-    const request = await promise;
-    const result = await request.json();
-    return result;
+    const path = '/api/country/trends';
+    return getTrendMap(path);
 };
 
 export function useAllCountryTrends() {
-    return useQuery<CountryTrends>(['allCountryTrend'], getAllCountryTrends);
+    return useQuery<TrendMap<CountryTrends>, Error>(
+        ['allCountryTrend'],
+        getAllCountryTrends
+    );
 }
 
 export function useAfricaTrends() {
