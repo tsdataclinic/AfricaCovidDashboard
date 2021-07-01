@@ -19,9 +19,7 @@ if( length(previous_models) == 0){
                         lnhhsn + lnihr2018 + lnsqualty + (Exposure|Country_Region),
                       data=modeldata, chains=1, iter=1000, warmup=500)
   saveRDS(model5,model5name)
-}
-#Load in the previous model and update using the new data 
-else{
+}else{
   most_recent_model <- previous_models[which.max(previous_models)]
   most_recent_data  <- filter(modeldata, Date > most_recent_model[[1]])
 
