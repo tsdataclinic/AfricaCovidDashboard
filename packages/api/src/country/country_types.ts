@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class Country {
   @ApiProperty({
     description: 'The name of the country',
-    examples: ['Spain', 'France', 'Egypt'],
+    //    examples: ['Spain', 'France', 'Egypt'],
     example: 'Egypt',
   })
   name: string;
@@ -27,14 +27,14 @@ export class Country {
 export class RegionStats {
   @ApiProperty({
     description: 'Stats for each region',
-    examples: ['CentralAfrica'],
+    //    examples: ['CentralAfrica'],
     example: 'CentralAfrica',
   })
   name: string;
 
   @ApiProperty({
     description: 'Population of the region',
-    examples: [10000, 20000],
+    //    examples: [10000, 20000],
     example: 1000,
   })
   population: number;
@@ -48,7 +48,7 @@ export class RegionStats {
 export class CountryStats {
   @ApiProperty({
     description: 'The name of the country',
-    examples: ['Spain', 'France', 'Egypt'],
+    //    examples: ['Spain', 'France', 'Egypt'],
     example: 'Egypt',
   })
   name: string;
@@ -70,7 +70,7 @@ export class CountryStats {
 
   @ApiProperty({
     description: 'Population of the country',
-    examples: [10000, 20000, 30000],
+    //    examples: [10000, 20000, 30000],
     example: 10000,
   })
   population: number;
