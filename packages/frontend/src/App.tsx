@@ -5,6 +5,7 @@ import AppLayout from './components/Layout';
 import Routes from './Routes';
 import { ReactQueryDevtools } from 'react-query-devtools';
 import Fathom from 'fathom-react';
+import { QueryParamsProvider } from './contexts/QueryParamsContext';
 
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 
@@ -37,12 +38,14 @@ function App() {
         <Fathom siteId={'NGCVAEYE'}>
             <ReactQueryCacheProvider queryCache={queryCache}>
                 <BrowserRouter>
-                    <Shell>
-                        <Switch>
-                            {children}
-                            <Redirect to="/" />
-                        </Switch>
-                    </Shell>
+                    <QueryParamsProvider>
+                        <Shell>
+                            <Switch>
+                                {children}
+                                <Redirect to="/" />
+                            </Switch>
+                        </Shell>
+                    </QueryParamsProvider>
                 </BrowserRouter>
                 <ReactQueryDevtools initialIsOpen />
             </ReactQueryCacheProvider>

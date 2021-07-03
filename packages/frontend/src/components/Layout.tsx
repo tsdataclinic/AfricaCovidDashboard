@@ -3,8 +3,6 @@ import { Layout, Drawer } from 'antd';
 import styled from 'styled-components';
 import AppMenu from './AppMenu';
 import SmallScreenHeader from './controls/SmallScreenHeader';
-import useQueryParams from '../hooks/useQueryParams';
-import QueryParamsContext from '../contexts/QueryParamsContext';
 import { CountryStatsStore } from '../contexts/StatsContext';
 import { WHITE } from '../colors';
 
@@ -14,17 +12,6 @@ const NAV_SHADOW = '0px 2px 8px rgba(0,0,0,0.15';
 
 const AppLayout: FunctionComponent = ({ children }) => {
     const [showDrawer, setDrawer] = useState(false);
-    const {
-        country,
-        region,
-        isRegion,
-        dataType,
-        category,
-        updateQuery,
-        selectedDate,
-        isLog,
-        per100K,
-    } = useQueryParams();
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider
@@ -47,21 +34,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
             <Main>
                 <SmallScreenHeader openDrawer={() => setDrawer(true)} />
                 <Content style={{ flex: 1, height: '100%' }}>
-                    <QueryParamsContext.Provider
-                        value={{
-                            country,
-                            region,
-                            isRegion,
-                            dataType,
-                            category,
-                            updateQuery,
-                            selectedDate,
-                            isLog,
-                            per100K,
-                        }}
-                    >
-                        <CountryStatsStore>{children}</CountryStatsStore>
-                    </QueryParamsContext.Provider>
+                    <CountryStatsStore>{children}</CountryStatsStore>
                 </Content>
             </Main>
         </Layout>
