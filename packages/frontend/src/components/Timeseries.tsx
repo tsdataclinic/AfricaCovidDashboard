@@ -460,12 +460,21 @@ const Timeseries = ({
                             return xScale(convertDateStrToDate(d.date));
                         })
                         .y0(function (d: any) {
-                            return yScale(d.confirmed_prediction_upper);
+                            return yScale(
+                                dataType === 'cumulative'
+                                    ? d.confirmed_prediction_upper
+                                    : d.daily_prediction_upper
+                            );
                         })
                         .y1(function (d: any) {
-                            return yScale(d.confirmed_prediction_lower);
+                            return yScale(
+                                dataType === 'cumulative'
+                                    ? d.confirmed_prediction_lower
+                                    : d.daily_prediction_lower
+                            );
                         })
                 );
+
             svg.append('path')
                 .datum(predictedTimeseries)
                 .attr('fill', 'none')
@@ -480,7 +489,11 @@ const Timeseries = ({
                             return xScale(convertDateStrToDate(d.date));
                         })
                         .y(function (d: any) {
-                            return yScale(d.confirmed_prediction);
+                            return yScale(
+                                dataType === 'cumulative'
+                                    ? d.confirmed_prediction
+                                    : d.daily_prediction
+                            );
                         })
                 );
         });
@@ -742,6 +755,7 @@ const Wrapper = styled.div`
         }
         path.confirmed-prediction-error {
             stroke: none;
+            opacity: 0.5;
         }
         .tick {
             fill: ${HINT_GREY};

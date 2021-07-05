@@ -4,6 +4,7 @@ import TopControl from './TopControl';
 import TypeControl from './TypeControl';
 import DateSlider, { DateSliderProps } from './DateSlider';
 import DataSettings from './DataSettings';
+import ViewSettings from './ViewSettings';
 import { useUpdated } from '../../hooks/useUpdated';
 
 const SMALL_TOGGLE_KEY = 'small_screen_toggle_key';
@@ -32,9 +33,10 @@ const Controls = ({
                 lastUpdatedDate={data}
             />
             <BottomControl showToggle={showSmallToggle}>
-                <DataSettingWrapper className="hide-large">
+                <SettingWrapper className="hide-large">
                     <DataSettings />
-                </DataSettingWrapper>
+                    <ViewSettings />
+                </SettingWrapper>
 
                 <TypeControl />
                 <DateSliderWrapper>
@@ -68,6 +70,6 @@ const BottomControl = styled.div<{ showToggle: boolean }>`
     }
 `;
 
-const DataSettingWrapper = styled.div`
+const SettingWrapper = styled.div`
     padding: 10px 20px;
 `;

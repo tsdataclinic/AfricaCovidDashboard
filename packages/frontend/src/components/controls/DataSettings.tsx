@@ -49,7 +49,7 @@ export default DataSettings;
 const DataSettingsGroup = styled.div`
     text-align: left;
     font-size: 14px;
-    width: 250px;
+    width: 300px;
     .ant-switch-checked {
         background-color: ${DARK_BLUE};
     }

@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import moment, { Moment } from 'moment';
 
 export type SeachQueryKey =
+    | 'selectedWindow'
     | 'selectedDate'
     | 'dataType'
     | 'category'
@@ -24,6 +25,8 @@ export type SearchQueryValue =
     | boolean
     | null;
 
+export type SelectedWindow = 'FULL' | '6M' | '1M';
+
 interface QueryParamsContextProps {
     country: string;
     region: string;
@@ -34,6 +37,7 @@ interface QueryParamsContextProps {
     updateQuery: (key: SeachQueryKey, value: SearchQueryValue) => void;
     dataType: DataType;
     category: Category;
+    selectedWindow: SelectedWindow;
 }
 
 const DefaultParams: QueryParamsContextProps = {
@@ -46,6 +50,7 @@ const DefaultParams: QueryParamsContextProps = {
     updateQuery: noop,
     dataType: 'daily' as DataType,
     category: 'confirmed' as Category,
+    selectedWindow: 'FULL',
 };
 
 const QueryParamsContext = createContext<QueryParamsContextProps>(
@@ -76,7 +81,6 @@ export const QueryParamsProvider: React.FC = ({ children }) => {
             ...parsed,
         };
 
-        console.log('Fully parsed params are ', parsedPlusDefault);
         setState(parsedPlusDefault);
     }, []);
 
