@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Row, Col } from 'antd';
 import CountryMenu, { CountryMenuProps } from './CountryMenu';
 import DataSettings from './DataSettings';
+import ViewSettings from './ViewSettings';
 import { GREY, WHITE } from '../../colors';
 import moment from 'moment';
 
@@ -16,7 +17,7 @@ const TopControl = ({
     lastUpdatedDate,
 }: TopControlProps) => (
     <TopControlWrapper justify="space-between" align="middle">
-        <Col xs={24} md={12}>
+        <Col xs={24} md={6}>
             <CountryMenu
                 handleToggle={handleToggle}
                 selectedToggle={selectedToggle}
@@ -28,9 +29,10 @@ const TopControl = ({
                 </UpdatedText>
             )}
         </Col>
-        <Col xs={24} md={12} className="hide-small">
+        <Col xs={24} md={18} className="hide-small">
             <Row justify="end">
                 <DataSettings />
+                <ViewSettings />
             </Row>
         </Col>
     </TopControlWrapper>

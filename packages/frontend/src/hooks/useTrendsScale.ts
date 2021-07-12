@@ -11,7 +11,7 @@ const useTrendsScale = (trendData: CountryTrend[]) => {
     const { currentStats: statsData, isLoading: statsLoading } = useContext(
         StatsContext
     );
-    const { per100K } = useContext(QueryParamsContext);
+    const { per100K, selectedWindow } = useContext(QueryParamsContext);
 
     const timeseries = useMemo(() => {
         // Remove duplicated data in same day;
@@ -21,33 +21,44 @@ const useTrendsScale = (trendData: CountryTrend[]) => {
             return [];
         }
         let prev = trendData[0];
+        const monthBack = moment().subtract(1, 'month');
+        const halfYearBack = moment().subtract(6, 'month');
+
         trendData.forEach((item) => {
-            const key = moment(item.date).startOf('day').valueOf();
-            if ((mapper[key] && !item.isPrediction) || !mapper[key]) {
-                mapper[key] = item;
-                // remove 0 data
-                mapper[key].new_recoveries =
-                    item.new_recoveries < 0 ? 0 : item.new_recoveries;
-                // add delta value
-                mapper[key].delta_confirmed =
-                    mapper[key].confirmed - prev.confirmed;
-                mapper[key].delta_death = mapper[key].deaths - prev.deaths;
-                mapper[key].delta_recoveries =
-                    mapper[key].recoveries - prev.recoveries;
-                mapper[key].delta_confirmed_prediction =
-                    (mapper[key].confirmed_prediction || 0) -
-                    (prev.confirmed_prediction || prev.confirmed || 0);
-                mapper[key].delta_new_case =
-                    mapper[key].new_case - prev.new_case;
-                mapper[key].delta_new_death =
-                    mapper[key].new_deaths - prev.new_deaths;
-                mapper[key].delta_new_recoveries =
-                    mapper[key].new_recoveries - prev.new_recoveries;
-                mapper[key].delta_daily_prediction =
-                    (mapper[key].daily_prediction || 0) -
-                    (prev.daily_prediction || prev.new_case || 0);
-                prev = item;
-                cleanData.push(item);
+            const date = moment(item.date);
+            const key = date.startOf('day').valueOf();
+
+            if (
+                selectedWindow === 'FULL' ||
+                (selectedWindow === '1M' && monthBack.isBefore(date, 'day')) ||
+                (selectedWindow === '6M' && halfYearBack.isBefore(date, 'day'))
+            ) {
+                if ((mapper[key] && !item.isPrediction) || !mapper[key]) {
+                    mapper[key] = item;
+                    // remove 0 data
+                    mapper[key].new_recoveries =
+                        item.new_recoveries < 0 ? 0 : item.new_recoveries;
+                    // add delta value
+                    mapper[key].delta_confirmed =
+                        mapper[key].confirmed - prev.confirmed;
+                    mapper[key].delta_death = mapper[key].deaths - prev.deaths;
+                    mapper[key].delta_recoveries =
+                        mapper[key].recoveries - prev.recoveries;
+                    mapper[key].delta_confirmed_prediction =
+                        (mapper[key].confirmed_prediction || 0) -
+                        (prev.confirmed_prediction || prev.confirmed || 0);
+                    mapper[key].delta_new_case =
+                        mapper[key].new_case - prev.new_case;
+                    mapper[key].delta_new_death =
+                        mapper[key].new_deaths - prev.new_deaths;
+                    mapper[key].delta_new_recoveries =
+                        mapper[key].new_recoveries - prev.new_recoveries;
+                    mapper[key].delta_daily_prediction =
+                        (mapper[key].daily_prediction || 0) -
+                        (prev.daily_prediction || prev.new_case || 0);
+                    prev = item;
+                    cleanData.push(item);
+                }
             }
         });
 
@@ -57,7 +68,7 @@ const useTrendsScale = (trendData: CountryTrend[]) => {
         return cleanData.map((item) =>
             scaleTrendDatum(item, multiplier, per100K)
         );
-    }, [trendData, statsData, per100K]);
+    }, [trendData, statsData, per100K, selectedWindow]);
 
     return {
         timeseries,
