@@ -2,16 +2,17 @@ import React from 'react';
 import styled from 'styled-components';
 
 const LegendOuter = styled.div`
-    display: none;
-    position: absolute;
+    display: block;
     @media (min-width: 768px) {
         display: block;
+        position: absolute;
     }
     background-color: rgba(255, 255, 255, 0.9);
     bottom: 10px;
     left: 10px;
     padding: 10px;
     text-align: left;
+    box-sizing: border-box;
 
     ul {
         margin: 0px;
@@ -19,8 +20,17 @@ const LegendOuter = styled.div`
         list-style: none;
         display: flex;
         @media (min-width: 768px) {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            li {
+                padding-right: 20px;
+            }
+        }
+        @media (min-width: 1200px) {
             flex-direction: column;
         }
+
         flex-direction: row;
         li {
             display: flex;
@@ -34,7 +44,10 @@ const ColorBox = styled.div<{ color: string }>`
     height: 10px;
     border: solid black 1px;
     background-color: ${({ color }) => color};
-    margin-right: 10px;
+    margin-right: 2px;
+    @media (min-width: 1200px) {
+        margin-right: 5px;
+    }
 `;
 interface LegendProps {
     colors: number[][];

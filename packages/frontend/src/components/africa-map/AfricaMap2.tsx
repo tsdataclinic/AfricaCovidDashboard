@@ -9,7 +9,14 @@ import { useScaledData } from '../../hooks/useScaledData';
 import { useColorScale } from '../../hooks/useColorScale';
 import { Legend } from './Legend';
 import { ToolTip } from './ToolTip';
+import styled from 'styled-components';
 // import { FillStyleExtension } from '@deck.gl/extensions';
+
+const MapContainer = styled.div`
+    display: relative;
+    width: 100%;
+    height: 100%;
+`;
 
 interface AfrticaMapProps {
     category: Category;
@@ -102,39 +109,43 @@ export const AfricaMap: React.FC<AfrticaMapProps> = ({
         (per100k ? ' per 100k people' : '');
 
     return (
-        <DeckGL
-            width="100%"
-            height="100%"
-            controller={true}
-            layers={layers}
-            initialViewState={INITIAL_VIEW_STATE}
-            onHover={(info: any) => {}}
-            onClick={(info: any) => {
-                onCountrySelect?.(
-                    info.object ? info.object.properties.iso3 : null
-                );
-            }}
-        >
-            <StaticMap
-                mapboxApiAccessToken={
-                    'pk.eyJ1Ijoic3R1YXJ0LWx5bm4iLCJhIjoiY2tua2Zob293MDh6YjJ1cHU3Y2t0cmhlMiJ9.emy07UbMMy0nLUxrfCfTEQ'
-                }
-                width={'100%'}
-                height={'100%'}
-                mapStyle="mapbox://styles/mapbox/light-v10"
-            />
-            {hoverInfo && hoverInfo.object && (
-                <ToolTip
-                    countryProperties={hoverInfo.object.properties}
-                    isPer100k={per100k}
-                    isPrediction={isPrediction}
-                    dataType={dataType}
-                    x={hoverInfo.x}
-                    y={hoverInfo.y}
-                    trendData={scaledData?.[hoverInfo.object.properties.iso3]}
+        <MapContainer>
+            <DeckGL
+                width="100%"
+                height="100%"
+                controller={true}
+                layers={layers}
+                initialViewState={INITIAL_VIEW_STATE}
+                onHover={(info: any) => {}}
+                onClick={(info: any) => {
+                    onCountrySelect?.(
+                        info.object ? info.object.properties.iso3 : null
+                    );
+                }}
+            >
+                <StaticMap
+                    mapboxApiAccessToken={
+                        'pk.eyJ1Ijoic3R1YXJ0LWx5bm4iLCJhIjoiY2tua2Zob293MDh6YjJ1cHU3Y2t0cmhlMiJ9.emy07UbMMy0nLUxrfCfTEQ'
+                    }
+                    width={'100%'}
+                    height={'100%'}
+                    mapStyle="mapbox://styles/mapbox/light-v10"
                 />
-            )}
+                {hoverInfo && hoverInfo.object && (
+                    <ToolTip
+                        countryProperties={hoverInfo.object.properties}
+                        isPer100k={per100k}
+                        isPrediction={isPrediction}
+                        dataType={dataType}
+                        x={hoverInfo.x}
+                        y={hoverInfo.y}
+                        trendData={
+                            scaledData?.[hoverInfo.object.properties.iso3]
+                        }
+                    />
+                )}
+            </DeckGL>
             <Legend header={legendHeader} colors={colors} bins={bins} />
-        </DeckGL>
+        </MapContainer>
     );
 };
