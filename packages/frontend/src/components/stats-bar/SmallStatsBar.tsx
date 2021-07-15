@@ -1,31 +1,26 @@
 import React from 'react';
 import { Select, Card, Skeleton, Statistic } from 'antd';
-import { Category, StatsBarItem } from '../../types';
+import { StatsBarItem } from '../../types';
 import styled from 'styled-components';
-import { CountryTrend } from '../../hooks/useCountryTrends';
 import { useTranslation } from 'react-i18next';
 import { buttonize } from '../../utils/buttonize';
-
-export interface SmallStatsBarProps {
-    category: Category;
-    selectCategory: (category: Category) => void;
-    data?: CountryTrend;
-    loading?: boolean;
-    statsBarItems: StatsBarItem[];
-}
+import { getCategories } from '../../helper';
+import { StatsBarProps } from './StatsBar';
 
 const SmallStatsBar = ({
+    dataType,
     category,
     selectCategory,
     data,
     loading,
-    statsBarItems,
-}: SmallStatsBarProps) => {
+}: StatsBarProps) => {
     const { t } = useTranslation();
+    const items: StatsBarItem[] = getCategories(dataType, data?.isPrediction);
+
     return (
         <Container className="hide-large">
             <Select value={category} onSelect={selectCategory}>
-                {statsBarItems.map((column) => {
+                {items.map((column) => {
                     const value =
                         !data || data[column.value] === undefined
                             ? '--'
@@ -48,7 +43,7 @@ const SmallStatsBar = ({
                                 >
                                     <Statistic
                                         title={t(column.label)}
-                                        value={value}
+                                        value={value ?? '--'}
                                         valueStyle={{
                                             color: column.color,
                                             fontSize: '120%',
@@ -65,7 +60,7 @@ const SmallStatsBar = ({
 };
 
 const Container = styled.div`
-    margin-bottom: 10px;
+    margin: 10px;
     .ant-select {
         width: 100%;
         height: 72px;

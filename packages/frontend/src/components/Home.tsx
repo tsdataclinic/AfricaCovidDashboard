@@ -10,6 +10,7 @@ import {
 } from '../hooks/useCountryTrends';
 import { useAllRegionTrends } from '../hooks/useRegionTrends';
 import StatsBar from './stats-bar/StatsBar';
+import SmallStatsBar from './stats-bar/SmallStatsBar';
 import Trend from './Trend';
 import moment, { Moment } from 'moment';
 import { convertDateStrToDate } from '../helper';
@@ -21,6 +22,7 @@ import useTrendsScale from '../hooks/useTrendsScale';
 import { useGlobalRanges } from '../hooks/useGlobalRanges';
 
 const LAYOUT_GUTTER: [number, number] = [16, 16];
+const MAP_MIN_HEIGHT = 500;
 
 const Home = () => {
     const {
@@ -194,9 +196,17 @@ const Home = () => {
                 onUpdate={onSelectDate}
                 lastNonPredictedDate={lastNonPredictedDate}
             />
+            <SmallStatsBar
+                selectedCountry={country}
+                dataType={dataType}
+                category={category}
+                selectCategory={(category) => updateQuery('category', category)}
+                loading={isLoading}
+                data={selectedStats}
+            />
             <HomeWrapper>
                 <Row style={{ height: '100%' }} gutter={LAYOUT_GUTTER}>
-                    <Col xs={24} xl={12}>
+                    <Col xs={24} xl={12} style={{ minHeight: MAP_MIN_HEIGHT }}>
                         <StatsBar
                             selectedCountry={country}
                             dataType={dataType}

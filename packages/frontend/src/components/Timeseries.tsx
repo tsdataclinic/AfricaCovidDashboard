@@ -745,7 +745,7 @@ const Wrapper = styled.div`
         }
         path.confirmed-prediction-error {
             stroke: none;
-            opacity: 0.5;
+            opacity: 0.6;
         }
         .tick {
             fill: ${HINT_GREY};

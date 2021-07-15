@@ -1,4 +1,3 @@
-import { rgba } from 'polished';
 import { useCallback, useMemo } from 'react';
 import { Category, DataType } from '../types';
 import { CountryTrend } from './useCountryTrends';
