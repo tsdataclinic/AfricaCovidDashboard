@@ -13,7 +13,7 @@ const ViewSettings = () => {
                 View Settings:{' '}
                 <Info>
                     <InfoTooltip
-                        message="Zoom in to the latest timeline."
+                        message="Changing the view selection does not change cumulative counts. Cumulative counts are calculated from the first date of collected data."
                         top={3}
                         right={0}
                     />
