@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card, Skeleton, Statistic } from 'antd';
-import { transparentize } from 'polished';
 import { Category, DataType, StatsBarItem } from '../../types';
 import styled from 'styled-components';
 import { getCategories } from '../../helper';
@@ -8,9 +7,8 @@ import { CountryTrend } from '../../hooks/useCountryTrends';
 import { useTranslation } from 'react-i18next';
 import { HINT_GREY } from '../../colors';
 import { buttonize } from '../../utils/buttonize';
-import SmallStatsBar from './SmallStatsBar';
 
-interface StatsBarProps {
+export interface StatsBarProps {
     dataType: DataType;
     category: Category;
     selectCategory: (category: Category) => void;
@@ -32,13 +30,6 @@ const StatsBar: React.FC<StatsBarProps> = ({
 
     return (
         <>
-            <SmallStatsBar
-                statsBarItems={items}
-                loading={loading}
-                selectCategory={selectCategory}
-                data={data}
-                category={category}
-            />
             <Container className="hide-small">
                 {items.map((column) => {
                     const value =
@@ -69,7 +60,7 @@ const StatsBar: React.FC<StatsBarProps> = ({
                                             column.label ===
                                                 'Confirmed Prediction')
                                             ? 'No predictions'
-                                            : value
+                                            : value ?? '--'
                                     }
                                     valueStyle={{
                                         color: column.color,

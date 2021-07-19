@@ -26,12 +26,11 @@ import {
     TimeseriesMapper,
     CountryTrendWithDelta,
 } from '../types';
-import { BLUE, RED, PURPLE, HINT_GREY, DARK_BLUE } from '../colors';
+import { RED, PURPLE, HINT_GREY, DARK_BLUE, LIGHT_GREY } from '../colors';
 import { CountryTrend } from '../hooks/useCountryTrends';
 import moment, { Moment } from 'moment';
 import { Statistic } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { transparentize } from 'polished';
 import capitalize from 'lodash/capitalize';
 import { formatDay, formatNumber } from '../utils/trendUtils';
 import InfoTooltip from './InfoTooltip';
@@ -140,7 +139,7 @@ const Timeseries = ({
         const barWidth = getBarWidth();
 
         // Buffer space along y-axis
-        const yBufferTop = 1.2;
+        const yBufferTop = 2;
         const yBufferBottom = 1.1;
 
         // Number of x-axis ticks
@@ -220,51 +219,164 @@ const Timeseries = ({
                 .call(yAxis, yScale);
 
             svg.selectAll('.trend').remove();
+            const focus = svg.select('.focus').style('display', 'none');
 
-            const focus = svg
-                .append('g')
-                .attr('class', 'focus')
-                .style('display', 'none');
+            focus.select('.hover-circle').attr('r', 5).attr('fill', color);
 
-            focus
-                .append('circle')
-                .attr('r', 5)
-                .attr('class', 'hover-circle')
-                .attr('fill', color);
-
-            const tooltip = focus.append('g').attr('class', 'focus-tooltip');
+            const tooltip = focus.select('.focus-tooltip');
             tooltip
-                .append('rect')
-                .attr('class', 'tooltip')
+                .select('.tooltip')
                 .attr('width', LINE_TOOLTIP_WIDTH)
-                .attr('height', LINE_TOOLTIP_HEIGHT)
-                .attr('x', 10)
-                .attr('y', -22)
-                .attr('rx', 4)
-                .attr('ry', 4);
+                .attr('height', LINE_TOOLTIP_HEIGHT);
 
             tooltip
-                .append('text')
-                .attr('class', 'tooltip-date')
+                .select('.tooltip-date')
                 .attr('x', LINE_TOOLTIP_PADDING)
                 .attr('y', -2);
 
             const text = tooltip
-                .append('text')
+                .select('.tooltip-change')
                 .attr('x', LINE_TOOLTIP_PADDING)
                 .attr('y', 36)
                 .text('1 Day Change:');
 
-            text.append('tspan').attr('class', 'tooltip-delta');
-
             tooltip
-                .append('text')
-                .attr('class', 'tooltip-value')
+                .select('.tooltip-value')
                 .attr('x', LINE_TOOLTIP_PADDING)
                 .attr('y', 18);
 
-            svg.append('rect')
-                .attr('class', 'overlay')
+            // Remove prediction
+            svg.selectAll('.confirmed-prediction').remove();
+            svg.selectAll('.confirmed-prediction-error').remove();
+
+            if (dataType === 'cumulative') {
+                svg.selectAll('.stem')
+                    .transition(t)
+                    .attr('y1', yScale(0))
+                    .attr('y2', yScale(0))
+                    .remove();
+            } else {
+                /* DAILY TRENDS */
+
+                svg.select('.data')
+                    .selectAll('.stem')
+                    .data(
+                        category === 'confirmed'
+                            ? rawDailyTimeseries
+                            : rawDailyTimeseries.filter((t) => !t.isPrediction)
+                    )
+                    .join((enter: any) =>
+                        enter
+                            .append('line')
+                            .attr('class', 'stem')
+                            .attr('stroke-width', barWidth)
+                            .attr('x1', (d: CountryTrendWithDelta) =>
+                                xScale(convertDateStrToDate(d.date))
+                            )
+                            .attr('y1', chartBottom)
+                            .attr('x2', (d: CountryTrendWithDelta) =>
+                                xScale(convertDateStrToDate(d.date))
+                            )
+                            .attr('y2', chartBottom)
+                    )
+                    .transition(t)
+                    .attr('stroke-width', barWidth)
+                    .attr('x1', (d: CountryTrendWithDelta) =>
+                        xScale(convertDateStrToDate(d.date))
+                    )
+                    .attr('y1', yScale(0))
+                    .attr('x2', (d: CountryTrendWithDelta) =>
+                        xScale(convertDateStrToDate(d.date))
+                    )
+                    .attr('y2', (data: CountryTrendWithDelta) =>
+                        yScale(getStatistic(dataType, category, data))
+                    )
+                    .attr('stroke-dasharray', (data: CountryTrendWithDelta) =>
+                        data.isPrediction ? 0.8 : 0
+                    )
+                    .attr('opacity', (data: CountryTrendWithDelta) =>
+                        data.isPrediction ? 0.5 : 1
+                    );
+            }
+
+            // Add path
+            /* Path */
+            svg.select('.data')
+                .append('path')
+                .datum(
+                    category === 'confirmed'
+                        ? timeseries
+                        : unPredictedTimeseries
+                )
+                .attr('fill', 'none')
+                .attr('class', 'trend')
+                .attr('stroke', color)
+                .attr('stroke-width', 2)
+                .attr(
+                    'd',
+                    line()
+                        .x(function (d: any) {
+                            return xScale(convertDateStrToDate(d.date));
+                        })
+                        .y(function (d: any) {
+                            return yScale(getStatistic(dataType, category, d));
+                        })
+                );
+
+            if (predictedTimeseries.length && category === 'confirmed') {
+                svg.select('.data')
+                    .append('path')
+                    .datum(predictedTimeseries)
+                    .attr('class', 'confirmed-prediction-error')
+                    .attr('fill', RED)
+                    .attr('stroke', 'none')
+                    .attr(
+                        'd',
+                        area()
+                            .x(function (d: any) {
+                                return xScale(convertDateStrToDate(d.date));
+                            })
+                            .y0(function (d: any) {
+                                return yScale(
+                                    dataType === 'cumulative'
+                                        ? d.confirmed_prediction_upper
+                                        : d.daily_prediction_upper
+                                );
+                            })
+                            .y1(function (d: any) {
+                                return yScale(
+                                    dataType === 'cumulative'
+                                        ? d.confirmed_prediction_lower
+                                        : d.daily_prediction_lower
+                                );
+                            })
+                    );
+
+                svg.select('.data')
+                    .append('path')
+                    .datum(predictedTimeseries)
+                    .attr('fill', 'none')
+                    .attr('class', 'confirmed-prediction')
+                    .attr('stroke', 'steelblue')
+                    .attr('stroke-dasharray', 1)
+                    .attr('stroke-width', 1.5)
+                    .attr(
+                        'd',
+                        line()
+                            .x(function (d: any) {
+                                return xScale(convertDateStrToDate(d.date));
+                            })
+                            .y(function (d: any) {
+                                return yScale(
+                                    dataType === 'cumulative'
+                                        ? d.confirmed_prediction
+                                        : d.daily_prediction
+                                );
+                            })
+                    );
+            }
+
+            svg.select('.overlay')
                 .attr('width', width)
                 .attr('height', height)
                 .on('touchmove', mousemove)
@@ -362,140 +474,6 @@ const Timeseries = ({
                     onSelectDate(moment(hoverDate));
                 }
             }
-
-            // Remove prediction
-            svg.selectAll('.confirmed-prediction').remove();
-            svg.selectAll('.confirmed-prediction-error').remove();
-
-            if (dataType === 'cumulative') {
-                svg.selectAll('.stem')
-                    .transition(t)
-                    .attr('y1', yScale(0))
-                    .attr('y2', yScale(0))
-                    .remove();
-            } else {
-                /* DAILY TRENDS */
-
-                svg.select('.data')
-                    .selectAll('.stem')
-                    .data(
-                        category === 'confirmed'
-                            ? rawDailyTimeseries
-                            : rawDailyTimeseries.filter((t) => !t.isPrediction)
-                    )
-                    .join((enter: any) =>
-                        enter
-                            .append('line')
-                            .attr('class', 'stem')
-                            .attr('stroke-width', barWidth)
-                            .attr('x1', (d: CountryTrendWithDelta) =>
-                                xScale(convertDateStrToDate(d.date))
-                            )
-                            .attr('y1', chartBottom)
-                            .attr('x2', (d: CountryTrendWithDelta) =>
-                                xScale(convertDateStrToDate(d.date))
-                            )
-                            .attr('y2', chartBottom)
-                    )
-                    .transition(t)
-                    .attr('stroke-width', barWidth)
-                    .attr('x1', (d: CountryTrendWithDelta) =>
-                        xScale(convertDateStrToDate(d.date))
-                    )
-                    .attr('y1', yScale(0))
-                    .attr('x2', (d: CountryTrendWithDelta) =>
-                        xScale(convertDateStrToDate(d.date))
-                    )
-                    .attr('y2', (data: CountryTrendWithDelta) =>
-                        yScale(getStatistic(dataType, category, data))
-                    )
-                    .attr('stroke-dasharray', (data: CountryTrendWithDelta) =>
-                        data.isPrediction ? 0.5 : 0
-                    )
-                    .attr('opacity', (data: CountryTrendWithDelta) =>
-                        data.isPrediction ? 0.5 : 1
-                    );
-            }
-
-            // Add path
-            /* Path */
-            svg.select('.data')
-                .append('path')
-                .datum(
-                    category === 'confirmed'
-                        ? timeseries
-                        : unPredictedTimeseries
-                )
-                .attr('fill', 'none')
-                .attr('class', 'trend')
-                .attr('stroke', color)
-                .attr('stroke-width', 1.5)
-                .attr(
-                    'd',
-                    line()
-                        .x(function (d: any) {
-                            return xScale(convertDateStrToDate(d.date));
-                        })
-                        .y(function (d: any) {
-                            return yScale(getStatistic(dataType, category, d));
-                        })
-                );
-            if (!dates.length) {
-                return;
-            }
-
-            if (!predictedTimeseries.length || category !== 'confirmed') {
-                return;
-            }
-
-            svg.append('path')
-                .datum(predictedTimeseries)
-                .attr('class', 'confirmed-prediction-error')
-                .attr('fill', '#cce5df')
-                .attr('stroke', 'none')
-                .attr(
-                    'd',
-                    area()
-                        .x(function (d: any) {
-                            return xScale(convertDateStrToDate(d.date));
-                        })
-                        .y0(function (d: any) {
-                            return yScale(
-                                dataType === 'cumulative'
-                                    ? d.confirmed_prediction_upper
-                                    : d.daily_prediction_upper
-                            );
-                        })
-                        .y1(function (d: any) {
-                            return yScale(
-                                dataType === 'cumulative'
-                                    ? d.confirmed_prediction_lower
-                                    : d.daily_prediction_lower
-                            );
-                        })
-                );
-
-            svg.append('path')
-                .datum(predictedTimeseries)
-                .attr('fill', 'none')
-                .attr('class', 'confirmed-prediction')
-                .attr('stroke', 'steelblue')
-                .attr('stroke-dasharray', 1)
-                .attr('stroke-width', 1.5)
-                .attr(
-                    'd',
-                    line()
-                        .x(function (d: any) {
-                            return xScale(convertDateStrToDate(d.date));
-                        })
-                        .y(function (d: any) {
-                            return yScale(
-                                dataType === 'cumulative'
-                                    ? d.confirmed_prediction
-                                    : d.daily_prediction
-                            );
-                        })
-                );
         });
     }, [
         dataType,
@@ -525,18 +503,6 @@ const Timeseries = ({
         });
     }, [selectedDate, dataType, categories, stats, xScale, isLog]);
 
-    const trail = useMemo(() => {
-        const styles: any[] = [];
-
-        [0, 0, 0, 0, 0].map((element, index) => {
-            styles.push({
-                animationDelay: `${index * 250}ms`,
-            });
-            return null;
-        });
-        return styles;
-    }, []);
-
     const infoMessage = `${dayChangeMessage} ${
         dataType === 'cumulative'
             ? ''
@@ -562,11 +528,8 @@ const Timeseries = ({
                     return (
                         <Wrapper
                             key={category}
-                            className={`svg-parent ${
-                                index > 0 ? 'fadeInUp' : ''
-                            } is-${category}`}
+                            className={`is-${category}`}
                             ref={wrapperRef}
-                            style={trail[index]}
                         >
                             {selectedDate && (
                                 <div
@@ -626,13 +589,13 @@ const Timeseries = ({
                                         <Info>
                                             <InfoTooltip
                                                 message={infoMessage}
-                                                top={0}
-                                                right={0}
+                                                top={3}
+                                                right={3}
                                             />
                                         </Info>
                                     </Delta>
                                     {dataType === 'daily' && (
-                                        <Delta className="stem">
+                                        <Delta style={{ opacity: 0.7 }}>
                                             <span>
                                                 Raw Daily:{' '}
                                                 <strong>
@@ -648,8 +611,8 @@ const Timeseries = ({
                                             <Info>
                                                 <InfoTooltip
                                                     message="Bar charts using raw daily data. Other data in dashboard using 7 days rolling average."
-                                                    top={0}
-                                                    right={0}
+                                                    top={3}
+                                                    right={3}
                                                 />
                                             </Info>
                                         </Delta>
@@ -674,6 +637,33 @@ const Timeseries = ({
                                     fill="white"
                                     stroke="red"
                                 />
+                                <g className="focus">
+                                    <circle r="5" className="hover-circle" />
+                                    <g className="focus-tooltip">
+                                        <rect
+                                            className="tooltip"
+                                            x="10"
+                                            y="-22"
+                                            rx="4"
+                                            ry="4"
+                                        />
+                                        <text className="tooltip-date" y="-2" />
+                                        <text
+                                            x="15"
+                                            y="36"
+                                            className="tooltip-change"
+                                        >
+                                            1 Day Change:
+                                            <tspan className="tooltip-delta" />
+                                        </text>
+                                        <text
+                                            className="tooltip-value"
+                                            x="15"
+                                            y="18"
+                                        />
+                                    </g>
+                                </g>
+                                <rect className="overlay" />
                             </svg>
                         </Wrapper>
                     );
@@ -712,13 +702,13 @@ const getStatColor = (category: Category) => {
 const Wrapper = styled.div`
     position: relative;
     align-self: center;
-    background: ${transparentize(0.85, RED)};
     border-radius: 5px;
     display: flex;
     position: relative;
     width: 100%;
     height: 10rem;
     margin-bottom: 1rem;
+    border: 1px solid ${LIGHT_GREY};
 
     .stats {
         border-radius: 3px;
@@ -755,7 +745,7 @@ const Wrapper = styled.div`
         }
         path.confirmed-prediction-error {
             stroke: none;
-            opacity: 0.5;
+            opacity: 0.6;
         }
         .tick {
             fill: ${HINT_GREY};
@@ -763,7 +753,6 @@ const Wrapper = styled.div`
     }
 
     &.is-recoveries {
-        background: ${transparentize(0.85, BLUE)};
         h5.title,
         h2,
         h6 {
@@ -792,7 +781,6 @@ const Wrapper = styled.div`
     }
 
     &.is-deaths {
-        background: ${transparentize(0.85, PURPLE)};
         h5.title,
         h2,
         h6 {
@@ -826,6 +814,7 @@ const Wrapper = styled.div`
         color: ${RED};
         font-weight: 900;
         line-height: 10px;
+        font-size: 11px;
     }
     h2,
     h6 {
@@ -872,6 +861,7 @@ const Wrapper = styled.div`
     h5.title {
         display: flex;
         align-items: center;
+        font-size: ;
     }
     .symbol {
         border: 1px solid ${RED};
@@ -881,20 +871,31 @@ const Wrapper = styled.div`
         transform: translate(-40%, 0%) rotate(45deg);
     }
     .stem {
-        opacity: 0.6;
+        opacity: 0.3;
     }
 `;
 
 const HighlightNumber = styled.h2`
     margin-bottom: 0;
+    .ant-statistic {
+        line-height: 1.3;
+    }
+    .ant-statistic-content {
+        font-size: 16px;
+    }
+    .ant-statistic-content-value-decimal {
+        font-size: 12px;
+    }
 `;
 
 const Delta = styled.h6`
-    font-size: 10px;
+    font-size: 9px;
+    line-height: 1.1;
     position: relative;
     button {
         left: -10px;
     }
+    margin-bottom: 0;
 `;
 
 const Text = styled.span`
@@ -906,7 +907,6 @@ const Info = styled.span`
     width: 11px;
     height: 11px;
     display: inline-block;
-    z-index: 10;
     button {
         left: 1px;
     }
