@@ -654,8 +654,12 @@ const Timeseries = ({
                                             className="tooltip-change"
                                         >
                                             1 Day Change:
-                                            <tspan className="tooltip-delta" />
                                         </text>
+                                        <text
+                                            className="tooltip-delta"
+                                            x="85"
+                                            y="36"
+                                        />
                                         <text
                                             className="tooltip-value"
                                             x="15"
