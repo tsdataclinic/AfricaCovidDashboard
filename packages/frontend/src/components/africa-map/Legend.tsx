@@ -7,7 +7,13 @@ const LegendOuter = styled.div`
     @media (min-width: 768px) {
         display: block;
         position: absolute;
+        width: 98%;
     }
+
+    @media (min-width: 1200px) {
+        width: auto;
+    }
+
     background-color: rgba(255, 255, 255, 0.9);
     bottom: 10px;
     left: 10px;
