@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 const LegendOuter = styled.div`
     display: block;
+    position: relative;
     @media (min-width: 768px) {
         display: block;
         position: absolute;
