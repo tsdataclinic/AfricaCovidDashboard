@@ -146,7 +146,7 @@ const About = () => {
                     </TextColumn>
                     <IconColumn>
                         <img
-                            style={{ width: '300px', height: '300px' }}
+                            style={{ width: '361px', height: '300px' }}
                             src="/what_is_covid.png"
                         />
                     </IconColumn>
