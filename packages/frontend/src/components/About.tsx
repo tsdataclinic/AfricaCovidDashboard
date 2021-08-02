@@ -147,7 +147,7 @@ const About = () => {
                     <IconColumn>
                         <img
                             style={{ width: '300px', height: '300px' }}
-                            src="/colab.png"
+                            src="/what_is_covid.png"
                         />
                     </IconColumn>
                 </AboutPageSegment>
