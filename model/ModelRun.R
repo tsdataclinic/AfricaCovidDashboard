@@ -1,4 +1,5 @@
 library(tidyverse)
+library(httr)
 source("InstallPackages.R")
 
 modeldata = read.csv("ModelData/modeldata.csv")
@@ -38,3 +39,7 @@ forecastestimate <- data.frame(Est=apply(forecastpredict,2,mean),Var=apply(forec
 
 #Save for app.
 write.csv(forecastestimate,"ModelData/forecastestimates.csv")
+POST(
+  "https://ts-africa-covid.herokuapp.com/model",
+  body = upload_file("forecastestimates.csv")
+)

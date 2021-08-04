@@ -1,4 +1,4 @@
-packages <- c("tidyverse","lubridate","Matrix", "lme4","Rcpp","rstanarm", "magrittr","abind")
+packages <- c("tidyverse","lubridate","Matrix", "lme4","Rcpp","rstanarm", "magrittr","abind","httr")
 
 installed <- packages %in% rownames(installed.packages())
 if (any(installed == FALSE)) {
