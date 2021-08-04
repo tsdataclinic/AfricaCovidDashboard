@@ -17,7 +17,7 @@ if( length(previous_models) == 0){
   model5name <- paste("ModelData/stanmodel",Sys.Date(),".rds",sep="")
   model5 <- stan_lmer(log(Confirmed) ~ Exposure + lnsdi + lnurban + lnp70p +
                         lnhhsn + lnihr2018 + lnsqualty + (Exposure|Country_Region),
-                      data=modeldata, chains=1, iter=1000, warmup=500)
+                      data=modeldata, chains=1, iter=5000, warmup=1000)
   saveRDS(model5,model5name)
 }else{
   most_recent_model <- previous_models[which.max(previous_models)]
