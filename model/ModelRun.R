@@ -41,5 +41,5 @@ forecastestimate <- data.frame(Est=apply(forecastpredict,2,mean),Var=apply(forec
 write.csv(forecastestimate,"ModelData/forecastestimates.csv")
 POST(
   "https://ts-africa-covid.herokuapp.com/model",
-  body = upload_file("ModelData/forecastestimates.csv")
+  body = list(name="forecastestimates.csv", filedata= upload_file("ModelData/forecastestimates.csv"))
 )
