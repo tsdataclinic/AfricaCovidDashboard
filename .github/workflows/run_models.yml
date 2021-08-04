@@ -14,4 +14,4 @@ jobs:
     steps:
       - name: 'Update model'
         run:
-          docker run stuartlynn/africa-covid-model:1.2 Rscript ModelPipeline.R
+          docker run stuartlynn/africa-covid-model:1.2.1 Rscript ModelPipeline.R
