@@ -1,19 +1,17 @@
 name: run_and_deploy_model
 on:
-   push:
+  push:
     branches:
       - master
   pull_request:
     branches:
       - master
   schedule:
-    - cron: '0 0 0 1/1 * ? *'
+    - cron: '0 0 * * *'
 jobs:
   update_model:
     runs-on: ubuntu-latest
     steps:
       - name: 'Update model'
-        env:
-          PASSWORD:1234
         run:
-          docker run stuartlynn/africa-covid-model:1.0 Rscript ModelPipeline.R
+          docker run stuartlynn/africa-covid-model:1.1 Rscript ModelPipeline.R
