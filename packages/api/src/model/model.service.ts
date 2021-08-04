@@ -4,16 +4,15 @@ import { CountryTrendDict, TrendDatum } from 'src/country/country_types';
 import { ModelDatum } from './model.types';
 import * as fs from 'fs';
 import CsvReadableStream from 'csv-reader';
+import { Readable } from 'stream';
 import { getCountryISO } from 'src/utils/countryISO';
+import { resolve } from 'dns';
 
 @Injectable()
 export class ModelService {
-  predictions: CountryTrendDict | null;
+  predictions: CountryTrendDict;
   constructor() {
-    this.loadPredictions().then((data: CountryTrendDict) => {
-      this.normalizePredictions(data);
-      this.predictions = data;
-    });
+    this.predictions = {};
   }
 
   normalizePredictions(data: CountryTrendDict) {
@@ -33,14 +32,13 @@ export class ModelService {
       });
     });
   }
-  loadPredictions() {
+
+  parsePredictions(
+    stream: fs.ReadStream | Readable,
+  ): Promise<CountryTrendDict> {
     return new Promise((resolve, reject) => {
       let data: CountryTrendDict = {};
-      const readStream = fs.createReadStream(
-        'data/forecastestimates.csv',
-        'utf8',
-      );
-      readStream
+      stream
         .pipe(new CsvReadableStream({ parseNumbers: true, asObject: true }))
         .on('data', (row) => {
           // Get the ISO details of the country so we can link things up
@@ -66,6 +64,22 @@ export class ModelService {
         .on('error', (err) => {
           reject(err);
         });
+    });
+  }
+
+  loadPredictionsFromString(csv: string | Buffer) {
+    const readStream = Readable.from(csv, { encoding: 'utf8' });
+    this.parsePredictions(readStream).then((data) => {
+      this.normalizePredictions(data);
+      this.predictions = data;
+    });
+  }
+
+  loadPredictionsFromFile(file: any) {
+    const readStream = fs.createReadStream(file, 'utf8');
+    this.parsePredictions(readStream).then((data) => {
+      this.normalizePredictions(data);
+      this.predictions = data;
     });
   }
 

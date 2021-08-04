@@ -1,6 +1,16 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { ModelService } from './model.service';
 import { ModelDatum } from './model.types';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 import {
   ApiOkResponse,
   ApiParam,
@@ -15,6 +25,14 @@ export class ModelController {
   @Get('/')
   getModelIndex(): string {
     return 'models are wrong';
+  }
+
+  @UseInterceptors(FileInterceptor('forecastestimates.csv'))
+  @Post('/')
+  updateModel(@UploadedFile() file: any) {
+    console.log(`Updating predictions at ${new Date()}`);
+    this.modelService.loadPredictionsFromString(file.buffer);
+    return 'File uploaded';
   }
 
   // @Get('/:country')
