@@ -23,11 +23,11 @@ export class ModelController {
   constructor(private readonly modelService: ModelService) {}
 
   @Get('/')
-  getModelIndex(): string {
-    return 'models are wrong';
+  getModelIndex() {
+    this.modelService.predictions;
   }
 
-  @UseInterceptors(FileInterceptor('forecastestimates.csv'))
+  @UseInterceptors(FileInterceptor('Model/forecastestimates.csv'))
   @Post('/')
   updateModel(@UploadedFile() file: any) {
     console.log(`Updating predictions at ${new Date()}`);
