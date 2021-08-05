@@ -27,7 +27,7 @@ export class ModelController {
     return this.modelService.predictions;
   }
 
-  @UseInterceptors(FileInterceptor('Model/forecastestimates.csv'))
+  @UseInterceptors(FileInterceptor('ModelData/forecastestimates.csv'))
   @Post('/')
   updateModel(@UploadedFile() file: any) {
     console.log(`Updating predictions at ${new Date()}`);
