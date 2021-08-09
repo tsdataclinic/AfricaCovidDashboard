@@ -8,12 +8,11 @@ import { Readable } from 'stream';
 import { getCountryISO } from 'src/utils/countryISO';
 import { resolve } from 'dns';
 
+let predictions: CountryTrendDict = {};
+
 @Injectable()
 export class ModelService {
-  predictions: CountryTrendDict;
-  constructor() {
-    this.predictions = {};
-  }
+  constructor() {}
 
   normalizePredictions(data: CountryTrendDict) {
     Object.keys(data).forEach((country) => {
@@ -71,7 +70,7 @@ export class ModelService {
     const readStream = Readable.from(csv, { encoding: 'utf8' });
     this.parsePredictions(readStream).then((data) => {
       this.normalizePredictions(data);
-      this.predictions = data;
+      predictions = data;
     });
   }
 
@@ -79,15 +78,15 @@ export class ModelService {
     const readStream = fs.createReadStream(file, 'utf8');
     this.parsePredictions(readStream).then((data) => {
       this.normalizePredictions(data);
-      this.predictions = data;
+      predictions = data;
     });
   }
 
   predictForCountry(countryISO: string): TrendDatum[] {
-    return this.predictions[countryISO];
+    return predictions[countryISO];
   }
 
-  allPredictions() {
-    return this.predictions;
+  allPredictions(): CountryTrendDict {
+    return predictions;
   }
 }

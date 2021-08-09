@@ -24,7 +24,7 @@ export class ModelController {
 
   @Get('/')
   getModelIndex() {
-    return this.modelService.predictions;
+    return this.modelService.allPredictions();
   }
 
   @UseInterceptors(FileInterceptor('ModelData/forecastestimates.csv'))
