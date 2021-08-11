@@ -7,7 +7,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '30 0 * * *'
+    - cron: '0 3 * * *'
 jobs:
   update_model:
     runs-on: ubuntu-latest
