@@ -34,7 +34,7 @@ const AppLayout: FunctionComponent = ({ children }) => {
             <Main>
                 <div
                     style={{
-                        backgroundColor: '#dc2626',
+                        backgroundColor: '#ef4444',
                         color: 'white',
                         fontSize: '1.25rem',
                         padding: 8,
