@@ -4,7 +4,7 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "lerna run build",
+        "build": "cd packages/frontend && yarn build",
         "start": "lerna run start"
     },
     "name": "AfricaCovid",
