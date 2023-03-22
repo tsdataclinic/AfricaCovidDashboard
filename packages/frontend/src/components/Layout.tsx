@@ -32,6 +32,16 @@ const AppLayout: FunctionComponent = ({ children }) => {
                 <AppMenu />
             </StyledDrawer>
             <Main>
+                <div
+                    style={{
+                        backgroundColor: '#dc2626',
+                        color: 'white',
+                        fontSize: '1.25rem',
+                        padding: 8,
+                    }}
+                >
+                    This app is currently offline and under maintenance.
+                </div>
                 <SmallScreenHeader openDrawer={() => setDrawer(true)} />
                 <Content style={{ flex: 1, height: '100%' }}>
                     <CountryStatsStore>{children}</CountryStatsStore>
