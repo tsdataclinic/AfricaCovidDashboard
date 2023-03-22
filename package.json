@@ -4,7 +4,7 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "lerna run build:watch",
+        "build": "lerna run build",
         "start": "lerna run start"
     },
     "name": "AfricaCovid",
